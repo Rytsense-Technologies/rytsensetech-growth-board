@@ -1,0 +1,13 @@
+# Cloudflare Pages — static dashboard (no build step)
+# Connect this repo in the Cloudflare dashboard OR deploy with:
+#   npx wrangler pages deploy . --project-name=rytsensetech-growth-board
+#
+# Dashboard settings when linking GitHub:
+#   Production branch: main
+#   Build command: (leave empty)
+#   Build output directory: /
+#   Root directory: /
+
+name = "rytsensetech-growth-board"
+compatibility_date = "2026-09-09"
+pages_build_output_dir = "."

@@ -1,0 +1,51 @@
+Refresh the Rytsensetech Growth Board data file.
+
+Use your connected MCP tools (Search Console, GA4, Clarity if available) for property rytsensetech.com / GA4 property 423166919. Then overwrite the file data/latest.json in this repo with ONE valid JSON object that matches this schema exactly. Do not invent metrics — only use tool results. If Clarity fails or is missing, keep clarity.status = "unavailable" with a short note.
+
+Schema and rules:
+{
+  "site": "rytsensetech.com",
+  "updatedAt": "<ISO-8601 UTC now>",
+  "gsc": {
+    "period": { "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD" },
+    "current": { "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 },
+    "prior": { "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 },
+    "change": {
+      "clicks": 0, "clicksPercent": 0,
+      "impressions": 0, "impressionsPercent": 0,
+      "ctr": 0, "position": 0
+    },
+    "quickWins": [
+      {
+        "query": "", "clicks": 0, "impressions": 0, "ctr": 0,
+        "position": 0, "opportunity": 0
+      }
+    ]
+  },
+  "ga4": {
+    "totals": {
+      "sessions": 0, "activeUsers": 0,
+      "engagementRate": 0, "pageViews": 0
+    },
+    "daily": [ { "date": "YYYYMMDD", "sessions": 0 } ],
+    "channels": [
+      { "channel": "", "sessions": 0, "activeUsers": 0, "conversions": 0 }
+    ]
+  },
+  "clarity": {
+    "status": "ok" | "unavailable",
+    "data": { },
+    "note": "only when unavailable"
+  }
+}
+
+Computation rules (match scripts/fetch-data.mjs):
+1) GSC current window = last 28 full days ending yesterday (UTC). Prior = the 28 days before that.
+2) ctr values are percentages (e.g. 1.11), not fractions. Round ctr to 2 decimals, position to 1 decimal.
+3) change.clicks = current - prior; change.clicksPercent = ((current-prior)/prior)*100 when prior>0 else 0. Same for impressions. change.ctr and change.position are simple differences.
+4) quickWins: queries with position 4–15 and impressions >= 100; opportunity = round(impressions * (1 - ctr/100) * 0.05 * (16 - position)); sort by opportunity desc; top 8.
+5) GA4: last 28 days through today. totals.engagementRate is sessions-weighted average, 4 decimals. daily[].date is YYYYMMDD. channels use sessionDefaultChannelGroup, sorted by sessions desc.
+6) Write pretty-printed JSON (2-space indent) to data/latest.json and set updatedAt to now (UTC).
+7) After writing, briefly report the new updatedAt and top-line GSC clicks + GA4 sessions.
+
+Then commit and push if I ask — message: "chore: refresh dashboard data via Claude MCP".

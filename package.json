@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Live SEO & marketing dashboard for rytsensetech.com — data pulled from Search Console, GA4 and Clarity on a schedule via GitHub Actions, served as a static site on Vercel.",
   "scripts": {
-    "fetch-data": "node scripts/fetch-data.mjs"
+    "fetch-data": "node scripts/fetch-data.mjs",
+    "deploy:cf": "node scripts/deploy-cloudflare.mjs"
   },
   "dependencies": {
     "googleapis": "^140.0.0"
