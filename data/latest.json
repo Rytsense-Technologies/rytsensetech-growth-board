@@ -1,47 +1,102 @@
 {
   "site": "rytsensetech.com",
-  "updatedAt": "2026-09-09T00:00:00.000Z",
+  "updatedAt": "2026-09-10T09:39:11Z",
   "gsc": {
-    "period": {"startDate": "2026-08-12", "endDate": "2026-09-08"},
-    "current": {"clicks": 1241, "impressions": 112187, "ctr": 1.11, "position": 34.3},
-    "prior": {"clicks": 1713, "impressions": 100193, "ctr": 1.71, "position": 29.6},
-    "change": {"clicks": -472, "clicksPercent": -27.55, "impressions": 11994, "impressionsPercent": 11.97, "ctr": -0.6, "position": 4.7},
+    "period": { "startDate": "2026-08-13", "endDate": "2026-09-09" },
+    "current": { "clicks": 1225, "impressions": 113214, "ctr": 1.08, "position": 33.7 },
+    "prior": { "clicks": 1719, "impressions": 101291, "ctr": 1.7, "position": 29.7 },
+    "change": {
+      "clicks": -494, "clicksPercent": -28.74,
+      "impressions": 11923, "impressionsPercent": 11.77,
+      "ctr": -0.62, "position": 4
+    },
     "quickWins": [
-      {"query": "what purpose do fairness measures serve in ai product development", "clicks": 1, "impressions": 3197, "ctr": 0.03, "position": 9.8, "opportunity": 351},
-      {"query": "difference between ai and ml", "clicks": 0, "impressions": 476, "ctr": 0, "position": 6.3, "opportunity": 52},
-      {"query": "zomato mcp", "clicks": 1, "impressions": 401, "ctr": 0.25, "position": 8.7, "opportunity": 43},
-      {"query": "carc codes", "clicks": 0, "impressions": 377, "ctr": 0, "position": 9.1, "opportunity": 41},
-      {"query": "generative ai development company", "clicks": 1, "impressions": 324, "ctr": 0.31, "position": 12.2, "opportunity": 35},
-      {"query": "carc", "clicks": 0, "impressions": 290, "ctr": 0, "position": 6.4, "opportunity": 32},
-      {"query": "ai development company in dubai", "clicks": 2, "impressions": 271, "ctr": 0.74, "position": 6.7, "opportunity": 28},
-      {"query": "software development company in chennai", "clicks": 7, "impressions": 304, "ctr": 2.3, "position": 11.3, "opportunity": 26}
+      { "query": "what purpose do fairness measures serve in ai product development", "clicks": 1, "impressions": 3388, "ctr": 0.03, "position": 9.8, "opportunity": 372 },
+      { "query": "difference between ai and ml", "clicks": 0, "impressions": 438, "ctr": 0, "position": 6.3, "opportunity": 48 },
+      { "query": "carc codes", "clicks": 0, "impressions": 408, "ctr": 0, "position": 9.1, "opportunity": 45 },
+      { "query": "zomato mcp", "clicks": 1, "impressions": 409, "ctr": 0.24, "position": 8.8, "opportunity": 44 },
+      { "query": "tidewater eye centers revenue cycle automation case study", "clicks": 0, "impressions": 373, "ctr": 0, "position": 9.8, "opportunity": 41 },
+      { "query": "generative ai development company", "clicks": 1, "impressions": 327, "ctr": 0.31, "position": 12, "opportunity": 35 },
+      { "query": "carc", "clicks": 0, "impressions": 289, "ctr": 0, "position": 6.2, "opportunity": 32 },
+      { "query": "software development company in chennai", "clicks": 7, "impressions": 305, "ctr": 2.3, "position": 11.3, "opportunity": 27 }
     ]
   },
   "ga4": {
-    "totals": {"sessions": 4630, "activeUsers": 3969, "engagementRate": 0.5492, "pageViews": 9784},
+    "totals": { "sessions": 4591, "activeUsers": 3558, "engagementRate": 0.5295, "pageViews": 8825 },
     "daily": [
-      {"date": "20260812", "sessions": 163}, {"date": "20260813", "sessions": 170}, {"date": "20260814", "sessions": 179},
-      {"date": "20260815", "sessions": 111}, {"date": "20260816", "sessions": 105}, {"date": "20260817", "sessions": 171},
-      {"date": "20260818", "sessions": 178}, {"date": "20260819", "sessions": 294}, {"date": "20260820", "sessions": 212},
-      {"date": "20260821", "sessions": 209}, {"date": "20260822", "sessions": 135}, {"date": "20260823", "sessions": 110},
-      {"date": "20260824", "sessions": 222}, {"date": "20260825", "sessions": 202}, {"date": "20260826", "sessions": 156},
-      {"date": "20260827", "sessions": 159}, {"date": "20260828", "sessions": 162}, {"date": "20260829", "sessions": 133},
-      {"date": "20260830", "sessions": 130}, {"date": "20260831", "sessions": 172}, {"date": "20260901", "sessions": 215},
-      {"date": "20260902", "sessions": 133}, {"date": "20260903", "sessions": 182}, {"date": "20260904", "sessions": 165},
-      {"date": "20260905", "sessions": 92}, {"date": "20260906", "sessions": 70}, {"date": "20260907", "sessions": 152},
-      {"date": "20260908", "sessions": 216}, {"date": "20260909", "sessions": 32}
+      { "date": "20260814", "sessions": 179 },
+      { "date": "20260815", "sessions": 111 },
+      { "date": "20260816", "sessions": 105 },
+      { "date": "20260817", "sessions": 171 },
+      { "date": "20260818", "sessions": 178 },
+      { "date": "20260819", "sessions": 294 },
+      { "date": "20260820", "sessions": 212 },
+      { "date": "20260821", "sessions": 209 },
+      { "date": "20260822", "sessions": 135 },
+      { "date": "20260823", "sessions": 110 },
+      { "date": "20260824", "sessions": 222 },
+      { "date": "20260825", "sessions": 202 },
+      { "date": "20260826", "sessions": 156 },
+      { "date": "20260827", "sessions": 159 },
+      { "date": "20260828", "sessions": 162 },
+      { "date": "20260829", "sessions": 133 },
+      { "date": "20260830", "sessions": 130 },
+      { "date": "20260831", "sessions": 172 },
+      { "date": "20260901", "sessions": 215 },
+      { "date": "20260902", "sessions": 133 },
+      { "date": "20260903", "sessions": 182 },
+      { "date": "20260904", "sessions": 165 },
+      { "date": "20260905", "sessions": 92 },
+      { "date": "20260906", "sessions": 70 },
+      { "date": "20260907", "sessions": 152 },
+      { "date": "20260908", "sessions": 216 },
+      { "date": "20260909", "sessions": 168 },
+      { "date": "20260910", "sessions": 49 }
     ],
     "channels": [
-      {"channel": "Organic Search", "sessions": 2226, "activeUsers": 1553, "conversions": 67},
-      {"channel": "Direct", "sessions": 2053, "activeUsers": 1884, "conversions": 12},
-      {"channel": "Organic Social", "sessions": 145, "activeUsers": 115, "conversions": 4},
-      {"channel": "Referral", "sessions": 97, "activeUsers": 26, "conversions": 4},
-      {"channel": "AI Assistant", "sessions": 74, "activeUsers": 55, "conversions": 4},
-      {"channel": "Unassigned", "sessions": 34, "activeUsers": 33, "conversions": 1}
+      { "channel": "Organic Search", "sessions": 2103, "activeUsers": 1473, "conversions": 66 },
+      { "channel": "Direct", "sessions": 2037, "activeUsers": 1875, "conversions": 9 },
+      { "channel": "Organic Social", "sessions": 148, "activeUsers": 120, "conversions": 4 },
+      { "channel": "Referral", "sessions": 86, "activeUsers": 25, "conversions": 4 },
+      { "channel": "AI Assistant", "sessions": 72, "activeUsers": 53, "conversions": 4 },
+      { "channel": "Unassigned", "sessions": 38, "activeUsers": 37, "conversions": 1 }
     ]
   },
   "clarity": {
+    "status": "ok",
+    "note": "",
+    "data": {
+      "DeadClickCount": { "sessionsCount": 136, "sessionsWithMetricPercentage": 12.5, "pagesViews": 19, "subTotal": 63 },
+      "RageClickCount": { "sessionsCount": 136, "sessionsWithMetricPercentage": 0.74, "pagesViews": 1, "subTotal": 2 },
+      "QuickbackClick": { "sessionsCount": 136, "sessionsWithMetricPercentage": 13.24, "pagesViews": 25, "subTotal": 25 },
+      "ScrollDepth": { "averageScrollDepth": 34.28 },
+      "EngagementTime": { "totalTimeSeconds": 434, "activeTimeSeconds": 94 },
+      "Traffic": { "totalSessionCount": 136, "totalBotSessionCount": 35, "distinctUserCount": 158, "pagesPerSessionPercentage": 2.05 },
+      "Browser": { "Chrome": 81, "ChromeMobile": 26, "Edge": 17, "MobileSafari": 8, "GoogleApp": 4 },
+      "Device": { "PC": 98, "Mobile": 37, "Tablet": 1 },
+      "OS": { "Windows": 86, "Android": 23, "IOS": 15, "MacOSX": 9, "Linux": 3 },
+      "Country": { "India": 96, "United States": 25, "Pakistan": 9, "China": 2, "Bangladesh": 1, "Finland": 1, "Kazakhstan": 1, "United Arab Emirates": 1 },
+      "PopularPages": {
+        "/": 55,
+        "/company/career/": 46,
+        "/blog/what-is-the-30-percent-rule-in-ai/": 15,
+        "/ai-machine-learning-course/": 11,
+        "/us/": 9
+      }
+    }
+  },
+  "github": {
+    "status": "ok",
+    "repo": "Rytsense-Technologies/rytsensetech-growth-board",
+    "recentCommits": [
+      { "sha": "2cb798c", "message": "Add Cloudflare Pages deploy helper and Claude MCP refresh prompt.", "author": "Arun K", "date": "2026-09-09T10:32:04Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/2cb798ca6759bbd5dfaf92ad8e6208708a66c5c4" },
+      { "sha": "36f769d", "message": "Ignore secrets/ so service account keys never get committed.", "author": "Arun K", "date": "2026-09-09T08:54:19Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/36f769de2f796a3227e1ea9256450951414bae28" },
+      { "sha": "5916cf5", "message": "Initial commit: Rytsensetech growth board static dashboard.", "author": "Arun K", "date": "2026-09-09T08:53:52Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/5916cf54a9880409d7b96677ca6ecbc83be90577" }
+    ]
+  },
+  "cloudflare": {
     "status": "unavailable",
-    "note": "The Clarity connector is returning malformed data (numeric placeholder keys instead of metrics) on this account right now, so behavioral metrics can't be shown here yet. This needs a look at the Clarity connector setup — ask Claude to retry once it's fixed and this card will populate automatically."
+    "note": "Analytics skipped (CLOUDFLARE_API_TOKEN/CLOUDFLARE_ZONE_ID env vars not set on this machine). Deploy also failed: wrangler could not reach the Cloudflare API from this device's shell (fetch failed / network-proxy egress blocked) after 2 attempts.",
+    "deployment": { "status": "failed", "url": "", "deployedAt": "" }
   }
 }
