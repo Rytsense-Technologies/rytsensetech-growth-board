@@ -1,0 +1,230 @@
+/* Shared top site navigation — Growth Board family (teal operating pages)
+   Also works above .rts-report with CSS-variable fallbacks. */
+
+.site-nav {
+  --sn-bg: var(--paper-raised, #ffffff);
+  --sn-ink: var(--ink, #12181f);
+  --sn-soft: var(--ink-soft, #4b5563);
+  --sn-faint: var(--ink-faint, #8b93a1);
+  --sn-line: var(--line, #e2e5ea);
+  --sn-accent: var(--accent, #0e7a82);
+  --sn-accent-soft: var(--accent-soft, #e4f2f1);
+  --sn-accent-ink: var(--accent-ink, #075258);
+  --sn-chip: var(--chip-bg, #edeff3);
+  --sn-ground: var(--paper, #f5f6f8);
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--sn-bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--sn-line);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .site-nav,
+  html:not([data-theme="light"]) .site-nav {
+    --sn-bg: #141a1f;
+    --sn-ink: #e8ecef;
+    --sn-soft: #a7afb9;
+    --sn-faint: #6c7480;
+    --sn-line: #232b31;
+    --sn-accent: #3fbfc2;
+    --sn-accent-soft: #132726;
+    --sn-accent-ink: #8fe0e2;
+    --sn-chip: #1b2126;
+    --sn-ground: #0b1013;
+  }
+}
+
+:root[data-theme="dark"] .site-nav,
+html[data-theme="dark"] .site-nav {
+  --sn-bg: #141a1f;
+  --sn-ink: #e8ecef;
+  --sn-soft: #a7afb9;
+  --sn-faint: #6c7480;
+  --sn-line: #232b31;
+  --sn-accent: #3fbfc2;
+  --sn-accent-soft: #132726;
+  --sn-accent-ink: #8fe0e2;
+  --sn-chip: #1b2126;
+  --sn-ground: #0b1013;
+}
+
+.site-nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.site-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  color: var(--sn-ink);
+  flex: none;
+  margin-right: 4px;
+}
+
+.site-nav-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(155deg, var(--sn-accent), var(--sn-accent-ink));
+  color: #fff;
+  font-family: Manrope, "IBM Plex Sans Condensed", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-nav-name {
+  font-family: Manrope, "IBM Plex Sans Condensed", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+}
+
+.site-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.site-nav-links a {
+  text-decoration: none;
+  color: var(--sn-soft);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+
+.site-nav-links a:hover {
+  background: var(--sn-chip);
+  color: var(--sn-ink);
+}
+
+.site-nav-links a[aria-current="page"] {
+  background: var(--sn-accent-soft);
+  color: var(--sn-accent-ink);
+}
+
+.site-nav-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.site-nav-chip {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sn-faint);
+  background: var(--sn-chip);
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.site-nav-source {
+  font-family: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sn-accent-ink);
+  text-decoration: none;
+  padding: 4px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--sn-line);
+  background: var(--sn-bg);
+}
+
+.site-nav-source:hover {
+  border-color: var(--sn-accent);
+  background: var(--sn-accent-soft);
+}
+
+.site-nav-updated {
+  font-family: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--sn-faint);
+}
+
+@media (max-width: 720px) {
+  .site-nav-inner {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .site-nav-name {
+    display: none;
+  }
+  .site-nav-meta {
+    width: 100%;
+    margin-left: 0;
+  }
+  .site-nav-links {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav-links a {
+    transition: none;
+  }
+}
+
+/* —— Sticky module sidebars (ops / platform / tasks) ——
+   Keeps the left nav visible while main content scrolls to #anchors. */
+:root {
+  --site-nav-h: 56px;
+}
+
+.shell > .sidebar,
+.shell > aside.sidebar {
+  position: sticky;
+  top: var(--site-nav-h);
+  align-self: start;
+  height: calc(100vh - var(--site-nav-h));
+  max-height: calc(100vh - var(--site-nav-h));
+  overflow-x: hidden;
+  overflow-y: auto;
+  z-index: 30;
+}
+
+.shell > .main {
+  min-width: 0;
+}
+
+.shell > .main section,
+.shell > .main [id] {
+  scroll-margin-top: calc(var(--site-nav-h) + 16px);
+}
+
+@media (max-width: 960px) {
+  .shell > .sidebar,
+  .shell > aside.sidebar {
+    position: relative;
+    top: auto;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+}

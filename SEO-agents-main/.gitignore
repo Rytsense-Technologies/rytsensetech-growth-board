@@ -1,0 +1,35 @@
+# Secrets — never commit
+.env
+.env.local
+*.pem
+*.key
+
+# Generated deliverables. Reports contain client data; keep them out of a
+# shared repo unless you have decided otherwise.
+output/
+!output/.gitkeep
+
+# Per-site memory is client data too.
+memory/*/
+!memory/.gitkeep
+
+# Caches and results
+.cache/
+evals/results/
+node_modules/
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.venv/
+venv/

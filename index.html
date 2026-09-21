@@ -130,6 +130,76 @@
   .empty-state.ok .badge{ background:var(--good-soft); color:var(--good); }
   .empty-state p{ margin:0; color:var(--ink-soft); font-size:12.5px; max-width:46ch; }
 
+  .site-split{
+    display:grid; grid-template-columns:1fr 1fr; gap:18px; padding-top:2px;
+  }
+  @media (max-width:640px){ .site-split{ grid-template-columns:1fr; } }
+  .site-pane{ min-width:0; }
+  .site-pane + .site-pane{ border-left:1px solid var(--line); padding-left:18px; }
+  @media (max-width:640px){
+    .site-pane + .site-pane{ border-left:none; padding-left:0; border-top:1px solid var(--line); padding-top:14px; }
+  }
+  .site-pane-label{
+    font-size:11.5px; text-transform:uppercase; letter-spacing:0.05em;
+    color:var(--ink-faint); font-weight:600; margin-bottom:10px;
+  }
+  .site-pane-label .repo{
+    display:block; margin-top:3px; text-transform:none; letter-spacing:0;
+    font-size:12.5px; font-weight:600; color:var(--ink-soft);
+  }
+  .commit-list{ display:flex; flex-direction:column; }
+  a.commit-row{
+    display:grid; grid-template-columns:58px 1fr; gap:8px 10px;
+    padding:8px 0; border-bottom:1px solid var(--line);
+    text-decoration:none; color:inherit;
+  }
+  a.commit-row:last-child{ border-bottom:none; }
+  a.commit-row:hover .commit-msg{ color:var(--accent-ink); }
+  .commit-sha{ font-size:11.5px; color:var(--ink-faint); padding-top:1px; }
+  .commit-msg{
+    font-size:12.5px; font-weight:600; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; color:var(--ink);
+  }
+  .commit-meta{ font-size:11.5px; color:var(--ink-faint); grid-column:2; margin-top:-4px; }
+
+  .deploy-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-bottom:12px; }
+  .deploy-pill{
+    display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 8px; border-radius:999px;
+    font-size:11.5px; font-weight:600; border:1px solid transparent;
+  }
+  .deploy-pill .status-dot{
+    width:6px; height:6px; border-radius:50%;
+    box-shadow:0 0 0 3px color-mix(in srgb, currentColor 25%, transparent);
+  }
+  .deploy-pill.success{ background:var(--good-soft); color:var(--good); border-color:color-mix(in srgb, var(--good) 30%, transparent); }
+  .deploy-pill.success .status-dot{ background:var(--good); }
+  .deploy-pill.failed{ background:var(--bad-soft); color:var(--bad); border-color:color-mix(in srgb, var(--bad) 30%, transparent); }
+  .deploy-pill.failed .status-dot{ background:var(--bad); }
+  .deploy-pill.unknown{ background:var(--chip-bg); color:var(--ink-faint); border-color:var(--line); }
+  .deploy-pill.unknown .status-dot{ background:var(--ink-faint); box-shadow:none; }
+  .deploy-url{ font-size:12.5px; font-weight:600; word-break:break-all; }
+  .deploy-when{ font-size:11.5px; color:var(--ink-faint); }
+
+  .mini-tiles{ display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; }
+  .mini-tile{
+    background:var(--chip-bg); border-radius:8px; padding:10px 12px;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .mini-tile .label{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em;
+    color:var(--ink-faint); font-weight:600;
+  }
+  .mini-tile .value{ font-size:16px; font-weight:700; font-family:'Manrope', ui-sans-serif, system-ui, sans-serif; letter-spacing:-0.01em; }
+
+  .clarity-block{ margin-top:14px; }
+  .clarity-block:first-child{ margin-top:4px; }
+  .clarity-block-title{
+    font-size:11.5px; text-transform:uppercase; letter-spacing:0.05em;
+    color:var(--ink-faint); font-weight:600; margin-bottom:8px;
+  }
+  .clarity-stats{ display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:8px; }
+  .clarity-fallback{ font-size:12.5px; color:var(--ink-soft); margin:0; }
+
   footer{
     margin-top:8px; padding-top:16px; border-top:1px solid var(--line);
     display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
@@ -137,8 +207,30 @@
   }
   a{ color:var(--accent-ink); }
 </style>
+<link rel="stylesheet" href="assets/site-nav.css">
 </head>
 <body>
+<nav class="site-nav" aria-label="Site">
+  <div class="site-nav-inner">
+    <a class="site-nav-brand" href="index.html">
+      <span class="site-nav-mark">RT</span>
+      <span class="site-nav-name">Rytsense</span>
+    </a>
+    <div class="site-nav-links">
+      <a href="index.html" data-nav="board">Growth Board</a>
+      <a href="report.html" data-nav="report">Intelligence Report</a>
+      <a href="tasks.html" data-nav="tasks">Team Tasks</a>
+      <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="ops.html" data-nav="ops">SEO Ops</a>
+    </div>
+    <div class="site-nav-meta">
+      <span class="site-nav-chip">Refreshes on schedule</span>
+      <span class="site-nav-updated" id="updated-text">Waiting for first sync…</span>
+      <a class="site-nav-source" href="data/latest.json">latest.json</a>
+    </div>
+  </div>
+</nav>
+<script src="assets/site-nav.js" defer></script>
 <div class="wrap">
 
   <div class="topbar">
@@ -155,9 +247,11 @@
         <span id="live-text">Connecting&hellip;</span>
       </div>
       <div class="sources" id="sources">
-        <span class="source-chip"><span class="dot ok"></span>Search Console</span>
-        <span class="source-chip"><span class="dot ok"></span>GA4</span>
-        <span class="source-chip"><span class="dot off"></span>Clarity</span>
+        <span class="source-chip" data-source="gsc"><span class="dot ok"></span>Search Console</span>
+        <span class="source-chip" data-source="ga4"><span class="dot ok"></span>GA4</span>
+        <span class="source-chip" data-source="clarity"><span class="dot off"></span>Clarity</span>
+        <span class="source-chip" data-source="github"><span class="dot off"></span>GitHub</span>
+        <span class="source-chip" data-source="cloudflare"><span class="dot off"></span>Cloudflare</span>
       </div>
     </div>
   </div>
@@ -190,23 +284,41 @@
     </div>
   </div>
 
-  <div class="grid" style="grid-template-columns:1fr;">
+  <div class="grid">
     <div class="card" id="clarity-card">
       <div class="card-head">
         <h2>Microsoft Clarity</h2>
         <span class="sub">behavioral analytics</span>
       </div>
-      <div class="empty-state" id="clarity-state">
-        <span class="badge">Not reporting</span>
-        <p id="clarity-note">Waiting for first sync&hellip;</p>
+      <div id="clarity-body">
+        <div class="empty-state">
+          <span class="badge">Not reporting</span>
+          <p>Waiting for first sync&hellip;</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="site-deploys-card">
+      <div class="card-head">
+        <h2>Site &amp; Deploys</h2>
+        <span class="sub">GitHub &middot; Cloudflare</span>
+      </div>
+      <div class="site-split">
+        <div class="site-pane" id="github-pane">
+          <div class="empty-state" id="github-state">
+            <span class="badge">Not reporting</span>
+            <p>Waiting for first sync&hellip;</p>
+          </div>
+        </div>
+        <div class="site-pane" id="cloudflare-pane">
+          <div class="empty-state" id="cloudflare-state">
+            <span class="badge">Not reporting</span>
+            <p>Waiting for first sync&hellip;</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
-  <footer>
-    <span id="updated-text">Waiting for first sync&hellip;</span>
-    <span>Refreshes automatically on schedule &middot; source: <a href="data/latest.json">data/latest.json</a></span>
-  </footer>
 
 </div>
 
@@ -225,6 +337,35 @@
     var dt = new Date(y+'-'+m+'-'+d+'T00:00:00Z');
     return dt.toLocaleDateString('en-US',{month:'short', day:'numeric'});
   }
+  function relativeTime(iso){
+    if(!iso) return '–';
+    var ms = Date.now() - new Date(iso).getTime();
+    if(isNaN(ms)) return '–';
+    var sec = Math.round(ms / 1000);
+    if(sec < 45) return 'just now';
+    var min = Math.round(sec / 60);
+    if(min < 60) return min + 'm ago';
+    var hr = Math.round(min / 60);
+    if(hr < 48) return hr + 'h ago';
+    var day = Math.round(hr / 24);
+    if(day < 30) return day + 'd ago';
+    var mo = Math.round(day / 30);
+    if(mo < 12) return mo + 'mo ago';
+    return Math.round(mo / 12) + 'y ago';
+  }
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+  function setSourceDot(name, ok){
+    var chip = document.querySelector('#sources .source-chip[data-source="'+name+'"] .dot');
+    if(chip) chip.className = 'dot ' + (ok ? 'ok' : 'off');
+  }
+  function unavailableHtml(note){
+    return '<div class="empty-state"><span class="badge">Not reporting</span><p>'+
+      esc(note || 'Waiting for first sync…')+'</p></div>';
+  }
 
   function deltaEl(pct, invert){
     var up = invert ? pct < 0 : pct > 0;
@@ -234,7 +375,7 @@
     return '<span class="delta '+cls+'">'+arrow+' '+Math.abs(pct).toFixed(1)+'%</span>';
   }
 
-  function renderTiles(gsc, ga4){
+  function renderTiles(gsc, ga4, taskSummary){
     var tiles = [];
     if(gsc){
       tiles.push({label:'Clicks (28d)', value: fmtNum(gsc.current.clicks), delta: deltaEl(gsc.change.clicksPercent, false)});
@@ -247,8 +388,20 @@
       tiles.push({label:'Active Users', value: fmtNum(ga4.totals.activeUsers)});
       tiles.push({label:'Engagement Rate', value: fmtPct(ga4.totals.engagementRate*100)});
     }
+    if(taskSummary){
+      var crit = taskSummary.openCritical||0;
+      var overdue = taskSummary.overdue||0;
+      tiles.push({
+        label:'Open critical tasks',
+        value: fmtNum(crit),
+        delta: overdue ? ('<span class="delta down">'+fmtNum(overdue)+' overdue</span>') : '<a href="tasks.html" style="font-size:12px;font-weight:600">Team Tasks →</a>',
+        warn: crit>0
+      });
+    }
     document.getElementById('tiles').innerHTML = tiles.map(function(t){
-      return '<div class="tile"><div class="label">'+t.label+'</div><div class="value mono">'+t.value+'</div>'+(t.delta?('<div>'+t.delta+' vs prior period</div>'):'')+'</div>';
+      var sub = t.delta || '';
+      if(t.delta && t.delta.indexOf('href=')<0 && t.delta.indexOf('overdue')<0) sub = t.delta + ' vs prior period';
+      return '<div class="tile"'+(t.warn?' style="outline:1px solid color-mix(in srgb, var(--bad) 35%, transparent)"':'')+'><div class="label">'+t.label+'</div><div class="value mono"'+(t.warn?' style="color:var(--bad)"':'')+'>'+t.value+'</div>'+(sub?('<div>'+sub+'</div>'):'')+'</div>';
     }).join('');
   }
 
@@ -324,17 +477,248 @@
   }
 
   function renderClarity(clarity){
-    var stateEl = document.getElementById('clarity-state');
-    var sourceDot = document.querySelectorAll('#sources .source-chip .dot')[2];
-    if(clarity && clarity.status === 'ok'){
-      stateEl.className = 'empty-state ok';
-      stateEl.innerHTML = '<span class="badge">Connected</span><p>Clarity data is flowing. Raw payload logged to data/latest.json — extend this card to chart specific fields once you decide which ones matter most.</p>';
-      if(sourceDot) sourceDot.className = 'dot ok';
-    } else {
-      stateEl.className = 'empty-state';
-      stateEl.innerHTML = '<span class="badge">Not reporting</span><p>'+((clarity && clarity.note) || 'Waiting for first sync…')+'</p>';
-      if(sourceDot) sourceDot.className = 'dot off';
+    var body = document.getElementById('clarity-body');
+    if(!clarity || clarity.status !== 'ok'){
+      body.innerHTML = unavailableHtml(clarity && clarity.note);
+      setSourceDot('clarity', false);
+      return;
     }
+    setSourceDot('clarity', true);
+    var raw = clarity.data;
+    if(!raw || typeof raw !== 'object' || Array.isArray(raw) || !Object.keys(raw).length){
+      body.innerHTML = unavailableHtml('Clarity connected, but no metric payload was included in this sync.');
+      return;
+    }
+
+    var priorityRe = /session|engagement|scroll|dead|rage|click|traffic|visitor/i;
+    var scalars = [];
+    var lists = [];
+    var leftovers = [];
+
+    Object.keys(raw).forEach(function(key){
+      var val = raw[key];
+      var label = humanizeKey(key);
+      var rows = clarityAsRows(val);
+      if(rows && rows.length){
+        lists.push({ key: key, label: label, rows: rows, priority: priorityRe.test(key) ? 0 : 1 });
+        return;
+      }
+      var num = clarityScalar(val);
+      if(num != null){
+        scalars.push({ key: key, label: label, value: num, priority: priorityRe.test(key) ? 0 : 1, fmt: clarityFormatHint(key, num) });
+        return;
+      }
+      if(typeof val === 'string' || typeof val === 'boolean'){
+        scalars.push({ key: key, label: label, value: val, priority: 2, fmt: 'text' });
+        return;
+      }
+      leftovers.push({ label: label, count: clarityPointCount(val) });
+    });
+
+    scalars.sort(function(a,b){ return a.priority - b.priority || a.label.localeCompare(b.label); });
+    lists.sort(function(a,b){ return a.priority - b.priority || a.label.localeCompare(b.label); });
+
+    var html = '';
+    if(scalars.length){
+      html += '<div class="clarity-block"><div class="clarity-block-title">Top signals</div><div class="clarity-stats">';
+      html += scalars.slice(0, 8).map(function(s){
+        var display = s.fmt === 'text' ? esc(String(s.value))
+          : s.fmt === 'pct' ? fmtPct(+s.value <= 1 && +s.value >= 0 ? +s.value * 100 : +s.value)
+          : s.fmt === 'ms' ? fmtNum(+s.value) + ' ms'
+          : s.fmt === 'sec' ? (+s.value).toFixed(1) + 's'
+          : fmtNum(+s.value);
+        return '<div class="mini-tile"><div class="label">'+esc(s.label)+'</div><div class="value mono">'+display+'</div></div>';
+      }).join('');
+      html += '</div></div>';
+    }
+
+    lists.forEach(function(block){
+      var max = Math.max.apply(null, block.rows.map(function(r){ return +r.value || 0; }).concat([0]));
+      html += '<div class="clarity-block"><div class="clarity-block-title">'+esc(block.label)+'</div><div class="channels">';
+      html += block.rows.slice(0, 8).map(function(r){
+        var pct = max ? ((+r.value || 0) / max * 100) : 0;
+        return '<div class="channel-row"><div class="name" title="'+esc(r.name)+'">'+esc(r.name)+'</div>'+
+          '<div class="channel-bar-track"><div class="channel-bar-fill" style="width:'+pct.toFixed(1)+'%"></div></div>'+
+          '<div class="num mono">'+fmtNum(r.value)+'</div></div>';
+      }).join('');
+      html += '</div></div>';
+    });
+
+    if(leftovers.length){
+      html += '<div class="clarity-block"><div class="clarity-block-title">Other metrics</div>';
+      html += leftovers.map(function(l){
+        return '<p class="clarity-fallback">'+esc(l.label)+' — '+l.count+' data point'+(l.count===1?'':'s')+'</p>';
+      }).join('');
+      html += '</div>';
+    }
+
+    if(!html){
+      body.innerHTML = unavailableHtml('Clarity payload present, but no renderable metrics were found.');
+      return;
+    }
+    body.innerHTML = html;
+  }
+
+  function humanizeKey(key){
+    var s = String(key == null ? '' : key)
+      .replace(/[_./-]+/g, ' ')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+      .trim();
+    if(!s) return 'Metric';
+    return s.split(/\s+/).map(function(w, i){
+      w = w.toLowerCase();
+      if(i === 0) return w.charAt(0).toUpperCase() + w.slice(1);
+      return w;
+    }).join(' ');
+  }
+
+  function clarityScalar(val){
+    if(typeof val === 'number' && isFinite(val)) return val;
+    if(typeof val === 'string' && val.trim() !== '' && isFinite(+val)) return +val;
+    if(!val || typeof val !== 'object' || Array.isArray(val)) return null;
+    var prefer = ['value','count','total','sessions','sessionCount','metricValue','avg','average','percentage','pct','ms','seconds','depth','rate','users','visitors'];
+    for(var i=0;i<prefer.length;i++){
+      var v = val[prefer[i]];
+      if(typeof v === 'number' && isFinite(v)) return v;
+      if(typeof v === 'string' && v.trim() !== '' && isFinite(+v)) return +v;
+    }
+    var nums = Object.keys(val).filter(function(k){ return typeof val[k] === 'number' && isFinite(val[k]); });
+    if(nums.length === 1) return val[nums[0]];
+    return null;
+  }
+
+  function clarityFormatHint(key, num){
+    var k = String(key).toLowerCase();
+    if(/ratio|rate|pct|percent|ctr/.test(k) || (num >= 0 && num <= 1 && /engagement|scroll|depth/.test(k))) return 'pct';
+    if(/milliseconds|durationms|_ms$/.test(k)) return 'ms';
+    if(/seconds|engagementtime|timeonsite/.test(k) && num < 100000) return 'sec';
+    return 'num';
+  }
+
+  function clarityAsRows(val){
+    if(Array.isArray(val)) return normalizeClarityRows(val);
+    if(!val || typeof val !== 'object') return null;
+    var nestKeys = ['rows','items','data','values','breakdown','list','entries','top','results'];
+    for(var i=0;i<nestKeys.length;i++){
+      if(Array.isArray(val[nestKeys[i]])) return normalizeClarityRows(val[nestKeys[i]]);
+    }
+    var entries = Object.keys(val);
+    if(!entries.length) return null;
+    // Map-like { Chrome: 12, Safari: 8 } or { Chrome: {count:12} }
+    var asMap = entries.every(function(k){
+      var v = val[k];
+      return typeof v === 'number' || typeof v === 'string' || (v && typeof v === 'object' && !Array.isArray(v) && clarityScalar(v) != null);
+    });
+    if(asMap && entries.length >= 2){
+      return entries.map(function(k){
+        var n = clarityScalar(val[k]);
+        if(n == null && (typeof val[k] === 'string' || typeof val[k] === 'number')) n = +val[k] || 0;
+        return { name: humanizeKey(k), value: n == null ? 0 : n };
+      }).sort(function(a,b){ return b.value - a.value; });
+    }
+    return null;
+  }
+
+  function normalizeClarityRows(arr){
+    var out = [];
+    for(var i=0;i<arr.length;i++){
+      var item = arr[i];
+      if(item == null) continue;
+      if(typeof item === 'number' || (typeof item === 'string' && isFinite(+item))){
+        out.push({ name: String(item), value: +item });
+        continue;
+      }
+      if(typeof item === 'string'){
+        out.push({ name: item, value: 1 });
+        continue;
+      }
+      if(typeof item !== 'object') continue;
+      var name = item.name || item.label || item.key || item.country || item.Country ||
+        item.device || item.Device || item.browser || item.Browser || item.os || item.OS ||
+        item.url || item.Url || item.page || item.Page || item.referrer || item.Referrer ||
+        item.title || item.Title || item.metricName;
+      if(name == null){
+        var sk = Object.keys(item).find(function(k){ return typeof item[k] === 'string' && item[k]; });
+        name = sk ? item[sk] : ('Item '+(i+1));
+      }
+      var value = clarityScalar(item);
+      if(value == null){
+        var nk = Object.keys(item).find(function(k){ return typeof item[k] === 'number' && isFinite(item[k]); });
+        value = nk != null ? item[nk] : 0;
+      }
+      out.push({ name: String(name), value: value });
+    }
+    return out.length ? out.sort(function(a,b){ return b.value - a.value; }) : null;
+  }
+
+  function clarityPointCount(val){
+    if(val == null) return 0;
+    if(Array.isArray(val)) return val.length;
+    if(typeof val === 'object') return Object.keys(val).length;
+    return 1;
+  }
+
+  function renderGithub(github){
+    var pane = document.getElementById('github-pane');
+    if(!github || github.status !== 'ok'){
+      pane.innerHTML = unavailableHtml(github && github.note);
+      setSourceDot('github', false);
+      return;
+    }
+    setSourceDot('github', true);
+    var commits = (github.recentCommits || []).slice(0, 5);
+    var list = commits.length
+      ? commits.map(function(c){
+          var sha = esc((c.sha || '').slice(0, 7));
+          var msg = esc(c.message || '');
+          var author = esc(c.author || 'unknown');
+          var when = relativeTime(c.date);
+          var url = esc(c.url || '#');
+          return '<a class="commit-row" href="'+url+'" target="_blank" rel="noopener noreferrer">'+
+            '<span class="commit-sha mono">'+sha+'</span>'+
+            '<span class="commit-msg" title="'+msg+'">'+msg+'</span>'+
+            '<span class="commit-meta">'+author+' · '+when+'</span>'+
+          '</a>';
+        }).join('')
+      : '<p style="margin:0;color:var(--ink-faint);font-size:12.5px;">No recent commits.</p>';
+    pane.innerHTML =
+      '<div class="site-pane-label">GitHub'+
+        (github.repo ? '<span class="repo">'+esc(github.repo)+'</span>' : '')+
+      '</div>'+
+      '<div class="commit-list">'+list+'</div>';
+  }
+
+  function renderCloudflare(cf){
+    var pane = document.getElementById('cloudflare-pane');
+    if(!cf || cf.status !== 'ok'){
+      pane.innerHTML = unavailableHtml(cf && cf.note);
+      setSourceDot('cloudflare', false);
+      return;
+    }
+    setSourceDot('cloudflare', true);
+    var dep = cf.deployment || {};
+    var status = dep.status === 'success' || dep.status === 'failed' ? dep.status : 'unknown';
+    var statusLabel = status === 'success' ? 'Deploy success' : (status === 'failed' ? 'Deploy failed' : 'Deploy unknown');
+    var url = dep.url || '';
+    var analytics = cf.analytics || {};
+    var cachePct = analytics.cacheHitRatio;
+    if(cachePct != null && !isNaN(cachePct)){
+      cachePct = cachePct <= 1 ? cachePct * 100 : cachePct;
+    }
+    pane.innerHTML =
+      '<div class="site-pane-label">Cloudflare</div>'+
+      '<div class="deploy-row">'+
+        '<span class="deploy-pill '+status+'"><span class="status-dot"></span>'+statusLabel+'</span>'+
+        (url ? '<a class="deploy-url" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(url.replace(/^https?:\/\//,''))+'</a>' : '')+
+        (dep.deployedAt ? '<span class="deploy-when">'+relativeTime(dep.deployedAt)+'</span>' : '')+
+      '</div>'+
+      '<div class="mini-tiles">'+
+        '<div class="mini-tile"><div class="label">Requests</div><div class="value mono">'+fmtNum(analytics.requests)+'</div></div>'+
+        '<div class="mini-tile"><div class="label">Unique visitors</div><div class="value mono">'+fmtNum(analytics.uniqueVisitors)+'</div></div>'+
+        '<div class="mini-tile"><div class="label">Threats blocked</div><div class="value mono">'+fmtNum(analytics.threats)+'</div></div>'+
+        '<div class="mini-tile"><div class="label">Cache hit</div><div class="value mono">'+(cachePct==null||isNaN(cachePct)?'–':cachePct.toFixed(1)+'%')+'</div></div>'+
+      '</div>';
   }
 
   function renderLive(updatedAt){
@@ -355,10 +739,12 @@
     updatedText.textContent = 'Last synced ' + fmtDate(updatedAt);
   }
 
-  function render(data){
+  function render(data, taskSummary){
     if(!data) return;
     renderLive(data.updatedAt);
-    renderTiles(data.gsc, data.ga4);
+    renderTiles(data.gsc, data.ga4, taskSummary);
+    setSourceDot('gsc', !!(data.gsc && data.gsc.current));
+    setSourceDot('ga4', !!(data.ga4 && data.ga4.totals));
     if(data.gsc) renderQuickWins(data.gsc.quickWins);
     if(data.ga4){
       renderChart(data.ga4.daily);
@@ -366,19 +752,37 @@
       document.getElementById('ga4-total-sub').textContent = fmtNum(data.ga4.totals.sessions)+' sessions total';
     }
     renderClarity(data.clarity);
+    renderGithub(data.github);
+    renderCloudflare(data.cloudflare);
   }
 
   var lastUpdatedAt = null;
+  var lastTaskKey = null;
   function load(){
-    fetch('data/latest.json', { cache: 'no-store' })
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if(data.updatedAt !== lastUpdatedAt){
-          lastUpdatedAt = data.updatedAt;
-          render(data);
-        }
-      })
-      .catch(function(){ /* keep showing last good render */ });
+    Promise.all([
+      fetch('data/latest.json', { cache: 'no-store' }).then(function(r){ return r.json(); }),
+      fetch('/api/tasks', { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+        .then(function(api){
+          if(api && api.summary) return api.summary;
+          return fetch('data/tasks.json', { cache: 'no-store' }).then(function(r){ return r.json(); }).then(function(seed){
+            var tasks = seed.tasks || [];
+            var open = tasks.filter(function(t){ return t.status !== 'done'; });
+            return {
+              openCritical: open.filter(function(t){ return t.priority === 'critical'; }).length,
+              overdue: open.filter(function(t){ return t.dueDate && new Date(t.dueDate) < new Date(); }).length
+            };
+          }).catch(function(){ return null; });
+        })
+    ]).then(function(pair){
+      var data = pair[0];
+      var taskSummary = pair[1];
+      var taskKey = taskSummary ? (taskSummary.openCritical + ':' + taskSummary.overdue) : '';
+      if(data.updatedAt !== lastUpdatedAt || taskKey !== lastTaskKey){
+        lastUpdatedAt = data.updatedAt;
+        lastTaskKey = taskKey;
+        render(data, taskSummary);
+      }
+    }).catch(function(){ /* keep showing last good render */ });
   }
 
   load();

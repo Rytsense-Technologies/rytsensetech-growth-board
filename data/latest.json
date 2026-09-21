@@ -118,8 +118,12 @@
     ]
   },
   "cloudflare": {
-    "status": "unavailable",
-    "note": "device_bash (the shell bridge to this Windows machine) failed this run with 'no Plan9 drive shares mounted under /mnt/.virtiofs-root/shared' -- flagged as a known issue from the Sept 8 Windows update that breaks Claude's local-shell access on this device (file read/write via device_list_dir/stage/commit still worked). Could not check CLOUDFLARE_API_TOKEN/CLOUDFLARE_ZONE_ID env vars, could not run `npm run deploy:cf` / wrangler, and could not run git add/commit/push locally. This data file was written directly via the file bridge; the live Cloudflare Pages dashboard was NOT redeployed this run. Note: the repo's last known-good deploy attempt (per the previously committed data/latest.json, dated 2026-09-10) also failed to reach the Cloudflare API -- this appears to be a persistent, multi-day outage of the deploy step, not a one-off.",
-    "deployment": { "status": "failed", "url": "", "deployedAt": "" }
+    "status": "ok",
+    "note": "Deployed from Cursor after Claude shell-bridge outage. Daily path: Claude pushes data/latest.json via GitHub API → Actions workflow deploy-pages.yml runs npm run deploy:cf.",
+    "deployment": {
+      "status": "success",
+      "url": "https://rytsensetech-growth-board.pages.dev",
+      "deployedAt": "2026-09-21T13:30:00Z"
+    }
   }
 }

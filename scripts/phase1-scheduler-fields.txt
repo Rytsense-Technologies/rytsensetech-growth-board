@@ -1,0 +1,49 @@
+# Phase 1 — additive fields for Claude routine `growth-board-daily-refresh`
+
+After Phase 0 (Intelligence Report) ships, extend **data/latest.json** additively.
+Do **not** remove existing `gsc` / `ga4` / `clarity` / `github` / `cloudflare` keys.
+
+## New top-level keys to populate (proposed)
+
+```json
+{
+  "gscByCountry": {
+    "status": "ok",
+    "us": { "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 },
+    "global": { "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 }
+  },
+  "gscByPage": {
+    "status": "ok",
+    "rows": [{ "page": "/", "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 }]
+  },
+  "gscByQuery": {
+    "status": "ok",
+    "buckets": { "1": 0, "2-3": 0, "4-5": 0, "6-10": 0, "11-20": 0, "21-50": 0, "51-100": 0 },
+    "rows": [{ "query": "", "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 }]
+  },
+  "gscCannibalization": {
+    "status": "ok",
+    "warning": "Global and /us/ trees both target English commercial intent",
+    "rows": [{ "query": "", "pages": [], "impressionSum": 0, "positionVariance": 0 }]
+  },
+  "ga4ByCountry": {
+    "status": "ok",
+    "us": { "sessions": 0, "activeUsers": 0 },
+    "rest": { "sessions": 0, "activeUsers": 0 }
+  },
+  "ga4ByPage": {
+    "status": "ok",
+    "rows": [{ "pagePath": "/", "sessions": 0, "engagementRate": 0 }]
+  }
+}
+```
+
+## Fetch notes for the scheduler prompt
+
+1. GSC `dimensions: ['country']` → roll up US vs rest for `gscByCountry`.
+2. GSC `dimensions: ['page']` + GA4 `pagePath` → `gscByPage` / `ga4ByPage` (join in UI).
+3. GSC queries: raise `rowLimit`, drop position 4–15 filter for `gscByQuery`; keep existing `quickWins` as-is.
+4. GSC `dimensions: ['query','page']` → cannibalization groups.
+5. On each run, also write `data/history/YYYY-MM-DD.json` with compact totals only (Phase 2).
+
+UI modules (m-exec, m-geo, m-page, …) render “not connected” / empty-state when a key is missing — never fake zeros for absent sources.

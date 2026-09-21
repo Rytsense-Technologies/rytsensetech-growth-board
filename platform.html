@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rytsense Internal SEO Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{
+    --paper:#F5F6F8;--paper-raised:#FFFFFF;--ink:#12181F;--ink-soft:#4B5563;--ink-faint:#8B93A1;
+    --line:#E2E5EA;--accent:#0E7A82;--accent-soft:#E4F2F1;--accent-ink:#075258;
+    --good:#1E8E5A;--good-soft:#E4F5EC;--warn:#B4740E;--warn-soft:#FBF0DC;
+    --bad:#C23B3B;--bad-soft:#FBE7E7;--chip-bg:#EDEFF3;
+    --shadow:0 1px 2px rgba(18,24,31,.04),0 8px 24px -12px rgba(18,24,31,.12);
+    --sidebar:232px;color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1013;--paper-raised:#141A1F;--ink:#E8ECEF;--ink-soft:#A7AFB9;--ink-faint:#6C7480;
+      --line:#232B31;--accent:#3FBFC2;--accent-soft:#132726;--accent-ink:#8FE0E2;
+      --good:#49C285;--good-soft:#132520;--warn:#E3A83B;--warn-soft:#2A2013;
+      --bad:#E4685E;--bad-soft:#2A1717;--chip-bg:#1B2126;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.5}
+  h1,h2,h3{font-family:'Manrope',system-ui,sans-serif;margin:0}
+  .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+  a{color:var(--accent-ink)}
+  .shell{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh}
+  @media(max-width:960px){.shell{grid-template-columns:1fr}.sidebar{position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}}
+  .sidebar{background:var(--paper-raised);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:14px}
+  .brand{display:flex;gap:10px;align-items:center;padding:0 6px}
+  .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--accent),var(--accent-ink));display:flex;align-items:center;justify-content:center;color:#fff;font-family:Manrope;font-weight:800;font-size:12px}
+  .brand strong{font-size:13px;display:block}
+  .brand span{font-size:11px;color:var(--ink-faint)}
+  .nav{display:flex;flex-direction:column;gap:2px;max-height:70vh;overflow:auto}
+  .nav .group{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);font-weight:700;padding:10px 10px 4px}
+  .nav a{text-decoration:none;color:var(--ink-soft);font-size:12.5px;font-weight:600;padding:7px 10px;border-radius:8px}
+  .nav a:hover,.nav a.active{background:var(--accent-soft);color:var(--accent-ink)}
+  .nav a.active{box-shadow:inset 3px 0 0 var(--accent)}
+  .side-foot{margin-top:auto;padding:8px 6px;font-size:11.5px;color:var(--ink-faint)}
+  .main{padding:24px 28px 72px;max-width:1120px}
+  .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+  .topbar h1{font-size:20px;font-weight:800}
+  .topbar p{margin:4px 0 0;color:var(--ink-soft);font-size:12.5px}
+  section{scroll-margin-top:calc(var(--site-nav-h, 56px) + 16px);margin-bottom:22px}
+  .card{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+  .card-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px}
+  .card-head h2{font-size:15px;font-weight:700}
+  .sub{font-size:12px;color:var(--ink-faint)}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .tile{background:var(--paper-raised);padding:12px 14px}
+  .tile .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:600}
+  .tile .value{font-size:20px;font-weight:700;font-family:Manrope;margin-top:4px}
+  .tile .hint{font-size:11.5px;color:var(--ink-faint);margin-top:4px}
+  .badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:700}
+  .badge.live{background:var(--good-soft);color:var(--good)}
+  .badge.pending{background:var(--warn-soft);color:var(--warn)}
+  .badge.off{background:var(--chip-bg);color:var(--ink-faint)}
+  .badge.blocked{background:var(--bad-soft);color:var(--bad)}
+  .empty{padding:10px 2px;color:var(--ink-soft);font-size:12.5px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);font-weight:700;padding:0 8px 8px 0;border-bottom:1px solid var(--line)}
+  td{padding:8px 8px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .num{text-align:right;white-space:nowrap}
+  .warn-card{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 35%,var(--line));border-radius:10px;padding:12px;margin-bottom:12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:800px){.grid2{grid-template-columns:1fr}}
+  form.row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-top:10px}
+  @media(max-width:800px){form.row{grid-template-columns:1fr}}
+  input,select,textarea{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font:inherit}
+  button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-family:Manrope}
+  button.secondary{background:var(--chip-bg);color:var(--ink)}
+  .delta.up{color:var(--good)} .delta.down{color:var(--bad)} .delta.flat{color:var(--ink-faint)}
+</style>
+<link rel="stylesheet" href="assets/site-nav.css">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site">
+  <div class="site-nav-inner">
+    <a class="site-nav-brand" href="index.html">
+      <span class="site-nav-mark">RT</span>
+      <span class="site-nav-name">Rytsense</span>
+    </a>
+    <div class="site-nav-links">
+      <a href="index.html" data-nav="board">Growth Board</a>
+      <a href="report.html" data-nav="report">Intelligence Report</a>
+      <a href="tasks.html" data-nav="tasks">Team Tasks</a>
+      <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="ops.html" data-nav="ops">SEO Ops</a>
+    </div>
+    <div class="site-nav-meta">
+      <span class="site-nav-chip">Refreshes on schedule</span>
+      <a class="site-nav-source" href="data/latest.json">latest.json</a>
+    </div>
+  </div>
+</nav>
+<script src="assets/site-nav.js" defer></script>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">RT</div>
+      <div><strong>Internal Platform</strong><span>SEO · AEO · Ops</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="group">Live pulse</div>
+      <a href="#exec" class="active">Executive KPIs</a>
+      <a href="#geo">Global vs US</a>
+      <a href="#page">Page Performance</a>
+      <a href="#kw">Keywords</a>
+      <a href="#opp">Opportunities</a>
+      <a href="#cann">Cannibalization</a>
+      <a href="#content">Content</a>
+      <a href="#ai">AI / GEO Traffic</a>
+      <div class="group">Operating system</div>
+      <a href="#decay">Content Decay</a>
+      <a href="#goals">Goals &amp; Targets</a>
+      <a href="#alerts">Alerts</a>
+      <a href="#activity">Activity Tracker</a>
+      <a href="#fixes">Fixes Tracker</a>
+      <a href="#agents">Agent Engagements</a>
+      <div class="group">Audit &amp; sources</div>
+      <a href="#audit">Audit Snapshot</a>
+      <a href="#sources">Data Sources</a>
+      <a href="#blocked">Integrations (Phase 4)</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>Rytsense internal SEO platform</h1>
+        <p id="sync">Loading…</p>
+      </div>
+      <div id="pills"></div>
+    </div>
+
+    <section id="exec"><div class="card" data-mod="exec"></div></section>
+    <section id="geo"><div class="card" data-mod="geo"></div></section>
+    <section id="page"><div class="card" data-mod="page"></div></section>
+    <section id="kw"><div class="card" data-mod="kw"></div></section>
+    <section id="opp"><div class="card" data-mod="opp"></div></section>
+    <section id="cann"><div class="card" data-mod="cann"></div></section>
+    <section id="content"><div class="card" data-mod="content"></div></section>
+    <section id="ai"><div class="card" data-mod="ai"></div></section>
+    <section id="decay"><div class="card" data-mod="decay"></div></section>
+    <section id="goals"><div class="card" data-mod="goals"></div></section>
+    <section id="alerts"><div class="card" data-mod="alerts"></div></section>
+    <section id="activity"><div class="card" data-mod="activity"></div></section>
+    <section id="fixes"><div class="card" data-mod="fixes"></div></section>
+    <section id="agents"><div class="card" data-mod="agents"></div></section>
+    <section id="audit"><div class="card" data-mod="audit"></div></section>
+    <section id="sources"><div class="card" data-mod="sources"></div></section>
+    <section id="blocked"><div class="card" data-mod="blocked"></div></section>
+  </div>
+</div>
+<script>
+(function(){
+  var fmt=new Intl.NumberFormat('en-US');
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+  function num(n){if(n==null||n===''||isNaN(n))return '–';return fmt.format(Math.round(+n))}
+  function pct(n){if(n==null||isNaN(n))return '–';return (+n).toFixed(1)+'%'}
+  function head(t,s,b){return '<div class="card-head"><h2>'+t+'</h2><span class="sub">'+(b||'')+' '+(s||'')+'</span></div>'}
+  function badge(k,label){return '<span class="badge '+k+'">'+(label||k)+'</span>'}
+  function pending(m){return '<div class="empty">'+badge('pending','pending')+'<p style="margin:8px 0 0">'+esc(m)+'</p></div>'}
+  function blocked(m){return '<div class="empty">'+badge('blocked','not connected')+'<p style="margin:8px 0 0">'+esc(m)+'</p></div>'}
+  function delta(p){if(p==null||isNaN(p))return '';var f=Math.abs(p)<.1;return '<div class="hint delta '+(f?'flat':p>0?'up':'down')+'">'+(f?'→':p>0?'↑':'↓')+' '+Math.abs(p).toFixed(1)+'%</div>'}
+  function pageType(path){var p=String(path||'');if(/^\/us\//i.test(p))return 'US';if(/\/blog\//i.test(p))return 'Blog';if(/case-stud/i.test(p))return 'Case';if(/resource/i.test(p))return 'Resource';return 'Other'}
+  function bucketPos(pos){if(pos<=1)return '1';if(pos<=3)return '2-3';if(pos<=5)return '4-5';if(pos<=10)return '6-10';if(pos<=20)return '11-20';if(pos<=50)return '21-50';return '51-100'}
+  function getPath(obj, path){return path.split('.').reduce(function(o,k){return o==null?null:o[k]},obj)}
+
+  var state={live:null,audit:null,goals:null,activity:null,fixes:null,history:[],engagements:null};
+
+  function renderExec(){
+    var el=document.querySelector('[data-mod=exec]'); var g=state.live.gsc,a=state.live.ga4;
+    if(!g||!g.current){el.innerHTML=head('Executive KPIs')+pending('No GSC totals yet');return}
+    var ch=(a&&a.channels)||[];
+    function find(n){var x=ch.find(function(c){return c.channel===n});return x?x.sessions:null}
+    el.innerHTML=head('Executive KPIs','Organic + channel mix',badge('live'))+
+      '<div class="tiles">'+
+      '<div class="tile"><div class="label">Clicks 28d</div><div class="value mono">'+num(g.current.clicks)+'</div>'+delta(g.change&&g.change.clicksPercent)+'</div>'+
+      '<div class="tile"><div class="label">Impressions</div><div class="value mono">'+num(g.current.impressions)+'</div>'+delta(g.change&&g.change.impressionsPercent)+'</div>'+
+      '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.current.ctr)+'</div></div>'+
+      '<div class="tile"><div class="label">Avg position</div><div class="value mono">'+(g.current.position!=null?Number(g.current.position).toFixed(1):'–')+'</div></div>'+
+      '<div class="tile"><div class="label">Sessions</div><div class="value mono">'+num(a&&a.totals&&a.totals.sessions)+'</div></div>'+
+      '<div class="tile"><div class="label">Organic</div><div class="value mono">'+num(find('Organic Search'))+'</div></div>'+
+      '<div class="tile"><div class="label">Direct</div><div class="value mono">'+num(find('Direct'))+'</div></div>'+
+      '<div class="tile"><div class="label">Social</div><div class="value mono">'+num(find('Organic Social'))+'</div></div>'+
+      '</div>'+blocked('Leads / conversion / backlinks / domain authority need Phase 4 integrations.');
+  }
+
+  function renderGeo(){
+    var el=document.querySelector('[data-mod=geo]'); var g=state.live.gscByCountry,a=state.live.ga4ByCountry;
+    if((!g||g.status!=='ok')&&(!a||a.status!=='ok')){el.innerHTML=head('Global vs US')+pending('Awaiting gscByCountry / ga4ByCountry from daily refresh');return}
+    var html=head('Global vs US','Country rollups',badge('live'));
+    if(g&&g.status==='ok'){
+      html+='<div class="grid2"><div><div class="sub">GSC US</div><div class="tiles"><div class="tile"><div class="label">Clicks</div><div class="value mono">'+num(g.us&&g.us.clicks)+'</div></div><div class="tile"><div class="label">Impr</div><div class="value mono">'+num(g.us&&g.us.impressions)+'</div></div><div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.us&&g.us.ctr)+'</div></div><div class="tile"><div class="label">Pos</div><div class="value mono">'+(g.us&&g.us.position!=null?Number(g.us.position).toFixed(1):'–')+'</div></div></div></div>'+
+      '<div><div class="sub">GSC Rest</div><div class="tiles"><div class="tile"><div class="label">Clicks</div><div class="value mono">'+num(g.global&&g.global.clicks)+'</div></div><div class="tile"><div class="label">Impr</div><div class="value mono">'+num(g.global&&g.global.impressions)+'</div></div><div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.global&&g.global.ctr)+'</div></div><div class="tile"><div class="label">Pos</div><div class="value mono">'+(g.global&&g.global.position!=null?Number(g.global.position).toFixed(1):'–')+'</div></div></div></div></div>';
+    }
+    if(a&&a.status==='ok') html+='<div class="tiles" style="margin-top:12px"><div class="tile"><div class="label">GA4 US sessions</div><div class="value mono">'+num(a.us&&a.us.sessions)+'</div></div><div class="tile"><div class="label">GA4 rest</div><div class="value mono">'+num(a.rest&&a.rest.sessions)+'</div></div></div>';
+    el.innerHTML=html;
+  }
+
+  function renderPage(){
+    var el=document.querySelector('[data-mod=page]');
+    var pages=state.live.gscByPage&&state.live.gscByPage.status==='ok'?state.live.gscByPage.rows:null;
+    if(!pages){el.innerHTML=head('Page Performance')+pending('Needs gscByPage from scheduler');return}
+    var ga={}; if(state.live.ga4ByPage&&state.live.ga4ByPage.status==='ok') (state.live.ga4ByPage.rows||[]).forEach(function(r){ga[r.pagePath]=r});
+    var rows=pages.slice().sort(function(a,b){return (b.impressions||0)-(a.impressions||0)}).slice(0,40);
+    el.innerHTML=head('Page Performance','Top by impressions',badge('live'))+'<div style="overflow:auto"><table><thead><tr><th>URL</th><th>Type</th><th class="num">Impr</th><th class="num">Clicks</th><th class="num">CTR</th><th class="num">Pos</th><th class="num">Sessions</th></tr></thead><tbody>'+
+      rows.map(function(r){var g=ga[r.page]||{};return '<tr><td class="mono">'+esc(r.page)+'</td><td>'+esc(pageType(r.page))+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td><td class="num mono">'+num(g.sessions)+'</td></tr>'}).join('')+'</tbody></table></div>';
+  }
+
+  function renderKw(){
+    var el=document.querySelector('[data-mod=kw]');
+    var full=state.live.gscByQuery&&state.live.gscByQuery.status==='ok';
+    var rows=full?(state.live.gscByQuery.rows||[]):((state.live.gsc&&state.live.gsc.quickWins)||[]);
+    var buckets=full&&state.live.gscByQuery.buckets?state.live.gscByQuery.buckets:null;
+    if(!buckets){buckets={'1':0,'2-3':0,'4-5':0,'6-10':0,'11-20':0,'21-50':0,'51-100':0};rows.forEach(function(r){var b=bucketPos(r.position||99);buckets[b]=(buckets[b]||0)+1})}
+    var order=['1','2-3','4-5','6-10','11-20','21-50','51-100'];
+    el.innerHTML=head('Keyword Performance',full?'Full query set':'Partial · quickWins',full?badge('live'):badge('pending','partial'))+
+      '<div class="tiles">'+order.map(function(k){return '<div class="tile"><div class="label">Pos '+k+'</div><div class="value mono" style="font-size:17px">'+num(buckets[k])+'</div></div>'}).join('')+'</div>'+
+      '<div style="overflow:auto;margin-top:12px"><table><thead><tr><th>Query</th><th class="num">Impr</th><th class="num">Clicks</th><th class="num">CTR</th><th class="num">Pos</th></tr></thead><tbody>'+
+      rows.slice(0,30).map(function(r){return '<tr><td>'+esc(r.query||'')+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>'}).join('')+'</tbody></table></div>';
+  }
+
+  function renderOpp(){
+    var el=document.querySelector('[data-mod=opp]'); var qw=(state.live.gsc&&state.live.gsc.quickWins)||[];
+    var z=qw.filter(function(r){return !(r.clicks)&& (r.impressions||0)>=100});
+    el.innerHTML=head('SEO Opportunities','Near-miss + zero-click',badge('live'))+
+      '<div style="overflow:auto"><table><thead><tr><th>Query</th><th class="num">Impr</th><th class="num">Clicks</th><th class="num">Pos</th><th class="num">Opp</th></tr></thead><tbody>'+
+      qw.slice(0,15).map(function(r){return '<tr><td>'+esc(r.query)+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td><td class="num mono">'+num(r.opportunity)+'</td></tr>'}).join('')+'</tbody></table></div>'+
+      (z.length?'<p class="sub" style="margin-top:10px">'+z.length+' high-impression zero-click queries in slice.</p>':'');
+  }
+
+  function renderCann(){
+    var el=document.querySelector('[data-mod=cann]');
+    var warn=(state.live.gscCannibalization&&state.live.gscCannibalization.warning)||'Global and /us/ trees both target the same English commercial intent.';
+    var rows=state.live.gscCannibalization&&state.live.gscCannibalization.status==='ok'?state.live.gscCannibalization.rows:null;
+    var html=head('Cannibalization','',rows?badge('live'):badge('pending','audit warning'))+'<div class="warn-card"><strong>Standing warning</strong><p style="margin:6px 0 0;font-size:12.5px">'+esc(warn)+'</p></div>';
+    if(!rows) html+=pending('Needs GSC query×page → gscCannibalization');
+    else html+='<div style="overflow:auto"><table><thead><tr><th>Query</th><th>Pages</th><th class="num">Impr</th><th class="num">σ</th></tr></thead><tbody>'+rows.slice(0,25).map(function(r){return '<tr><td>'+esc(r.query)+'</td><td class="mono" style="font-size:11px">'+esc((r.pages||[]).join(', '))+'</td><td class="num mono">'+num(r.impressionSum)+'</td><td class="num mono">'+(r.positionVariance!=null?Number(r.positionVariance).toFixed(2):'–')+'</td></tr>'}).join('')+'</tbody></table></div>';
+    el.innerHTML=html;
+  }
+
+  function renderContent(){
+    var el=document.querySelector('[data-mod=content]'); var inv=state.audit&&state.audit.pageInventory;
+    var pages=state.live.gscByPage&&state.live.gscByPage.status==='ok'?state.live.gscByPage.rows:null;
+    if(!pages){el.innerHTML=head('Content Performance')+(inv?'<div class="tiles"><div class="tile"><div class="label">Blog corpus</div><div class="value mono">'+num(inv.blogPostCount)+'</div></div><div class="tile"><div class="label">Unlinked to money</div><div class="value mono">'+num(inv.unlinkedBlogToMoney)+'</div></div></div>':'')+pending('Awaiting gscByPage for content URL table');return}
+    var content=pages.filter(function(r){return /\/(blog|case-stud|resource)/i.test(r.page||'')});
+    var withI=content.filter(function(r){return (r.impressions||0)>0}).length;
+    el.innerHTML=head('Content Performance','',badge('live'))+'<div class="tiles"><div class="tile"><div class="label">Content URLs</div><div class="value mono">'+num(content.length)+'</div></div><div class="tile"><div class="label">With impressions</div><div class="value mono">'+num(withI)+'</div></div><div class="tile"><div class="label">Audit blogs</div><div class="value mono">'+num(inv&&inv.blogPostCount)+'</div></div><div class="tile"><div class="label">Unlinked</div><div class="value mono">'+num(inv&&inv.unlinkedBlogToMoney)+'</div></div></div>';
+  }
+
+  function renderAi(){
+    var el=document.querySelector('[data-mod=ai]');
+    var ai=state.live.ga4AiTraffic;
+    var base=state.audit&&state.audit.baselines;
+    var html=head('AI / GEO Performance','Referrers + audit citation baselines',ai&&ai.status==='ok'?badge('live'):badge('pending'));
+    if(base) html+='<div class="tiles"><div class="tile"><div class="label">Non-brand cite rate</div><div class="value mono">'+(base.aiCitationRateNonBranded*100).toFixed(1)+'%</div><div class="hint">Audit prompt set</div></div><div class="tile"><div class="label">Branded cite</div><div class="value mono">'+esc(base.aiCitationRateBranded)+'</div></div><div class="tile"><div class="label">SoV vs LeewayHertz</div><div class="value mono" style="font-size:16px">'+esc(base.aiShareOfVoiceVsLeewayHertz)+'</div></div></div>';
+    if(!ai||ai.status!=='ok') html+=pending('Scheduler will add ga4AiTraffic by referrer (chatgpt.com, perplexity.ai, gemini.google.com, claude.ai, copilot.microsoft.com).');
+    else {
+      html+='<div style="overflow:auto;margin-top:12px"><table><thead><tr><th>Referrer</th><th class="num">Sessions</th><th class="num">Users</th></tr></thead><tbody>'+
+        (ai.rows||[]).map(function(r){return '<tr><td>'+esc(r.referrer)+'</td><td class="num mono">'+num(r.sessions)+'</td><td class="num mono">'+num(r.activeUsers)+'</td></tr>'}).join('')+'</tbody></table></div>';
+    }
+    if(state.audit&&state.audit.aiAccuracyErrors){
+      html+='<div class="card-head" style="margin-top:14px"><h2 style="font-size:14px">AI factual errors (audit)</h2></div>';
+      html+=(state.audit.aiAccuracyErrors||[]).filter(function(e){return e.live!==false}).slice(0,6).map(function(e){return '<div class="empty" style="padding:6px 0;border-bottom:1px solid var(--line)"><strong class="mono">'+esc(e.id)+'</strong> '+esc(e.error)+'</div>'}).join('');
+    }
+    el.innerHTML=html;
+  }
+
+  function renderDecay(){
+    var el=document.querySelector('[data-mod=decay]');
+    var hist=state.history.slice().sort(function(a,b){return String(a.date).localeCompare(String(b.date))});
+    if(hist.length<2){el.innerHTML=head('Content Decay','Needs ≥2 daily snapshots',badge('pending'))+pending('History has '+hist.length+' snapshot(s). After a few daily refreshes, traffic/click declines vs older snapshots will appear here (3‑month / year windows preferred).');return}
+    var newest=hist[hist.length-1], oldest=hist[0];
+    var nc=newest.gsc&&newest.gsc.current, oc=oldest.gsc&&oldest.gsc.current;
+    var ns=newest.ga4&&newest.ga4.totals, os=oldest.ga4&&oldest.ga4.totals;
+    function chg(a,b){if(a==null||b==null||!b)return null;return ((a-b)/b)*100}
+    el.innerHTML=head('Content Decay','Comparing '+oldest.date+' → '+newest.date,badge('live'))+
+      '<div class="tiles">'+
+      '<div class="tile"><div class="label">Clicks Δ</div><div class="value mono">'+pct(chg(nc&&nc.clicks,oc&&oc.clicks))+'</div><div class="hint">'+num(oc&&oc.clicks)+' → '+num(nc&&nc.clicks)+'</div></div>'+
+      '<div class="tile"><div class="label">Impr Δ</div><div class="value mono">'+pct(chg(nc&&nc.impressions,oc&&oc.impressions))+'</div></div>'+
+      '<div class="tile"><div class="label">Sessions Δ</div><div class="value mono">'+pct(chg(ns&&ns.sessions,os&&os.sessions))+'</div></div>'+
+      '</div><p class="sub" style="margin-top:10px">Page-level decay flags need gscByPage history (Phase 2 continued). Short windows can look like seasonality.</p>';
+  }
+
+  function currentValueForGoal(t){
+    if(t.source==='fixes.done'){var items=(state.fixes&&state.fixes.items)||[];return items.filter(function(i){return i.done}).length}
+    if(t.source==='audit.baselines') return t.baseline;
+    if(t.source==='audit.baselines.aiCitationRateNonBranded') return state.audit&&state.audit.baselines&&state.audit.baselines.aiCitationRateNonBranded;
+    return getPath(state.live, t.source);
+  }
+
+  function renderGoals(){
+    var el=document.querySelector('[data-mod=goals]');
+    var targets=(state.goals&&state.goals.targets)||[];
+    el.innerHTML=head('Goals & Targets','Editable targets · stored in KV when API live',badge('live'))+
+      '<div style="overflow:auto"><table><thead><tr><th>KPI</th><th>Cadence</th><th class="num">Current</th><th class="num">Target</th><th></th></tr></thead><tbody>'+
+      targets.map(function(t){
+        var cur=currentValueForGoal(t);
+        var curDisp=t.unit==='pct'?pct(cur):(t.unit==='pct_fraction'?pct((cur||0)*100):(t.unit==='text'?esc(cur):num(cur)));
+        var tgt=t.target;
+        var tgtDisp=tgt==null?'—':(t.unit==='pct_fraction'?pct((+tgt)*100):(t.unit==='pct'?pct(tgt):(t.unit==='text'?esc(tgt):num(tgt))));
+        return '<tr data-gid="'+esc(t.id)+'"><td>'+esc(t.label)+'</td><td>'+esc(t.cadence)+'</td><td class="num mono">'+curDisp+'</td><td class="num"><input data-goal="'+esc(t.id)+'" value="'+(tgt==null?'':esc(tgt))+'" style="width:110px;text-align:right"></td><td><button class="secondary" data-save-goal="'+esc(t.id)+'">Save</button></td></tr>';
+      }).join('')+'</tbody></table></div>';
+  }
+
+  function renderAlerts(){
+    var el=document.querySelector('[data-mod=alerts]');
+    var alerts=[];
+    var g=state.live.gsc;
+    if(g&&g.change&&g.change.clicksPercent!=null&&g.change.clicksPercent<=-15) alerts.push({sev:'bad',title:'Organic clicks down '+g.change.clicksPercent.toFixed(1)+'% vs prior 28d'});
+    if(g&&g.change&&g.change.impressionsPercent!=null&&g.change.impressionsPercent<=-15) alerts.push({sev:'warn',title:'Impressions down '+g.change.impressionsPercent.toFixed(1)+'% vs prior'});
+    var hist=state.history; if(hist.length>=2){var n=hist[hist.length-1],o=hist[hist.length-2]; var nc=n.gsc&&n.gsc.current&&n.gsc.current.clicks, oc=o.gsc&&o.gsc.current&&o.gsc.current.clicks; if(nc!=null&&oc){var d=((nc-oc)/oc)*100; if(d<=-10) alerts.push({sev:'bad',title:'Day-over-day clicks drop '+d.toFixed(1)+'% ('+o.date+'→'+n.date+')'})}}
+    if(state.audit&&state.audit.criticalIssues) alerts.push({sev:'bad',title:state.audit.criticalIssues.length+' critical audit issues still open — see Fixes Tracker'});
+    if(state.live.clarity&&state.live.clarity.status!=='ok') alerts.push({sev:'warn',title:'Clarity not reporting'});
+    if(!alerts.length) alerts.push({sev:'good',title:'No threshold alerts fired on current data'});
+    el.innerHTML=head('Automated Alerts','Rules on latest + history',badge('live'))+
+      alerts.map(function(a){return '<div class="empty" style="border-bottom:1px solid var(--line);padding:8px 0">'+badge(a.sev==='bad'?'blocked':a.sev==='warn'?'pending':'live',a.sev)+' <strong style="margin-left:6px">'+esc(a.title)+'</strong></div>'}).join('');
+  }
+
+  function renderActivity(){
+    var el=document.querySelector('[data-mod=activity]');
+    var entries=(state.activity&&state.activity.entries)||[];
+    el.innerHTML=head('Marketing Activity Tracker','Append-only log',badge('live'))+
+      '<form class="row" id="activity-form">'+
+      '<input name="who" placeholder="Who" required>'+
+      '<select name="activityType"><option value="fix">Fix</option><option value="content">Content</option><option value="tech">Tech</option><option value="outreach">Outreach</option><option value="note">Note</option></select>'+
+      '<input name="url" placeholder="URL (optional)">'+
+      '<button type="submit">Add</button></form>'+
+      '<input name="note" id="activity-note" placeholder="What happened?" style="width:100%;margin-top:8px">'+
+      '<div style="overflow:auto;margin-top:12px"><table><thead><tr><th>When</th><th>Who</th><th>Type</th><th>Note</th></tr></thead><tbody>'+
+      (entries.length?entries.slice(0,40).map(function(e){return '<tr><td class="mono">'+esc((e.date||'').slice(0,16))+'</td><td>'+esc(e.who)+'</td><td>'+esc(e.activityType)+'</td><td>'+esc(e.note)+(e.url?' · <a href="'+esc(e.url)+'" target="_blank">link</a>':'')+'</td></tr>'}).join(''):'<tr><td colspan="4" class="sub">No activity yet — log the first fix or content ship.</td></tr>')+
+      '</tbody></table></div>';
+  }
+
+  function renderFixes(){
+    var el=document.querySelector('[data-mod=fixes]');
+    var items=(state.fixes&&state.fixes.items)||[];
+    var done=items.filter(function(i){return i.done}).length;
+    el.innerHTML=head('Fixes Tracker',done+' / '+items.length+' done','<a href="report.html#fixes">Open full checklist →</a>')+
+      '<div class="tiles"><div class="tile"><div class="label">Open</div><div class="value mono">'+num(items.length-done)+'</div></div><div class="tile"><div class="label">Done</div><div class="value mono">'+num(done)+'</div></div><div class="tile"><div class="label">Critical open</div><div class="value mono">'+num(items.filter(function(i){return i.type==='critical'&&!i.done}).length)+'</div></div></div>'+
+      '<p class="sub" style="margin-top:10px">Check items off on the Intelligence Report; completions also write activity into KV.</p>';
+  }
+
+  function renderAgents(){
+    var el=document.querySelector('[data-mod=agents]');
+    var list=(state.engagements&&state.engagements.engagements)||[];
+    var latest=state.engagements&&state.engagements.latest?state.engagements.latest:list[0];
+    if(!latest){
+      el.innerHTML=head('Agent Engagements','52-agent SEO team → board',badge('pending'))+
+        pending('No engagements published yet. From SEO-agents-main run: node tools/publish-to-board.mjs --from-audit ../data/audit.json --post');
+      return;
+    }
+    var v=latest.verdict||{};
+    var findings=latest.findings||[];
+    var agents=(latest.agentsUsed||[]).slice(0,12);
+    var more=(latest.agentsUsed||[]).length-agents.length;
+    var html=head('Agent Engagements','Last: '+(latest.command||'')+' · '+(latest.finishedAt||'').slice(0,10),badge('live'))+
+      '<p style="margin:0 0 12px;color:var(--ink-soft);max-width:72ch">'+esc(latest.summary)+'</p>'+
+      '<div class="tiles">'+
+      '<div class="tile"><div class="label">Critical</div><div class="value mono">'+num(v.criticalCount!=null?v.criticalCount:findings.filter(function(f){return f.severity==='critical'}).length)+'</div></div>'+
+      '<div class="tile"><div class="label">High</div><div class="value mono">'+num(v.highCount!=null?v.highCount:findings.filter(function(f){return f.severity==='high'}).length)+'</div></div>'+
+      '<div class="tile"><div class="label">Findings</div><div class="value mono">'+num(findings.length)+'</div></div>'+
+      '<div class="tile"><div class="label">Agents used</div><div class="value mono">'+num((latest.agentsUsed||[]).length)+'</div></div>'+
+      '</div>';
+    if(agents.length){
+      html+='<p class="sub" style="margin-top:12px">'+agents.map(function(a){return '<span class="badge off" style="margin:0 4px 4px 0">'+esc(a)+'</span>'}).join('')+(more>0?' <span class="sub">+'+more+' more</span>':'')+'</p>';
+    }
+    if(findings.length){
+      html+='<div style="overflow:auto;margin-top:12px"><table><thead><tr><th>ID</th><th>Severity</th><th>Finding</th><th>Agent</th></tr></thead><tbody>'+
+        findings.slice(0,12).map(function(f){
+          var sev=f.severity==='critical'?'blocked':(f.severity==='high'?'pending':'off');
+          return '<tr><td class="mono">'+esc(f.id||'—')+'</td><td>'+badge(sev,f.severity||'info')+'</td><td>'+esc(f.title)+'</td><td class="sub">'+esc(f.agent||'')+'</td></tr>';
+        }).join('')+'</tbody></table></div>';
+    }
+    if(list.length>1){
+      html+='<div class="card-head" style="margin-top:16px"><h2 style="font-size:14px">Prior engagements</h2></div>';
+      html+='<div style="overflow:auto"><table><thead><tr><th>When</th><th>Command</th><th>Summary</th><th class="num">Findings</th></tr></thead><tbody>'+
+        list.slice(1,6).map(function(e){
+          return '<tr><td class="mono">'+esc((e.finishedAt||'').slice(0,10))+'</td><td>'+esc(e.command||'')+'</td><td>'+esc((e.summary||'').slice(0,90))+'</td><td class="num mono">'+num((e.findings||[]).length)+'</td></tr>';
+        }).join('')+'</tbody></table></div>';
+    }
+    html+='<p class="sub" style="margin-top:12px">Publish from agents: <span class="mono">node tools/publish-to-board.mjs --post</span> · or Claude <span class="mono">/seo-publish</span></p>';
+    el.innerHTML=html;
+  }
+
+  function renderAudit(){
+    var el=document.querySelector('[data-mod=audit]'); var a=state.audit;
+    if(!a){el.innerHTML=head('Audit Snapshot')+pending('audit.json missing');return}
+    el.innerHTML=head('Audit Snapshot',a.auditedRange,badge('live'))+
+      '<p style="margin:0 0 10px;color:var(--ink-soft);max-width:70ch">'+esc(a.verdict&&a.verdict.summary)+'</p>'+
+      '<div class="tiles"><div class="tile"><div class="label">Critical</div><div class="value mono">'+num(a.verdict&&a.verdict.criticalCount)+'</div></div><div class="tile"><div class="label">High</div><div class="value mono">'+num(a.verdict&&a.verdict.highCount)+'</div></div><div class="tile"><div class="label">URLs</div><div class="value mono">'+num(a.pageInventory&&a.pageInventory.totalUrls)+'</div></div><div class="tile"><div class="label">Easy wins</div><div class="value mono">'+num((a.easyWins||[]).length)+'</div></div></div>'+
+      '<p class="sub" style="margin-top:10px"><a href="report.html">Open full Intelligence Report</a> for competitive bench, tech checks, AI errors, money pages.</p>';
+  }
+
+  function renderSources(){
+    var el=document.querySelector('[data-mod=sources]');
+    var rows=(state.audit&&state.audit.sourceStatus)||[];
+    el.innerHTML=head('Data Sources', '', badge('live'))+'<div style="overflow:auto"><table><thead><tr><th>Source</th><th>Status</th><th>Note</th></tr></thead><tbody>'+
+      rows.map(function(s){var b=s.status==='live'?'live':(s.status==='not_connected'?'off':'pending');return '<tr><td>'+esc(s.name)+'</td><td>'+badge(b,s.status)+'</td><td class="sub">'+esc(s.note||'')+'</td></tr>'}).join('')+'</tbody></table></div>';
+  }
+
+  function renderBlocked(){
+    var el=document.querySelector('[data-mod=blocked]');
+    var items=[
+      {name:'CRM (HubSpot / Zoho / Pipedrive)', unlocks:'Leads, qualified leads, conversion rate across Exec/Page/Content/Goals'},
+      {name:'Ahrefs / Semrush / Moz', unlocks:'Backlinks, referring domains, domain authority, link decay'},
+      {name:'Screaming Frog / custom crawler', unlocks:'Full tech SEO: 404s, redirects, duplicate titles, CWV at scale'},
+      {name:'Google Ads / Bing Ads', unlocks:'Paid traffic tiles and blended CAC views'},
+      {name:'Google Business Profile', unlocks:'Local pack, reviews, NAP consistency'},
+      {name:'Social platform APIs', unlocks:'Finer social breakdown beyond GA4 channels'}
+    ];
+    el.innerHTML=head('Phase 4 integrations','UI ready · connect when you choose a vendor',badge('blocked','gated'))+
+      items.map(function(i){return '<div class="empty" style="border-bottom:1px solid var(--line);padding:10px 0"><strong>'+esc(i.name)+'</strong><p style="margin:4px 0 0" class="sub">Unlocks: '+esc(i.unlocks)+'</p></div>'}).join('')+
+      '<p class="sub" style="margin-top:12px">Tell Cursor which CRM and SEO toolkit you use and we can wire live pulls without building empty vendor UIs.</p>';
+  }
+
+  function renderAll(){
+    renderExec();renderGeo();renderPage();renderKw();renderOpp();renderCann();renderContent();
+    renderAi();renderDecay();renderGoals();renderAlerts();renderActivity();renderFixes();
+    renderAudit();renderSources();renderBlocked();renderAgents();
+  }
+
+  async function loadJson(url, fallback){
+    try{var r=await fetch(url,{cache:'no-store'}); if(r.ok) return r.json(); }catch(e){}
+    return fallback;
+  }
+
+  async function loadHistory(){
+    var dates=[];
+    try{
+      var m=await fetch('data/history/index.json',{cache:'no-store'});
+      if(m.ok){ var j=await m.json(); dates=j.dates||[]; }
+    }catch(e){}
+    if(!dates.length) dates=['2026-09-18','2026-09-19'];
+    var out=[];
+    for(var i=0;i<dates.length;i++){
+      try{
+        var r=await fetch('data/history/'+dates[i]+'.json',{cache:'no-store'});
+        if(r.ok) out.push(await r.json());
+      }catch(e){}
+    }
+    return out;
+  }
+
+  async function loadFixes(){
+    try{
+      var r=await fetch('/api/fixes',{cache:'no-store'});
+      if(r.ok) return r.json();
+    }catch(e){}
+    return loadJson('data/fixes.json',{items:[]});
+  }
+
+  document.body.addEventListener('click', async function(ev){
+    var btn=ev.target.closest('[data-save-goal]');
+    if(!btn) return;
+    var id=btn.getAttribute('data-save-goal');
+    var input=document.querySelector('input[data-goal="'+id+'"]');
+    var target=input?input.value:null;
+    try{
+      var res=await fetch('/api/goals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,target:target})});
+      if(res.ok){ state.goals=await (await fetch('/api/goals')).json(); renderGoals(); }
+      else alert('Goals API unavailable — set FIXES KV binding. Value kept locally only until then.');
+    }catch(e){ alert('Could not save goal: '+e.message); }
+  });
+
+  document.body.addEventListener('submit', async function(ev){
+    if(ev.target.id!=='activity-form') return;
+    ev.preventDefault();
+    var fd=new FormData(ev.target);
+    var note=(document.getElementById('activity-note')||{}).value||'';
+    var payload={who:fd.get('who'),activityType:fd.get('activityType'),url:fd.get('url')||null,note:note,date:new Date().toISOString()};
+    try{
+      var res=await fetch('/api/activity',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      if(res.ok){ state.activity=await (await fetch('/api/activity')).json(); renderActivity(); ev.target.reset(); if(document.getElementById('activity-note')) document.getElementById('activity-note').value=''; }
+      else {
+        // local fallback
+        state.activity=state.activity||{entries:[]};
+        payload.id='local-'+Date.now();
+        state.activity.entries.unshift(payload);
+        try{localStorage.setItem('gb-activity-v1',JSON.stringify(state.activity.entries));}catch(e){}
+        renderActivity();
+      }
+    }catch(e){
+      state.activity=state.activity||{entries:[]};
+      payload.id='local-'+Date.now();
+      state.activity.entries.unshift(payload);
+      renderActivity();
+    }
+  });
+
+  Promise.all([
+    loadJson('data/latest.json',{}),
+    loadJson('data/audit.json',null),
+    loadJson('/api/goals',null).then(function(g){return g||loadJson('data/goals.json',{targets:[]})}),
+    loadJson('/api/activity',null).then(function(a){return a||loadJson('data/activity.json',{entries:[]})}),
+    loadFixes(),
+    loadHistory(),
+    loadJson('/api/engagements',null).then(function(e){
+      return e||loadJson('data/engagements.json',{engagements:[]}).then(function(s){
+        return {engagements:s.engagements||[], latest:(s.engagements||[])[0]||null, source:'seed'};
+      });
+    })
+  ]).then(function(pair){
+    state.live=pair[0]; state.audit=pair[1]; state.goals=pair[2]; state.activity=pair[3]; state.fixes=pair[4]; state.history=pair[5]; state.engagements=pair[6];
+    try{
+      var local=localStorage.getItem('gb-activity-v1');
+      if(local && (!state.activity.entries||!state.activity.entries.length)) state.activity.entries=JSON.parse(local);
+    }catch(e){}
+    var engN=(state.engagements&&state.engagements.engagements&&state.engagements.engagements.length)||0;
+    document.getElementById('sync').textContent='Live sync '+(state.live.updatedAt?new Date(state.live.updatedAt).toLocaleString():'—')+' · Audit '+(state.audit&&state.audit.auditedRange||'—')+' · History '+state.history.length+' day(s) · Engagements '+engN;
+    document.getElementById('pills').innerHTML=badge('live','GSC/GA4')+' '+badge(state.live.clarity&&state.live.clarity.status==='ok'?'live':'pending','Clarity')+' '+badge(engN?'live':'pending','Agents')+' '+badge('live','Platform');
+    renderAll();
+  });
+})();
+</script>
+</body>
+</html>

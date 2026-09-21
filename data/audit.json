@@ -1,0 +1,173 @@
+{
+  "site": "rytsensetech.com",
+  "title": "Rytsense Search Intelligence",
+  "auditedAt": "2026-09-18",
+  "auditedRange": "2026-09-17/2026-09-18",
+  "verdict": {
+    "market": "US",
+    "summary": "US tree is technically reachable but commercially weak: broken canonicals, fabricated review schema, entity fact contradictions, and 118 blog posts with zero links into money pages. Five critical and four high findings block trustworthy AI citation and SERP conversion.",
+    "criticalCount": 5,
+    "highCount": 4
+  },
+  "scores": [
+    { "dimension": "Crawler access", "score": 5, "max": 5 },
+    { "dimension": "Render accessibility", "score": 5, "max": 5 },
+    { "dimension": "Indexability", "score": 5, "max": 5 },
+    { "dimension": "Content depth", "score": 4, "max": 5 },
+    { "dimension": "Structured data validity", "score": 2, "max": 5 },
+    { "dimension": "Internal link architecture", "score": 1, "max": 5 },
+    { "dimension": "Entity fact consistency", "score": 1, "max": 5 },
+    { "dimension": "Trust/compliance surface", "score": 1, "max": 5 },
+    { "dimension": "Off-site citation", "score": 1, "max": 5 },
+    { "dimension": "Commercial visibility", "score": 1, "max": 5 }
+  ],
+  "easyWins": [
+    { "id": "W1", "action": "Fix the canonical pointing at www.rytsense.com", "location": "/freight-broker-roi-calculator/", "effort": "30m", "owner": "Dev", "rationale": "Wrong-host canonical leaks US/global authority and confuses index selection." },
+    { "id": "W2", "action": "Remove placeholder zero values from server-rendered HTML", "location": "2 US money pages (server HTML)", "effort": "1h", "owner": "Dev", "rationale": "Visible zeros look like empty metrics to users and AI extractors." },
+    { "id": "W3", "action": "Strip fabricated AggregateRating / review schema", "location": "US service templates", "effort": "1h", "owner": "Dev", "rationale": "Fake review markup is a trust and rich-result risk." },
+    { "id": "W4", "action": "Publish a single source-of-truth entity facts block (headcount, projects, cities)", "location": "About / US landing templates", "effort": "2h", "owner": "Content", "rationale": "Five conflicting headcounts and project counts poison AI answers." },
+    { "id": "W5", "action": "Add hub links from top blog posts into primary /us/ service pages", "location": "118 orphaned posts → money pages", "effort": "4h", "owner": "SEO", "rationale": "Blog corpus has zero commercial internal links today." },
+    { "id": "W6", "action": "Create /us/security-and-compliance/ (or equivalent) trust page", "location": "/us/", "effort": "3h", "owner": "Content", "rationale": "No security/compliance surface for enterprise buyers or AI trust signals." },
+    { "id": "W7", "action": "Fix US self-declared location claims that 404", "location": "US tree nav/footer", "effort": "1h", "owner": "Dev", "rationale": "Declared US presence pages return 404 — brand SERP and trust damage." },
+    { "id": "W8", "action": "Align global vs /us/ title/H1 intent to reduce cannibalization", "location": "12 US service pages + global twins", "effort": "3h", "owner": "SEO", "rationale": "Both trees target the same English commercial queries." },
+    { "id": "W9", "action": "Add named client logos/case studies on US service pages", "location": "/us/* service URLs", "effort": "4h", "owner": "Content", "rationale": "31 case studies lack named clients; weak E-E-A-T for commercial SERPs." },
+    { "id": "W10", "action": "Correct brand SERP assets (GBP/LinkedIn/Crunchbase consistency)", "location": "Off-site profiles", "effort": "2h", "owner": "Marketing", "rationale": "Brand SERP currently resolves toward job-review style sites." },
+    { "id": "W11", "action": "Add FAQ answer blocks with extractable first sentences on top 5 US pages", "location": "/us/ai-*, /us/*-services/", "effort": "3h", "owner": "Content", "rationale": "Improves AEO chunk retrieval without waiting for full content rebuild." },
+    { "id": "W12", "action": "Wire Organization sameAs to verified profiles only", "location": "Sitewide JSON-LD", "effort": "1h", "owner": "Dev", "rationale": "Entity grounding fails when sameAs and on-page facts disagree." },
+    { "id": "W13", "action": "301 map legacy rytsense.com paths still linked internally", "location": "Internal link graph", "effort": "2h", "owner": "Dev", "rationale": "Stops soft-404 and host leakage from legacy brand domain." },
+    { "id": "W14", "action": "Add breadcrumb + Service schema only where visible content matches", "location": "US service templates", "effort": "2h", "owner": "Dev", "rationale": "Replace invalid markup with honest, visible structured data." },
+    { "id": "W15", "action": "Add named engineers to Meet the Experts", "location": "/us/ai-integration-services/", "effort": "3h", "owner": "Content", "rationale": "Named experts improve E-E-A-T and AI citation accuracy." }
+  ],
+  "criticalIssues": [
+    { "id": "C1", "scope": "sitewide", "title": "Placeholder zeros in server HTML", "detail": "At least 2 pages ship literal zero placeholders in server-rendered HTML, readable by crawlers and AI agents." },
+    { "id": "C2", "scope": "US", "title": "Broken canonical to www.rytsense.com", "detail": "Freight broker ROI calculator (and related) canonicalizes to the wrong host, splitting index signals." },
+    { "id": "C3", "scope": "US", "title": "Fabricated review schema", "detail": "AggregateRating / review JSON-LD present without verifiable on-page reviews." },
+    { "id": "C4", "scope": "US", "title": "No security / compliance page", "detail": "Enterprise buyers and trust-sensitive AI prompts find no authoritative compliance surface under /us/." },
+    { "id": "C5", "scope": "sitewide", "title": "118 blog posts with zero money-page links", "detail": "Large content corpus is commercially orphaned — no internal links into primary service URLs." }
+  ],
+  "highIssues": [
+    { "id": "H1", "title": "Five conflicting headcounts", "detail": "About/US pages disagree on company size across five distinct figures." },
+    { "id": "H2", "title": "US self-declared pages that 404", "detail": "Navigation or copy claims US presence URLs that return 404." },
+    { "id": "H3", "title": "Brand SERP resolves to job-review sites", "detail": "Branded queries surface third-party job/review properties ahead of owned assets." },
+    { "id": "H4", "title": "31 case studies with zero named clients", "detail": "Case study corpus lacks attributable client names, weakening proof and citations." }
+  ],
+  "competitiveBenchmark": [
+    { "domain": "effectivesoft.com", "serps": 12, "avgPosition": 8.4, "positions": 18, "aiCitations": 3, "onClientList": false },
+    { "domain": "masterofcode.com", "serps": 15, "avgPosition": 7.1, "positions": 22, "aiCitations": 4, "onClientList": false },
+    { "domain": "appinventiv.com", "serps": 28, "avgPosition": 5.6, "positions": 41, "aiCitations": 6, "onClientList": false },
+    { "domain": "itransition.com", "serps": 21, "avgPosition": 6.2, "positions": 30, "aiCitations": 5, "onClientList": false },
+    { "domain": "leewayhertz.com", "serps": 19, "avgPosition": 6.8, "positions": 27, "aiCitations": 5, "onClientList": false },
+    { "domain": "softteco.com", "serps": 9, "avgPosition": 11.2, "positions": 14, "aiCitations": 1, "onClientList": false },
+    { "domain": "techaheadcorp.com", "serps": 11, "avgPosition": 9.5, "positions": 16, "aiCitations": 2, "onClientList": false },
+    { "domain": "solulab.com", "serps": 14, "avgPosition": 8.9, "positions": 20, "aiCitations": 3, "onClientList": false },
+    { "domain": "simform.com", "serps": 24, "avgPosition": 5.9, "positions": 35, "aiCitations": 4, "onClientList": false },
+    { "domain": "rytsensetech.com", "serps": 0, "avgPosition": null, "positions": 0, "aiCitations": 1, "onClientList": true }
+  ],
+  "technicalHealth": {
+    "totalChecks": 19,
+    "passing": 15,
+    "failing": 4,
+    "checks": [
+      { "id": "T01", "name": "HTTPS everywhere", "status": "pass" },
+      { "id": "T02", "name": "robots.txt allows key bots", "status": "pass" },
+      { "id": "T03", "name": "XML sitemaps present", "status": "pass" },
+      { "id": "T04", "name": "Mobile viewport configured", "status": "pass" },
+      { "id": "T05", "name": "Primary content server-rendered", "status": "pass" },
+      { "id": "T06", "name": "No soft-404 home", "status": "pass" },
+      { "id": "T07", "name": "HSTS / security headers baseline", "status": "pass" },
+      { "id": "T08", "name": "Canonical targets correct host", "status": "fail", "note": "Wrong-host canonicals found (www.rytsense.com)" },
+      { "id": "T09", "name": "Review markup matches visible reviews", "status": "fail", "note": "Fabricated AggregateRating / review schema" },
+      { "id": "T10", "name": "Security/compliance page exists", "status": "fail", "note": "Missing under /us/" },
+      { "id": "T11", "name": "Blog → money-page internal links", "status": "fail", "note": "118 posts with zero commercial links" },
+      { "id": "T12", "name": "hreflang not required (EN-only)", "status": "pass" },
+      { "id": "T13", "name": "Pagination / faceted traps controlled", "status": "pass" },
+      { "id": "T14", "name": "Indexable money pages return 200", "status": "warn", "note": "Some US presence URLs 404" },
+      { "id": "T15", "name": "Org JSON-LD present", "status": "warn", "note": "Present but facts conflict on-page" },
+      { "id": "T16", "name": "Core templates have unique titles", "status": "pass" },
+      { "id": "T17", "name": "Image alt coverage on money pages", "status": "pass" },
+      { "id": "T18", "name": "No mixed-content assets", "status": "pass" },
+      { "id": "T19", "name": "Sitemap URL count plausible", "status": "pass", "note": "779 URLs across 15 segments" }
+    ]
+  },
+  "pageInventory": {
+    "totalUrls": 779,
+    "globalUrls": 539,
+    "usUrls": 240,
+    "blogPostCount": 362,
+    "unlinkedBlogToMoney": 118,
+    "segments": [
+      { "name": "Home & marketing", "urls": 24 },
+      { "name": "Services (global)", "urls": 48 },
+      { "name": "Services (US)", "urls": 36 },
+      { "name": "Industries", "urls": 22 },
+      { "name": "Blog", "urls": 362 },
+      { "name": "Case studies", "urls": 31 },
+      { "name": "Resources / downloads", "urls": 28 },
+      { "name": "Company / about", "urls": 18 },
+      { "name": "Careers", "urls": 14 },
+      { "name": "Locations", "urls": 12 },
+      { "name": "Tools / calculators", "urls": 8 },
+      { "name": "Legal / policy", "urls": 10 },
+      { "name": "Landing / campaigns", "urls": 40 },
+      { "name": "Other / misc", "urls": 66 },
+      { "name": "US tree residual", "urls": 60 }
+    ]
+  },
+  "moneyPages": [
+    { "url": "/us/ai-development-services/", "defects": ["entity-facts", "weak-internal-links"] },
+    { "url": "/us/ai-integration-services/", "defects": ["named-experts-missing", "schema"] },
+    { "url": "/us/generative-ai-development/", "defects": ["cannibalization-vs-global", "schema"] },
+    { "url": "/us/machine-learning-development/", "defects": ["weak-proof", "internal-links"] },
+    { "url": "/us/chatgpt-developers/", "defects": ["review-schema", "entity-facts"] },
+    { "url": "/us/custom-software-development/", "defects": ["cannibalization-vs-global"] },
+    { "url": "/us/mobile-app-development/", "defects": ["weak-proof"] },
+    { "url": "/us/web-development/", "defects": ["internal-links"] },
+    { "url": "/us/devops-services/", "defects": ["trust-page-gap"] },
+    { "url": "/us/data-engineering/", "defects": ["entity-facts"] },
+    { "url": "/us/ui-ux-design/", "defects": ["weak-proof"] },
+    { "url": "/freight-broker-roi-calculator/", "defects": ["broken-canonical", "placeholder-zeros"] }
+  ],
+  "aiAccuracyErrors": [
+    { "id": "E1", "severity": "retired", "error": "Retired / unreproduced claim from earlier prompt set", "source": "manual prompt test", "live": false },
+    { "id": "E2", "severity": "high", "error": "Models invent inconsistent employee headcounts", "source": "conflicting on-page facts", "live": true },
+    { "id": "E3", "severity": "high", "error": "Models invent project-delivery counts that do not match site", "source": "conflicting on-page facts", "live": true },
+    { "id": "E4", "severity": "high", "error": "Models assert US office cities that conflict across pages", "source": "location copy / 404 URLs", "live": true },
+    { "id": "E5", "severity": "medium", "error": "Models cite fabricated star ratings from review schema", "source": "AggregateRating markup", "live": true },
+    { "id": "E6", "severity": "medium", "error": "Models conflate rytsense.com and rytsensetech.com as separate companies", "source": "host/canonical leakage", "live": true },
+    { "id": "E7", "severity": "medium", "error": "Models overstate named enterprise clients", "source": "unnamed case studies", "live": true },
+    { "id": "E8", "severity": "medium", "error": "Models invent compliance certifications not evidenced on-site", "source": "missing trust page", "live": true },
+    { "id": "E9", "severity": "low", "error": "Models mis-attribute service specialties across global vs US trees", "source": "cannibalized commercial pages", "live": true }
+  ],
+  "offsiteTargets": [
+    { "domain": "clutch.co", "why": "B2B services citation and brand SERP control" },
+    { "domain": "goodfirms.co", "why": "Directory citation; displace job-review SERP noise" },
+    { "domain": "g2.com", "why": "Category presence for AI/custom software queries" },
+    { "domain": "crunchbase.com", "why": "Entity grounding / sameAs consistency" }
+  ],
+  "sourceStatus": [
+    { "id": "gsc", "name": "Google Search Console", "status": "live", "note": "Daily via growth-board Claude routine" },
+    { "id": "ga4", "name": "Google Analytics 4", "status": "live", "note": "Property 423166919" },
+    { "id": "clarity", "name": "Microsoft Clarity", "status": "live", "note": "Via clarity-copilot worker" },
+    { "id": "github", "name": "GitHub", "status": "live", "note": "Recent commits on growth-board repo" },
+    { "id": "cloudflare", "name": "Cloudflare Pages / Analytics", "status": "live", "note": "Deploy via npm run deploy:cf; analytics best-effort" },
+    { "id": "serp", "name": "Live SERP API (serper.dev)", "status": "live", "note": "Used in audit competitive / AEO pass" },
+    { "id": "crawl", "name": "Direct site crawl", "status": "live", "note": "Manual audit crawl 17–18 Sep 2026" },
+    { "id": "crm", "name": "CRM", "status": "not_connected", "note": "Would unlock leads / conversion tiles" },
+    { "id": "ahrefs", "name": "Ahrefs / Semrush / Moz", "status": "not_connected", "note": "Would unlock backlinks / DA" },
+    { "id": "gads", "name": "Google Ads", "status": "not_connected", "note": "Paid traffic tiles" },
+    { "id": "bing", "name": "Bing Webmaster / Ads", "status": "not_connected", "note": "Bing organic + paid" },
+    { "id": "sf", "name": "Screaming Frog", "status": "not_connected", "note": "Full tech crawl automation" },
+    { "id": "gbp", "name": "Google Business Profile", "status": "not_connected", "note": "Local pack / reviews" },
+    { "id": "social", "name": "Social platform APIs", "status": "not_connected", "note": "Beyond GA4 channel grouping" },
+    { "id": "ma", "name": "Marketing automation", "status": "not_connected", "note": "Campaign attribution" }
+  ],
+  "baselines": {
+    "urls": 779,
+    "blogPosts": 362,
+    "usServicePages": 12,
+    "usCommercialQueriesInTop10": "0/30",
+    "aiCitationRateNonBranded": 0.045,
+    "aiCitationRateBranded": "5/5",
+    "aiShareOfVoiceVsLeewayHertz": "1 vs 5"
+  }
+}

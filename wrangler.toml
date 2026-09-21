@@ -1,13 +1,20 @@
-# Cloudflare Pages — static dashboard (no build step)
-# Connect this repo in the Cloudflare dashboard OR deploy with:
-#   npx wrangler pages deploy . --project-name=rytsensetech-growth-board
+# Cloudflare Pages — growth board + Intelligence Report
+# Deploy: npm run deploy:cf
 #
-# Dashboard settings when linking GitHub:
-#   Production branch: main
-#   Build command: (leave empty)
-#   Build output directory: /
-#   Root directory: /
+# Fixes tracker KV (Phase 0.5):
+#   1) npx wrangler kv namespace create GROWTH_BOARD_FIXES
+#   2) paste the id below into [[kv_namespaces]] id =
+#   3) npm run deploy:cf
+#
+# Dashboard Git connect (optional):
+#   Production branch: main · Build command empty · Output /
 
 name = "rytsensetech-growth-board"
 compatibility_date = "2026-09-09"
-pages_build_output_dir = "."
+pages_build_output_dir = ".cf-pages"
+
+# Binding name FIXES is required by functions/api/fixes*.js
+# Replace id after: npx wrangler kv namespace create GROWTH_BOARD_FIXES
+[[kv_namespaces]]
+binding = "FIXES"
+id = "7b49c1096f734fb18ddc015790cdda09"

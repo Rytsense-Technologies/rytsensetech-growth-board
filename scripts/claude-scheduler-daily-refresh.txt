@@ -1,0 +1,191 @@
+SCHEDULED TASK — Rytsensetech Growth Board daily data refresh
+
+You are running unattended on a daily schedule. Complete the full refresh + deploy without asking for confirmation. If a step fails, retry once, then report the failure briefly and continue with the rest (do not fabricate numbers for a failed source — mark that source "unavailable" and continue).
+
+PROJECT PATH (Windows):
+E:\growth-board
+
+GOAL:
+1) Pull live SEO/marketing metrics via connected MCP tools and direct HTTP where noted.
+2) Overwrite E:\growth-board\data\latest.json with valid JSON matching the schema below.
+3) Deploy the static site to Cloudflare Pages so the public dashboard updates.
+
+SOURCES (do NOT invent numbers):
+
+- Google Search Console for site: https://rytsensetech.com/ — use the gsc MCP tools.
+- GA4 property ID: 423166919 — use the ga4 MCP tools.
+
+- Clarity — CRITICAL:
+  DO NOT use any Clarity MCP tools (get_clarity_overview, get_engagement, get_dead_clicks, get_rage_clicks, get_top_pages, get_browsers, get_countries, get_devices, get_referrers, get_live_metrics, or anything else from the clarity MCP). They have a known parsing bug (look for named sections; worker returns an array) and must be ignored.
+  Instead GET either URL (same payload):
+    https://clarity-copilot.rytsenselifestylellp.workers.dev/latest
+    or https://clarity-copilot.rytsenselifestylellp.workers.dev/
+  Response shape: JSON array of
+    { "metricName": "DeadClickCount", "information": [ { ...numbers... } ] }
+  covering DeadClickCount, RageClickCount, QuickbackClick, ScrollDepth, EngagementTime, Traffic, Browser, Device, OS, Country, PageTitle, ReferrerUrl, PopularPages, etc.
+  Normalize into clarity.data keyed by metricName. For each metric, simplify — do not dump the full nested payload:
+    - If information[0] is a single totals object (sessionsCount, percentages, subTotal, etc.), store those key numbers as a flat object (or the primary total if only one meaningful number).
+    - If information is a list of breakdown rows (browser/device/country/pages), store an array of { "name": "<label>", "value": <number> } (or name + sessionsCount) sorted by value desc, top 8.
+  Set clarity.status = "ok" once built. Omit clarity.note when ok.
+  If the HTTP request fails (network, non-200, not an array), set:
+    clarity: { "status": "unavailable", "note": "<short reason>" }
+  and continue — do not block the rest of the run.
+
+- GitHub: run `git -C E:\growth-board remote get-url origin` to get owner/name dynamically (do not hardcode). Use github MCP (or `gh`) for the 5 most recent commits on the default branch. Message = first line only.
+
+- Cloudflare analytics (OPTIONAL, best-effort): only if BOTH are available:
+    env CLOUDFLARE_API_TOKEN, OR file E:\growth-board\secrets\cloudflare-api-token.txt
+    AND env CLOUDFLARE_ZONE_ID, OR file E:\growth-board\secrets\cloudflare-zone-id.txt
+  Then call Cloudflare GraphQL Analytics API for last 24h: requests, bytes, uniqueVisitors, threats, cacheHitRatio.
+  If missing vars/files or the call fails (including egress policy denial to api.cloudflare.com), set cloudflare.status = "unavailable" with a short note for analytics — do not block the run. Still attempt deploy via local wrangler (step below); deploy uses the token file and often works even when Claude cloud egress blocks api.cloudflare.com.
+
+OUTPUT FILE:
+E:\growth-board\data\latest.json
+
+SCHEMA (exact keys — keep gsc/ga4; extend with clarity/github/cloudflare):
+{
+  "site": "rytsensetech.com",
+  "updatedAt": "<ISO-8601 UTC now>",
+  "gsc": {
+    "period": { "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD" },
+    "current": { "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 },
+    "prior": { "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 },
+    "change": {
+      "clicks": 0, "clicksPercent": 0,
+      "impressions": 0, "impressionsPercent": 0,
+      "ctr": 0, "position": 0
+    },
+    "quickWins": [
+      { "query": "", "clicks": 0, "impressions": 0, "ctr": 0, "position": 0, "opportunity": 0 }
+    ]
+  },
+  "ga4": {
+    "totals": { "sessions": 0, "activeUsers": 0, "engagementRate": 0, "pageViews": 0 },
+    "daily": [ { "date": "YYYYMMDD", "sessions": 0 } ],
+    "channels": [ { "channel": "", "sessions": 0, "activeUsers": 0, "conversions": 0 } ]
+  },
+  "clarity": { "status": "ok", "data": {} },
+  "github": {
+    "status": "ok",
+    "repo": "owner/name",
+    "recentCommits": [
+      { "sha": "abc1234", "message": "first line only", "author": "", "date": "ISO-8601", "url": "" }
+    ]
+  },
+  "cloudflare": {
+    "status": "ok",
+    "analytics": {
+      "requests": 0, "bytes": 0, "uniqueVisitors": 0, "threats": 0, "cacheHitRatio": 0
+    },
+    "deployment": { "status": "success", "url": "", "deployedAt": "ISO-8601" }
+  },
+
+  "gscByCountry": {
+    "status": "ok",
+    "us": { "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 },
+    "global": { "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 }
+  },
+  "gscByPage": {
+    "status": "ok",
+    "rows": [{ "page": "/", "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 }]
+  },
+  "gscByQuery": {
+    "status": "ok",
+    "buckets": { "1": 0, "2-3": 0, "4-5": 0, "6-10": 0, "11-20": 0, "21-50": 0, "51-100": 0 },
+    "rows": [{ "query": "", "clicks": 0, "impressions": 0, "ctr": 0, "position": 0 }]
+  },
+  "gscCannibalization": {
+    "status": "ok",
+    "warning": "Global and /us/ trees both target the same English commercial intent",
+    "rows": [{ "query": "", "pages": ["/", "/us/"], "impressionSum": 0, "positionVariance": 0 }]
+  },
+  "ga4ByCountry": {
+    "status": "ok",
+    "us": { "sessions": 0, "activeUsers": 0 },
+    "rest": { "sessions": 0, "activeUsers": 0 }
+  },
+  "ga4ByPage": {
+    "status": "ok",
+    "rows": [{ "pagePath": "/", "sessions": 0, "engagementRate": 0 }]
+  },
+  "ga4AiTraffic": {
+    "status": "ok",
+    "rows": [{ "referrer": "chatgpt.com", "sessions": 0, "activeUsers": 0 }]
+  }
+}
+
+PHASE 1 ADDITIVE FETCH (required — powers ops.html modules; do not invent numbers):
+A) GSC dimensions:['country'] for current 28d window → roll into gscByCountry.us vs gscByCountry.global (everything not United States). ctr as %, position 1 decimal.
+B) GSC dimensions:['page'] rowLimit 1000+ → gscByPage.rows sorted by impressions desc (keep top 200).
+C) GSC dimensions:['query'] rowLimit 5000 WITHOUT the position 4–15 filter → gscByQuery.rows (top 500 by impressions) + buckets by position bands 1, 2-3, 4-5, 6-10, 11-20, 21-50, 51-100 (count of queries). KEEP existing gsc.quickWins as today (pos 4–15, impr>=100, top 8 opportunity).
+D) GSC dimensions:['query','page'] → group by query; if >1 page with impressions>=20, add to gscCannibalization.rows with pages[], impressionSum, positionVariance. Always set the standing warning string about global vs /us/ trees.
+E) GA4 country dimension → ga4ByCountry.us vs rest sessions/activeUsers.
+F) GA4 pagePath → ga4ByPage.rows top 200 by sessions (include engagementRate if available).
+H) PHASE 3 — AI/GEO traffic: GA4 report filtered/segmented by sessionSource or pageReferrer containing
+   chatgpt.com, perplexity.ai, gemini.google.com, claude.ai, copilot.microsoft.com (and similar).
+   Write:
+   "ga4AiTraffic": { "status": "ok", "rows": [{ "referrer": "chatgpt.com", "sessions": 0, "activeUsers": 0 }] }
+   If GA4 cannot segment yet: { "status": "unavailable", "note": "..." }.
+G) HISTORY (Phase 2): after writing latest.json, also write data/history/YYYY-MM-DD.json (UTC date) with ONLY compact totals:
+   { "date", "updatedAt", "gsc": current+change, "ga4": totals, "clarityStatus", "githubStatus" }
+   Do not dump full keyword lists into history. Create data/history/ if missing.
+   Also update data/history/index.json: { "updatedAt", "dates": [ ...existing sorted unique YYYY-MM-DD..., today ] } keep last 90 days max.
+If any additive fetch fails: set that section { "status": "unavailable", "note": "..." } and continue — never delete core gsc/ga4.
+
+COMPUTATION RULES:
+1) GSC current = last 28 full days ending yesterday (UTC). Prior = the 28 days before that.
+2) ctr is a percentage (e.g. 1.11), not a fraction. Round ctr to 2 decimals, position to 1 decimal.
+3) change.clicks = current - prior; clicksPercent = ((current-prior)/prior)*100 if prior>0 else 0. Same for impressions. change.ctr / change.position = simple differences.
+4) quickWins: position 4–15 AND impressions >= 100. opportunity = round(impressions * (1 - ctr/100) * 0.05 * (16 - position)). Sort opportunity desc; top 8.
+5) GA4 = last 28 days through today. engagementRate = sessions-weighted average, 4 decimals. daily[].date = YYYYMMDD. channels = sessionDefaultChannelGroup, sessions desc.
+6) github.recentCommits: up to 5; message = first line only.
+7) If analytics env/files missing or API blocked: cloudflare.status may still be "ok" after a successful Pages deploy with analytics zeros OR status "unavailable" with note — prefer: after successful npm run deploy:cf set cloudflare.status="ok", deployment.status="success", deployment.url from wrangler output, deployment.deployedAt=now, and leave analytics at 0 with a note only if you must explain missing analytics (put that in cloudflare.note). If deploy also fails, set deployment.status="failed" and note the error.
+8) Write pretty-printed JSON (2-space indent) + trailing newline. updatedAt = now UTC.
+9) Failed GitHub/Clarity: { "status": "unavailable", "note": "<short reason>" }.
+
+DEPLOY (required after writing latest.json) — shell-bridge resilient:
+
+PRIMARY PATH (always do this — works even when device_bash / Plan9 is broken):
+1) Write E:\growth-board\data\latest.json via the file bridge (device_stage/commit or equivalent).
+2) Also write history for today (see G above) the same way.
+3) Push BOTH files to GitHub via the GitHub API / github integration (Contents API create-or-update):
+     - data/latest.json
+     - data/history/YYYY-MM-DD.json
+     - data/history/index.json
+   Commit message: "chore: refresh dashboard data via Claude MCP"
+   Branch: main (or the repo default).
+4) GitHub Actions workflow `.github/workflows/deploy-pages.yml` deploys Cloudflare Pages on push to data/**.
+   Set cloudflare.deployment to:
+     { "status": "queued", "url": "https://rytsensetech-growth-board.pages.dev", "deployedAt": "<ISO now>" }
+   and cloudflare.status = "ok" with note "deploy queued via GitHub Actions after API push"
+   when the GitHub push succeeds.
+
+LOCAL SHELL PATH (best-effort only — do NOT fail the run if this breaks):
+If device_bash / PowerShell works on E:\growth-board:
+  npm run deploy:cf
+Auth: secrets/cloudflare-api-token.txt or CLOUDFLARE_API_TOKEN — never print the token.
+After a successful local deploy, patch cloudflare.deployment { status:"success", url, deployedAt } once — do NOT redeploy after that patch.
+If device_bash fails with "no Plan9 drive shares" / shell bridge outage: SKIP local npm/git entirely.
+  Do NOT treat that as a failed refresh — the GitHub API push + Actions deploy is the recovery path.
+  Still finish the JSON write + GitHub push.
+
+Known issue (Sept 2025+ Windows): Claude device_bash often fails with Plan9/virtiofs mount errors while file read/write still works. Prefer PRIMARY PATH every day; treat local shell as optional speed-up.
+
+TASKS (do NOT modify):
+Never rewrite or overwrite data/tasks.json. Task status/assignee/notes are human-owned via /api/tasks (KV). The Growth Board already shows open-critical task counts from that API.
+
+OPTIONAL LOCAL GIT (do not block; skip when shell is broken):
+  git add data/latest.json data/history
+  git commit -m "chore: refresh dashboard data via Claude MCP"
+  git push origin main
+Prefer GitHub Contents API when local git is unavailable (already covered in PRIMARY PATH).
+
+FINAL REPLY (one short block):
+- updatedAt
+- GSC clicks (current) + GA4 sessions (totals)
+- Clarity: ok/unavailable (+ metricName keys if ok) — confirm you used the worker URL, not MCP
+- GitHub: repo + latest short sha (or Contents API push result), or unavailable
+- Cloudflare: local deploy URL/status OR "queued via GitHub Actions" + analytics ok/unavailable
+- Phase 1 additive: which of gscByCountry/gscByPage/gscByQuery/gscCannibalization/ga4ByCountry/ga4ByPage are ok vs unavailable
+- history file path written under data/history/
+- any errors (shell-bridge Plan9 failures are expected — note them but do not call the whole refresh "broken" if GitHub push succeeded)

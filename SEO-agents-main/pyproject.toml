@@ -1,0 +1,45 @@
+[project]
+name = "seo-agent-team"
+version = "1.0.0"
+description = "A 52-agent SEO and AEO department runnable from Claude Code"
+requires-python = ">=3.9"
+dependencies = ["requests>=2.31"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6", "black>=24.0", "isort>=5.13"]
+
+# ---------------------------------------------------------------------------
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+# T201 (print) is deliberately NOT selected. These are CLI tools whose stdout IS
+# the product — agents read it. `logging` would send the output to stderr and
+# break every caller.
+ignore = ["E501"]  # black owns line length
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "unit: isolated logic, no network or filesystem beyond tmp_path",
+    "integration: touches the real filesystem layout",
+]
+addopts = "-q --strict-markers"
+
+[tool.coverage.run]
+source = ["tools"]
+omit = ["tools/aio-extract.js"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

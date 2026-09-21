@@ -1,0 +1,35 @@
+{
+  "updatedAt": "2026-09-21T13:08:02.496Z",
+  "members": [
+    {
+      "id": "m-sri",
+      "name": "Srivishwa",
+      "team": "Development",
+      "color": "#0d9488"
+    },
+    {
+      "id": "m-ananya",
+      "name": "Ananya",
+      "team": "Development",
+      "color": "#7c3aed"
+    },
+    {
+      "id": "m-priya",
+      "name": "Priya",
+      "team": "Content",
+      "color": "#146c43"
+    },
+    {
+      "id": "m-arun",
+      "name": "Arun",
+      "team": "SEO",
+      "color": "#c2410c"
+    },
+    {
+      "id": "m-ravi",
+      "name": "Ravi",
+      "team": "Marketing",
+      "color": "#b45309"
+    }
+  ]
+}

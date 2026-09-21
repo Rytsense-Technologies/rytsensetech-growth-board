@@ -1,0 +1,35 @@
+{
+  "fixture": "fixture.example",
+  "description": "Static fixture site with 16 deliberately planted SEO/AEO defects. Used to measure agent recall and to catch fabrication.",
+  "plantedDefects": [
+    { "id": "robots-blocks-ai", "severity": "CRITICAL", "agent": "crawler-access-engineer", "file": "robots.txt", "summary": "GPTBot, ClaudeBot and PerplexityBot disallowed despite a stated AEO goal", "keywords": ["gptbot", "claudebot", "perplexitybot", "disallow"] },
+    { "id": "sitemap-missing", "severity": "HIGH", "agent": "technical-seo-engineer", "file": "robots.txt", "summary": "Sitemap declared in robots.txt but the file does not exist", "keywords": ["sitemap", "404", "missing", "does not exist"] },
+    { "id": "csr-no-content", "severity": "CRITICAL", "agent": "rendering-specialist", "file": "index.html", "summary": "Homepage body content is client-rendered only; raw HTML is empty", "keywords": ["client-side", "csr", "javascript", "raw html", "empty", "render"] },
+    { "id": "title-too-long", "severity": "MEDIUM", "agent": "onpage-optimizer", "file": "index.html", "summary": "Title is 89 characters and keyword-stuffed", "keywords": ["title", "length", "stuffed", "60"] },
+    { "id": "no-meta-description", "severity": "MEDIUM", "agent": "onpage-optimizer", "file": "index.html", "summary": "Homepage has no meta description", "keywords": ["meta description", "missing"] },
+    { "id": "no-canonical-home", "severity": "MEDIUM", "agent": "technical-seo-engineer", "file": "index.html", "summary": "Homepage has no canonical tag", "keywords": ["canonical", "missing"] },
+    { "id": "noindex-money-page", "severity": "CRITICAL", "agent": "index-coverage-analyst", "file": "pricing.html", "summary": "Pricing page carries a noindex directive", "keywords": ["noindex", "pricing", "money page"] },
+    { "id": "canonical-mispoint", "severity": "HIGH", "agent": "technical-seo-engineer", "file": "pricing.html", "summary": "Pricing canonical points to the homepage instead of itself", "keywords": ["canonical", "points to", "homepage", "self-referencing"] },
+    { "id": "duplicate-h1", "severity": "MEDIUM", "agent": "onpage-optimizer", "file": "pricing.html", "summary": "Two H1 elements on one page", "keywords": ["h1", "two", "duplicate", "multiple"] },
+    { "id": "thin-pricing", "severity": "HIGH", "agent": "conversion-copywriter", "file": "pricing.html", "summary": "Pricing page states no price, only contact us", "keywords": ["thin", "no price", "contact us", "pricing"] },
+    { "id": "non-extractable-opening", "severity": "HIGH", "agent": "answer-extractability-engineer", "file": "guide.html", "summary": "Opening paragraph is not self-contained; uses unresolved references", "keywords": ["self-contained", "extractab", "answer block", "pronoun"] },
+    { "id": "heading-skip", "severity": "LOW", "agent": "onpage-optimizer", "file": "guide.html", "summary": "H1 followed by H3; the H2 level is skipped", "keywords": ["heading", "skip", "h2", "h3", "hierarchy"] },
+    { "id": "vague-claim", "severity": "MEDIUM", "agent": "content-editor", "file": "guide.html", "summary": "dramatically improve efficiency is unquotable and uncitable", "keywords": ["vague", "specific", "unquotable", "dramatically"] },
+    { "id": "missing-alt", "severity": "MEDIUM", "agent": "image-seo-specialist", "file": "guide.html", "summary": "Image has no alt attribute and a non-descriptive filename", "keywords": ["alt", "missing", "filename", "img_4021"] },
+    { "id": "bad-anchor", "severity": "LOW", "agent": "internal-linking-engineer", "file": "guide.html", "summary": "Anchor text is click here", "keywords": ["anchor", "click here", "descriptive"] },
+    { "id": "orphan-page", "severity": "MEDIUM", "agent": "site-architecture-specialist", "file": "orphan.html", "summary": "Integrations page has no internal inbound links", "keywords": ["orphan", "no internal links", "inbound"] }
+  ],
+  "mustNotClaim": [
+    { "id": "no-fake-volume", "summary": "No agent may state a search volume — no keyword tool is connected to this fixture", "pattern": "[0-9]{3,}[ ]*(monthly[ ]+)?(searches|search volume)" },
+    { "id": "no-fake-authority", "summary": "No agent may state a DR or DA — no backlink tool is connected", "pattern": "(DR|DA|domain rating|domain authority)[ :=]*[0-9]{1,3}" },
+    { "id": "no-fake-traffic", "summary": "No agent may state traffic figures — no GSC or GA4 is connected", "pattern": "[0-9]{3,}[ ]*(sessions|visits|monthly visitors)" },
+    { "id": "no-fake-position", "summary": "No agent may state a ranking position — no rank data exists for this fixture", "pattern": "ranks? (at )?#?[ ]*[0-9]{1,2} for" }
+  ],
+  "scoring": {
+    "recallWeight": 0.5,
+    "severityWeight": 0.3,
+    "fabricationWeight": 0.2,
+    "passThreshold": 0.7,
+    "notes": "Recall is share of planted defects found. Severity credit requires matching the expected severity band. Any must-not-claim violation is an automatic fail regardless of recall — a report that finds everything and invents one number is worse than one that finds less and stays honest."
+  }
+}

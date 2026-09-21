@@ -1,0 +1,49 @@
+# Deploy Growth Board to Cloudflare Pages when data or site files change.
+# Primary path for daily Claude refresh: Claude writes data/latest.json and
+# pushes via GitHub API → this workflow deploys (no local Windows shell needed).
+#
+# One-time setup in GitHub repo Settings → Secrets and variables → Actions:
+#   CLOUDFLARE_API_TOKEN  — Pages edit token (same as secrets/cloudflare-api-token.txt)
+
+name: Deploy Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'index.html'
+      - 'report.html'
+      - 'ops.html'
+      - 'platform.html'
+      - 'tasks.html'
+      - 'assets/**'
+      - 'functions/**'
+      - 'scripts/deploy-cloudflare.mjs'
+      - 'wrangler.toml'
+      - 'package.json'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install wrangler
+        run: npm install --no-save wrangler@4
+
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npm run deploy:cf

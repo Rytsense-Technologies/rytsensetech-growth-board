@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# PLANTED DEFECT: AI retrieval crawlers blocked while the profile states an AEO goal
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+# PLANTED DEFECT: sitemap declared but does not exist
+Sitemap: https://fixture.example/sitemap.xml

@@ -1,0 +1,59 @@
+{
+  "updatedAt": "2026-09-19T00:00:00.000Z",
+  "targets": [
+    {
+      "id": "organic_clicks",
+      "label": "Organic clicks (28d)",
+      "cadence": "monthly",
+      "baseline": null,
+      "target": null,
+      "source": "gsc.current.clicks",
+      "unit": "count"
+    },
+    {
+      "id": "organic_ctr",
+      "label": "Organic CTR",
+      "cadence": "monthly",
+      "baseline": null,
+      "target": null,
+      "source": "gsc.current.ctr",
+      "unit": "pct"
+    },
+    {
+      "id": "sessions",
+      "label": "GA4 sessions (28d)",
+      "cadence": "monthly",
+      "baseline": null,
+      "target": null,
+      "source": "ga4.totals.sessions",
+      "unit": "count"
+    },
+    {
+      "id": "us_top10_queries",
+      "label": "US commercial queries in top 10",
+      "cadence": "monthly",
+      "baseline": "0/30",
+      "target": "5/30",
+      "source": "audit.baselines",
+      "unit": "text"
+    },
+    {
+      "id": "ai_citation_rate",
+      "label": "AI citation rate (non-branded)",
+      "cadence": "quarterly",
+      "baseline": 0.045,
+      "target": 0.10,
+      "source": "audit.baselines.aiCitationRateNonBranded",
+      "unit": "pct_fraction"
+    },
+    {
+      "id": "fixes_closed",
+      "label": "Audit fixes closed",
+      "cadence": "weekly",
+      "baseline": 0,
+      "target": 8,
+      "source": "fixes.done",
+      "unit": "count"
+    }
+  ]
+}

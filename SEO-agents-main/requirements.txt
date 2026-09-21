@@ -1,0 +1,21 @@
+# SEO agent team — Python dependencies
+#
+# The data tools (serp.py, board.py, memory.py) are the team-facing layer.
+# board.py and memory.py are stdlib-only and need nothing here; serp.py needs
+# one HTTP client.
+#
+#   pip install -r requirements.txt
+
+requests>=2.31
+
+# ---------------------------------------------------------------------------
+# Not required yet, uncomment when GSC and GA4 are connected.
+#
+# The page-value matrix — joining query data to conversion data across 779 URLs
+# — is a dataframe job. Doing it without pandas is the kind of thing that makes
+# people hate a codebase.
+#
+# pandas>=2.2
+# google-api-python-client>=2.120     # Search Console API
+# google-auth-oauthlib>=1.2           # OAuth flow for GSC/GA4
+# ---------------------------------------------------------------------------

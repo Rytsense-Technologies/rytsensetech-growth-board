@@ -1,123 +1,152 @@
 # Rytsensetech Growth Board
 
 A public, always-current SEO & marketing dashboard for **rytsensetech.com**.
-A scheduled GitHub Actions job pulls fresh data from Search Console, GA4 and
-Clarity every day, commits it as `data/latest.json`, and Vercel redeploys the
-static site automatically. No login required to view — share the URL with
-anyone on the team.
+A Claude Code Remote scheduled routine (`growth-board-daily-refresh`) pulls
+fresh data via connected MCP tools, writes `data/latest.json`, and deploys
+the static site with `npm run deploy:cf` (Wrangler → Cloudflare Pages).
+No login required to view — share the URL with anyone on the team.
 
-The dashboard already ships with real data (from 2026-09-09) so it works the
-moment it's deployed, before you've wired up the automated refresh.
+Live site: [rytsensetech-growth-board.pages.dev](https://rytsensetech-growth-board.pages.dev)
+
+**Intelligence Report** (IBM Plex / burnt-orange audit system — separate from teal Growth Board): [/report.html](https://rytsensetech-growth-board.pages.dev/report.html)  
+Design tokens live in `assets/rts-report.css` (scoped under `.rts-report`; do not merge with dashboard teal/Manrope).
+**Internal Platform** (all modules Phases 1–4): [/platform.html](https://rytsensetech-growth-board.pages.dev/platform.html)  
+**SEO Ops** (Phase 1 view): [/ops.html](https://rytsensetech-growth-board.pages.dev/ops.html)
+
+Wire: Growth Board ↔ **Team Tasks** (`tasks.html`, KV `/api/tasks`) ↔ Intelligence Report ↔ Internal Platform.  
+Daily Claude routine must **not** overwrite `data/tasks.json` (human-owned). It may only surface open-critical / overdue counts already shown on the Growth Board KPI tile.
+
+**SEO agent team** (52 specialists in `SEO-agents-main/`): run via Claude Code (`/seo-360`, `/aeo-360`, …). Publish results onto the board with:
+
+```bash
+cd SEO-agents-main
+node tools/publish-to-board.mjs --from-audit ../data/audit.json --post
+# or /seo-publish
+```
+
+That writes `data/engagements.json` and POSTs `/api/engagements` so [platform.html#agents](https://rytsensetech-growth-board.pages.dev/platform.html#agents) + Activity update.
 
 ## How it works
 
 ```
-GitHub Actions (cron, daily)
-  -> scripts/fetch-data.mjs
-     -> Search Console API   (service account)
-     -> GA4 Data API         (service account)
-     -> Clarity Data Export  (API token, optional)
+Claude Code Remote routine "growth-board-daily-refresh" (daily)
+  -> MCP tools (Search Console, GA4, Clarity, GitHub, Cloudflare)
   -> writes data/latest.json
-  -> commits + pushes
-       -> Vercel auto-redeploys (it watches the repo)
-            -> index.html fetches data/latest.json, renders the dashboard
+  -> npm run deploy:cf  (Wrangler / Cloudflare Pages)
+       -> index.html fetches data/latest.json and renders the dashboard
 ```
 
-There's no database and no server — `index.html` is a static file that reads
-a JSON file sitting next to it. That's the whole system.
+There's no database and no app server — `index.html` is a static file that
+reads a JSON file sitting next to it.
 
-## One-time setup
+## Local preview
 
-### 1. Push this to GitHub
+```bash
+npx serve .
+# or open index.html via any static file server
+```
 
-Create a new repository (e.g. `rytsensetech-growth-board`) and push this
-folder to it.
+Deploy manually after a local data edit:
 
-### 2. Create a Google Cloud service account
+```bash
+npm run deploy:cf
+```
 
-This is a robot credential — not your personal Google login — so the
-scheduled job can read Search Console and GA4 without anyone's password.
+Auth for deploy: `CLOUDFLARE_API_TOKEN` env var, or
+`secrets/cloudflare-api-token.txt` (gitignored). Interactive `wrangler login`
+also works on a developer machine but not for unattended scheduled runs.
 
-1. Go to [console.cloud.google.com](https://console.cloud.google.com), create
-   or pick a project.
-2. **APIs & Services > Library** — enable **Google Search Console API** and
-   **Google Analytics Data API**.
-3. **APIs & Services > Credentials > Create Credentials > Service account** —
-   give it any name (e.g. `growth-board`). No roles needed at the project
-   level.
-4. Open the new service account > **Keys > Add key > Create new key > JSON**.
-   This downloads a `.json` file — keep it private, you'll paste its full
-   contents into a GitHub secret in step 5.
-5. Copy the service account's email address (looks like
-   `growth-board@your-project.iam.gserviceaccount.com`).
+## Data schema (`data/latest.json`)
 
-### 3. Grant that service account access to your data
+Top-level fields:
 
-- **Search Console**: [search.google.com/search-console](https://search.google.com/search-console)
-  → Settings → Users and permissions → Add user → paste the service account
-  email → **Full** (or Restricted) permission.
-- **GA4**: Admin → Property Access Management (on the *Rytsensetech*
-  property) → `+` → paste the service account email → role **Viewer**.
-
-### 4. (Optional) Get a Clarity API token
-
-[clarity.microsoft.com](https://clarity.microsoft.com) → your project →
-Settings → Data Export → API tokens → generate one. Skip this if you'd
-rather leave the Clarity card showing "not reporting" for now — everything
-else still works.
-
-### 5. Add GitHub Actions secrets
-
-In your repo: **Settings → Secrets and variables → Actions → New repository
-secret**. Add:
-
-| Secret name | Value |
+| Key | Purpose |
 |---|---|
-| `GOOGLE_SERVICE_ACCOUNT_JSON` | the *entire contents* of the JSON key file from step 2.4 |
-| `GSC_SITE_URL` | `https://rytsensetech.com/` (must match exactly how it's listed in Search Console) |
-| `GA4_PROPERTY_ID` | `423166919` |
-| `CLARITY_API_TOKEN` | the token from step 4 (optional — leave unset to skip) |
+| `site` | Hostname label, e.g. `rytsensetech.com` |
+| `updatedAt` | ISO-8601 timestamp of the last refresh |
+| `gsc` | Search Console totals, period deltas, near-miss `quickWins` |
+| `ga4` | Sessions totals, daily series, channel breakdown |
+| `clarity` | Behavioral metrics (`status`, optional `note`, dynamic `data`) |
+| `github` | Recent commits for the dashboard repo |
+| `cloudflare` | Pages deployment status + zone analytics |
 
-### 6. Run the refresh once
+### `gsc`
 
-**Actions** tab → "Refresh dashboard data" → **Run workflow**. Check it goes
-green and that `data/latest.json` in the repo got a new `updatedAt` commit.
-After this it runs automatically every day at 08:00 IST — trigger it early
-any time from the same **Run workflow** button if you want fresher numbers
-before the next scheduled run.
+- `period`, `current`, `prior`, `change`, `quickWins[]`
+- Opportunity scores on quick wins are this repo's estimate (not an official
+  Search Console metric).
 
-### 7. Deploy to Vercel
+### `ga4`
 
-1. [vercel.com](https://vercel.com) → **Add New... > Project** → import this
-   GitHub repo.
-2. No configuration needed — it's a static site, Vercel detects that
-   automatically. Click **Deploy**.
-3. You'll get a URL like `rytsensetech-growth-board.vercel.app`. Share that
-   with the team — it's public and needs no sign-in. Add a custom domain
-   under Vercel's Project Settings if you'd rather use something like
-   `growth.rytsensetech.com`.
+- `totals` (`sessions`, `activeUsers`, `engagementRate`, `pageViews`)
+- `daily[]` (`date` as `YYYYMMDD`, `sessions`)
+- `channels[]` (`channel`, `sessions`, `activeUsers`, `conversions`)
 
-Every time the Actions job commits fresh data, Vercel picks up the push and
-redeploys within a minute or two — the dashboard just stays current.
+### `clarity`
 
-## Changing the schedule
+```json
+{
+  "status": "ok | unavailable",
+  "note": "only when unavailable",
+  "data": {
+    "DeadClickCount": 12,
+    "Browser": [{ "name": "Chrome", "count": 100 }]
+  }
+}
+```
 
-Edit the `cron` line in `.github/workflows/refresh.yml`
-(`30 2 * * *` = 02:30 UTC = 08:00 IST daily). GitHub Actions cron runs in
-UTC. You can also just click **Run workflow** manually whenever you want an
-immediate refresh.
+`data` is intentionally dynamic — metric names and nested shapes come from
+whatever the scheduled refresh extracted. The dashboard iterates entries
+defensively (scalar tiles, ranked bar lists, or a compact “N data points”
+fallback). Missing `clarity` or `status: "unavailable"` shows the quiet
+“Not reporting” empty state with `note` when present.
 
-## Notes on the data
+### `github`
 
-- **GSC "opportunity" score** on the near-miss keyword table is this repo's
-  own estimate (impression volume weighted by ranking position and CTR
-  headroom) — Search Console doesn't expose an official "opportunity"
-  metric, so treat it as directional.
-- **Clarity** card only populates once `CLARITY_API_TOKEN` is set and the
-  Clarity Data Export API responds; the exact fields it returns aren't
-  fixed into the dashboard yet — extend `renderClarity()` in `index.html`
-  and the `fetchClarity()` function in `scripts/fetch-data.mjs` once you
-  know which Clarity metrics you want surfaced.
-- All numbers are pulled directly from Google's and Microsoft's APIs — no
-  Claude involvement at runtime, so this keeps working whether or not any
-  Claude session is active.
+```json
+{
+  "status": "ok | unavailable",
+  "note": "…",
+  "repo": "owner/name",
+  "recentCommits": [
+    { "sha": "abc1234", "message": "…", "author": "…", "date": "ISO-8601", "url": "…" }
+  ]
+}
+```
+
+### `cloudflare`
+
+```json
+{
+  "status": "ok | unavailable",
+  "note": "…",
+  "analytics": {
+    "requests": 0, "bytes": 0, "uniqueVisitors": 0,
+    "threats": 0, "cacheHitRatio": 0
+  },
+  "deployment": {
+    "status": "success | failed | unknown",
+    "url": "https://….pages.dev",
+    "deployedAt": "ISO-8601"
+  }
+}
+```
+
+Cloudflare **analytics** only populate when `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ZONE_ID` are available to the scheduled refresh on this machine.
+Create a token at Cloudflare → My Profile → API Tokens; the zone ID is on
+the domain overview page’s right sidebar.
+
+## Schedule
+
+Owned by Claude Code Remote routine **`growth-board-daily-refresh`** on the
+machine that has MCP access + the Cloudflare token file. Prompt text lives
+in `scripts/claude-scheduler-daily-refresh.txt`.
+
+## Notes
+
+- The browser never calls Google/Clarity/GitHub APIs directly — it only
+  reads `data/latest.json`.
+- Older `scripts/fetch-data.mjs` / `.github/workflows/refresh.yml` may still
+  exist in the repo but are unused; refresh + deploy are owned by the
+  Claude routine and `npm run deploy:cf`.
