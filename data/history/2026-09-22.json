@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-22",
+  "updatedAt": "2026-09-22T05:38:42Z",
+  "gsc": {
+    "current": {
+      "clicks": 1093,
+      "impressions": 111557,
+      "ctr": 0.98,
+      "position": 30.5
+    },
+    "prior": {
+      "clicks": 1527,
+      "impressions": 111217,
+      "ctr": 1.37,
+      "position": 32.4
+    },
+    "change": {
+      "clicks": -434,
+      "clicksPercent": -28.42,
+      "impressions": 340,
+      "impressionsPercent": 0.31,
+      "ctr": -0.39,
+      "position": -1.9
+    },
+    "period": {
+      "startDate": "2026-08-25",
+      "endDate": "2026-09-21"
+    }
+  },
+  "ga4": {
+    "sessions": 3926,
+    "activeUsers": 3103,
+    "engagementRate": 0.5423,
+    "pageViews": 8002
+  },
+  "clarityStatus": "ok",
+  "githubStatus": "ok"
+}
