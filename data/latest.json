@@ -1,1 +1,259 @@
-{"site":"rytsensetech.com","updatedAt":"2026-09-21T19:22:20Z","gsc":{"period":{"startDate":"2026-08-24","endDate":"2026-09-20"},"current":{"clicks":1114,"impressions":114528,"ctr":0.97,"position":30.8},"prior":{"clicks":1568,"impressions":110938,"ctr":1.41,"position":32.1},"change":{"clicks":-454,"clicksPercent":-28.95,"impressions":3590,"impressionsPercent":3.24,"ctr":-0.44,"position":-1.3},"quickWins":[{"query":"what purpose do fairness measures serve in ai product development","clicks":1,"impressions":6126,"ctr":0.02,"position":9.4,"opportunity":2021},{"query":"tidewater eye centers revenue cycle automation case study","clicks":0,"impressions":2395,"ctr":0,"position":9,"opportunity":838},{"query":"carc codes","clicks":0,"impressions":734,"ctr":0,"position":7.9,"opportunity":297},{"query":"ai companies in chennai","clicks":8,"impressions":335,"ctr":2.39,"position":4,"opportunity":196},{"query":"imaginepediatrics.org billing revenue cycle automation rpa claims prior authorization automation","clicks":0,"impressions":527,"ctr":0,"position":9.7,"opportunity":166},{"query":"zomato mcp","clicks":2,"impressions":441,"ctr":0.45,"position":9.3,"opportunity":147},{"query":"carc","clicks":0,"impressions":318,"ctr":0,"position":7.4,"opportunity":137},{"query":"generative ai development company","clicks":1,"impressions":365,"ctr":0.27,"position":9.5,"opportunity":118}]},"ga4":{"totals":{"sessions":4102,"activeUsers":3217,"engagementRate":0.5431,"pageViews":8222},"daily":[{"date":"20260825","sessions":202},{"date":"20260826","sessions":156},{"date":"20260827","sessions":159},{"date":"20260828","sessions":162},{"date":"20260829","sessions":133},{"date":"20260830","sessions":130},{"date":"20260831","sessions":172},{"date":"20260901","sessions":215},{"date":"20260902","sessions":133},{"date":"20260903","sessions":182},{"date":"20260904","sessions":165},{"date":"20260905","sessions":92},{"date":"20260906","sessions":70},{"date":"20260907","sessions":152},{"date":"20260908","sessions":216},{"date":"20260909","sessions":168},{"date":"20260910","sessions":162},{"date":"20260911","sessions":158},{"date":"20260912","sessions":79},{"date":"20260913","sessions":66},{"date":"20260914","sessions":106},{"date":"20260915","sessions":213},{"date":"20260916","sessions":179},{"date":"20260917","sessions":165},{"date":"20260918","sessions":146},{"date":"20260919","sessions":139},{"date":"20260920","sessions":83},{"date":"20260921","sessions":139}],"channels":[{"channel":"Organic Search","sessions":2014,"activeUsers":1401,"conversions":51},{"channel":"Direct","sessions":1773,"activeUsers":1595,"conversions":9},{"channel":"Organic Social","sessions":172,"activeUsers":128,"conversions":0},{"channel":"AI Assistant","sessions":77,"activeUsers":51,"conversions":0},{"channel":"Referral","sessions":53,"activeUsers":17,"conversions":4},{"channel":"Unassigned","sessions":48,"activeUsers":47,"conversions":1}]},"clarity":{"status":"ok","data":{"DeadClickCount":{"sessionsCount":108,"sessionsWithMetricPercentage":25,"sessionsWithoutMetricPercentage":75,"pagesViews":35,"subTotal":71},"ExcessiveScroll":{"sessionsCount":114,"sessionsWithMetricPercentage":0,"sessionsWithoutMetricPercentage":100,"pagesViews":0,"subTotal":0},"RageClickCount":{"sessionsCount":114,"sessionsWithMetricPercentage":0.88,"sessionsWithoutMetricPercentage":99.12,"pagesViews":1,"subTotal":1},"QuickbackClick":{"sessionsCount":114,"sessionsWithMetricPercentage":8.77,"sessionsWithoutMetricPercentage":91.23,"pagesViews":26,"subTotal":26},"ScriptErrorCount":{"sessionsCount":114,"sessionsWithMetricPercentage":0.88,"sessionsWithoutMetricPercentage":99.12,"pagesViews":1,"subTotal":5},"ErrorClickCount":{"sessionsCount":114,"sessionsWithMetricPercentage":0,"sessionsWithoutMetricPercentage":100,"pagesViews":0,"subTotal":0},"ScrollDepth":{"averageScrollDepth":40.11},"Traffic":{"totalSessionCount":108,"totalBotSessionCount":37,"distinctUserCount":131,"pagesPerSessionPercentage":2.15},"EngagementTime":{"totalTime":639,"activeTime":75},"Browser":[{"name":"Chrome","value":72},{"name":"ChromeMobile","value":22},{"name":"MobileSafari","value":7},{"name":"Edge","value":4},{"name":"GoogleApp","value":2},{"name":"Firefox","value":1}],"Device":[{"name":"PC","value":83},{"name":"Mobile","value":30},{"name":"Tablet","value":1}],"OS":[{"name":"Windows","value":76},{"name":"Android","value":21},{"name":"IOS","value":10},{"name":"MacOSX","value":6},{"name":"Linux","value":1}],"Country":[{"name":"India","value":94},{"name":"United States","value":8},{"name":"Australia","value":3},{"name":"Romania","value":2},{"name":"United Arab Emirates","value":2},{"name":"China","value":1},{"name":"Germany","value":1},{"name":"Pakistan","value":1}],"PageTitle":[{"name":"AI Development Company in India | Global AI Experts | Rytsense","value":55},{"name":"Careers at Rytsense Technologies | AI & Tech Jobs in India, USA & UAE","value":44},{"name":"Contact Rytsense Technologies - Free AI Consultation","value":9},{"name":"AI & Machine Learning Course | Rytsense Technologies","value":9},{"name":"AI Integration Services | AI Integration Solutions | Rytsense","value":9},{"name":"Book a Demo | Rytsense RCM AI Workforce","value":6},{"name":"AI Voice Agents for Business | Custom Voice AI Solutions","value":5},{"name":"Hire AI Developers | Build Custom AI Solutions with Experts","value":4}],"ReferrerUrl":[{"name":"https://www.google.com/","value":55},{"name":"(not set)","value":43},{"name":"https://rytsensetech.com/?utm_source=google-listing&utm_medium=organic&utm_content=india","value":19},{"name":"https://rytsensetech.com/","value":8},{"name":"https://rytsensetech.com/company/career/","value":6},{"name":"http://localhost:3000/us/ai-integration-services/","value":4},{"name":"https://rytsensetech.com/?utm_medium=organic&utm_content=india&utm_source=chatgpt.com","value":3},{"name":"https://rytsensetech.com/us/book-a-demo/","value":3}],"PopularPages":[{"name":"https://rytsensetech.com/","value":65},{"name":"https://rytsensetech.com/company/career/","value":46},{"name":"https://rytsensetech.com/contact-us/","value":10},{"name":"https://rytsensetech.com/ai-machine-learning-course/","value":10},{"name":"https://rytsensetech.com/us/ai-integration-services/","value":6},{"name":"https://rytsensetech.com/ai-voice-agent/","value":6},{"name":"http://localhost:3000/us/ai-integration-services/","value":6},{"name":"https://rytsensetech.com/us/book-a-demo/","value":6}]}},"github":{"status":"ok","repo":"Rytsense-Technologies/rytsensetech-growth-board","recentCommits":[{"sha":"e7ae6bf","message":"feat: ship full growth-board platform with Team Tasks and CI deploy","author":"arunkanagaraj-rytsense","date":"2026-09-21T13:48:19Z","url":"https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/e7ae6bfe32df8024f976f2aeae3add8e3781bc25"},{"sha":"d61c14f","message":"chore: refresh dashboard data via Claude MCP (2026-09-21)","author":"arunkanagaraj-rytsense","date":"2026-09-21T09:41:33Z","url":"https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/d61c14f3dc6657520d422c9e9779f1d6f51764eb"},{"sha":"ff7b7b9","message":"chore: refresh dashboard data via Claude MCP","author":"arunkanagaraj-rytsense","date":"2026-09-10T09:43:19Z","url":"https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/ff7b7b91e31478d8bfa113b149b07a004c0b55ac"},{"sha":"2cb798c","message":"Add Cloudflare Pages deploy helper and Claude MCP refresh prompt.","author":"Arun K","date":"2026-09-09T10:32:04Z","url":"https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/2cb798ca6759bbd5dfaf92ad8e6208708a66c5c4"},{"sha":"36f769d","message":"Ignore secrets/ so service account keys never get committed.","author":"Arun K","date":"2026-09-09T08:54:19Z","url":"https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/36f769de2f796a3227e1ea9256450951414bae28"}]},"cloudflare":{"status":"ok","note":"Deploy queued via GitHub Actions after API push. Analytics unavailable: CLOUDFLARE_ZONE_ID not found (secrets/cloudflare-zone-id.txt missing) and no CLOUDFLARE_ZONE_ID env in this cloud session.","analytics":{"requests":0,"bytes":0,"uniqueVisitors":0,"threats":0,"cacheHitRatio":0},"deployment":{"status":"queued","url":"https://rytsensetech-growth-board.pages.dev","deployedAt":"2026-09-21T19:22:20Z"}},"gscByCountry":{"status":"ok","us":{"clicks":48,"impressions":57351,"ctr":0.08,"position":34.9},"global":{"clicks":1066,"impressions":57177,"ctr":1.86,"position":26.7}},"gscByPage":{"status":"ok","rows":[{"page":"/?utm_source=google-listing&utm_medium=organic&utm_content=india","clicks":347,"impressions":9524,"ctr":3.64,"position":4.6},{"page":"/blog/what-is-the-30-percent-rule-in-ai/","clicks":30,"impressions":9026,"ctr":0.33,"position":3.9},{"page":"/mobile-app-development-company-dubai/","clicks":4,"impressions":7155,"ctr":0.06,"position":51.2},{"page":"/blog/fairness-measures-in-ai-product-development/","clicks":1,"impressions":6243,"ctr":0.02,"position":9.4},{"page":"/","clicks":254,"impressions":4473,"ctr":5.68,"position":16.5},{"page":"/machine-learning-development-services/","clicks":1,"impressions":3657,"ctr":0.03,"position":48.4},{"page":"/us/blog/carc-codes-medical-billing/","clicks":6,"impressions":3153,"ctr":0.19,"position":8.7},{"page":"/us/speciality/ophthalmology/","clicks":1,"impressions":2760,"ctr":0.04,"position":13.8},{"page":"/generative-ai-development-services/","clicks":2,"impressions":2730,"ctr":0.07,"position":43.7},{"page":"/blog/top-money-earning-apps-uae/","clicks":56,"impressions":2518,"ctr":2.22,"position":10.3},{"page":"/artificial-intelligence-development-company-in-dubai/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=dubai","clicks":28,"impressions":2492,"ctr":1.12,"position":6.6},{"page":"/us/blog/top-medical-claim-denial-codes/","clicks":1,"impressions":1761,"ctr":0.06,"position":9.4},{"page":"/blog/chennai-top-ten-custom-software-development-company/","clicks":8,"impressions":1530,"ctr":0.52,"position":27.8},{"page":"/company/career/","clicks":237,"impressions":1510,"ctr":15.7,"position":3.5},{"page":"/us/machine-learning-development-services/","clicks":3,"impressions":1454,"ctr":0.21,"position":59.5},{"page":"/blog/top-ai-development-companies/","clicks":0,"impressions":1434,"ctr":0,"position":61.6},{"page":"/contact-us/","clicks":2,"impressions":1367,"ctr":0.15,"position":6},{"page":"/hire-developers-in-india/","clicks":0,"impressions":1364,"ctr":0,"position":57.3},{"page":"/us/healthcare-claims-management-automation/","clicks":0,"impressions":1362,"ctr":0,"position":53.7},{"page":"/us/insurance-verification-ai/","clicks":19,"impressions":1350,"ctr":1.41,"position":30.8},{"page":"/artificial-intelligence-development-company-in-dubai/","clicks":5,"impressions":1256,"ctr":0.4,"position":45.6},{"page":"/blog/how-to-become-ai-developer/","clicks":0,"impressions":1170,"ctr":0,"position":31.5},{"page":"/computer-vision-development-services/","clicks":0,"impressions":1135,"ctr":0,"position":44.1},{"page":"/blog/what-is-the-best-ai-model/","clicks":1,"impressions":1112,"ctr":0.09,"position":50},{"page":"/blog/ai-in-oil-and-gas-industry/","clicks":1,"impressions":1095,"ctr":0.09,"position":65},{"page":"/blog/ecommerce-ai-agents-and-agentic-commerce-explained/","clicks":0,"impressions":1087,"ctr":0,"position":74.3},{"page":"/blog/what-companies-are-building-ai-infrastructure/","clicks":0,"impressions":1077,"ctr":0,"position":76.1},{"page":"/ai-development-company-in-chennai/","clicks":1,"impressions":1052,"ctr":0.1,"position":16.7},{"page":"/blog/ai-tools-for-web-development/","clicks":2,"impressions":1036,"ctr":0.19,"position":41.1},{"page":"/us/blog/top-custom-ai-development-companies/","clicks":1,"impressions":1002,"ctr":0.1,"position":73.8},{"page":"/ai-agent-development-services/","clicks":4,"impressions":959,"ctr":0.42,"position":61},{"page":"/us/healthcare-rcm-automation/","clicks":0,"impressions":930,"ctr":0,"position":74.7},{"page":"/ai-development-company-in-bengaluru/","clicks":2,"impressions":902,"ctr":0.22,"position":16.9},{"page":"/us/speciality/radiology/","clicks":0,"impressions":878,"ctr":0,"position":56.6},{"page":"/us/blog/top-generative-ai-development-companies-usa/","clicks":2,"impressions":867,"ctr":0.23,"position":13.5},{"page":"/blog/zomato-mcp-server-order-food-claude-desktop/","clicks":3,"impressions":839,"ctr":0.36,"position":9.5},{"page":"/data-science-analytics-services/","clicks":2,"impressions":805,"ctr":0.25,"position":33.5},{"page":"/blog/what-are-the-seven-stages-of-machine-learning/","clicks":5,"impressions":788,"ctr":0.63,"position":9.7},{"page":"/company/who-we-are/","clicks":3,"impressions":774,"ctr":0.39,"position":8.6},{"page":"/us/industry/ai-in-retail/","clicks":0,"impressions":770,"ctr":0,"position":59.3},{"page":"/us/voice-ai-healthcare/","clicks":1,"impressions":765,"ctr":0.13,"position":35.7},{"page":"/us/generative-ai-consulting-services/","clicks":0,"impressions":755,"ctr":0,"position":72.7},{"page":"/industry/electric-vehicle-software-development-services/","clicks":0,"impressions":729,"ctr":0,"position":55.2},{"page":"/us/blog/top-insurance-eligibility-verification-software/","clicks":2,"impressions":686,"ctr":0.29,"position":32.3},{"page":"/ai-development-company-in-bengaluru/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=bengaluru","clicks":25,"impressions":685,"ctr":3.65,"position":24.6},{"page":"/hire/hire-yii-developers/","clicks":0,"impressions":672,"ctr":0,"position":46.9},{"page":"/blog/hire-dedicated-software-developers-india/","clicks":1,"impressions":663,"ctr":0.15,"position":59.2},{"page":"/blog/why-should-hire-on-demand-developers/","clicks":0,"impressions":656,"ctr":0,"position":14.4},{"page":"/ai-development-company-uk/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=uk","clicks":1,"impressions":643,"ctr":0.16,"position":1.5},{"page":"/us/speciality/cardiology/","clicks":0,"impressions":624,"ctr":0,"position":55.5},{"page":"/us/","clicks":3,"impressions":620,"ctr":0.48,"position":16.2},{"page":"/us/rpa-development-services/","clicks":0,"impressions":611,"ctr":0,"position":47.2},{"page":"/blog/advantages-of-using-prompts-in-ai-model-development/","clicks":0,"impressions":610,"ctr":0,"position":10},{"page":"/blog/agentic-ai-use-cases-in-banking/","clicks":1,"impressions":603,"ctr":0.17,"position":79.5},{"page":"/us/speciality/pediatric/","clicks":1,"impressions":584,"ctr":0.17,"position":12},{"page":"/hire/hire-codeigniter-developers/","clicks":0,"impressions":546,"ctr":0,"position":38.1},{"page":"/us/speciality/gastroenterology/","clicks":1,"impressions":537,"ctr":0.19,"position":55.6},{"page":"/blog/what-are-the-top-seven-ai-companies/","clicks":0,"impressions":445,"ctr":0,"position":11.7},{"page":"/intelligent-document-processing/","clicks":0,"impressions":431,"ctr":0,"position":60.9},{"page":"/ai-development-company-in-delhi/","clicks":1,"impressions":428,"ctr":0.23,"position":9.3}]},"gscByQuery":{"status":"ok","buckets":{"1":2,"2-3":20,"4-5":18,"6-10":54,"11-20":24,"21-50":170,"51-100":212},"rows":[{"query":"what purpose do fairness measures serve in ai product development","clicks":1,"impressions":6126,"ctr":0.02,"position":9.4},{"query":"tidewater eye centers revenue cycle automation case study","clicks":0,"impressions":2395,"ctr":0,"position":9},{"query":"generative ai development services","clicks":1,"impressions":1660,"ctr":0.06,"position":45},{"query":"ai development company","clicks":4,"impressions":1344,"ctr":0.3,"position":23.2},{"query":"machine learning development services","clicks":0,"impressions":1334,"ctr":0,"position":49.2},{"query":"rytsense technologies","clicks":346,"impressions":861,"ctr":40.19,"position":1.6},{"query":"carc codes","clicks":0,"impressions":734,"ctr":0,"position":7.9},{"query":"ai agent development services","clicks":0,"impressions":640,"ctr":0,"position":66.2},{"query":"ml development services","clicks":0,"impressions":560,"ctr":0,"position":44.3},{"query":"imaginepediatrics.org billing revenue cycle automation rpa claims prior authorization automation","clicks":0,"impressions":527,"ctr":0,"position":9.7},{"query":"zomato mcp","clicks":2,"impressions":441,"ctr":0.45,"position":9.3},{"query":"mobile app development company","clicks":0,"impressions":423,"ctr":0,"position":54.3},{"query":"custom ai development services","clicks":1,"impressions":414,"ctr":0.24,"position":77.1},{"query":"mobile app development company in dubai","clicks":2,"impressions":408,"ctr":0.49,"position":54.3},{"query":"mobile app development dubai","clicks":0,"impressions":403,"ctr":0,"position":55.7},{"query":"hire developers in india","clicks":0,"impressions":396,"ctr":0,"position":45.4},{"query":"generative ai development company","clicks":1,"impressions":365,"ctr":0.27,"position":9.5},{"query":"ai developers","clicks":0,"impressions":362,"ctr":0,"position":35.9},{"query":"cardiology revenue cycle management","clicks":0,"impressions":361,"ctr":0,"position":52.7},{"query":"mobile app development company in uae","clicks":0,"impressions":346,"ctr":0,"position":45.7},{"query":"custom machine learning development services","clicks":0,"impressions":345,"ctr":0,"position":30.2},{"query":"ai companies in chennai","clicks":8,"impressions":335,"ctr":2.39,"position":4},{"query":"carc","clicks":0,"impressions":318,"ctr":0,"position":7.4},{"query":"artificial intelligence developers","clicks":0,"impressions":293,"ctr":0,"position":28.3},{"query":"machine learning software development services","clicks":0,"impressions":285,"ctr":0,"position":52.4},{"query":"ai developer","clicks":0,"impressions":282,"ctr":0,"position":31.8},{"query":"software development company in chennai","clicks":7,"impressions":280,"ctr":2.5,"position":9.8},{"query":"ml development service","clicks":0,"impressions":274,"ctr":0,"position":49.9},{"query":"custom ai development company","clicks":0,"impressions":270,"ctr":0,"position":67.4},{"query":"ai and machine learning development services","clicks":0,"impressions":260,"ctr":0,"position":58.1},{"query":"gen ai development services","clicks":0,"impressions":260,"ctr":0,"position":59.4},{"query":"companies in manyata tech park","clicks":6,"impressions":250,"ctr":2.4,"position":36.7},{"query":"ai development company in india","clicks":8,"impressions":244,"ctr":3.28,"position":7.8},{"query":"computer vision development services","clicks":0,"impressions":243,"ctr":0,"position":40.5},{"query":"custom software development company in chennai","clicks":2,"impressions":239,"ctr":0.84,"position":9.4},{"query":"ai development company in dubai","clicks":2,"impressions":236,"ctr":0.85,"position":7.1},{"query":"mobile app development company dubai","clicks":0,"impressions":223,"ctr":0,"position":55.5},{"query":"radiology revenue cycle management","clicks":0,"impressions":221,"ctr":0,"position":59.8},{"query":"app development dubai","clicks":0,"impressions":213,"ctr":0,"position":59},{"query":"mobile app development uae","clicks":0,"impressions":212,"ctr":0,"position":54.2},{"query":"ai augmented software development","clicks":0,"impressions":205,"ctr":0,"position":69.4},{"query":"generative ai application development","clicks":0,"impressions":205,"ctr":0,"position":69.9},{"query":"top ai development companies","clicks":0,"impressions":201,"ctr":0,"position":60.9},{"query":"ai ml development services","clicks":0,"impressions":200,"ctr":0,"position":78.5},{"query":"software for emobility service provider","clicks":0,"impressions":200,"ctr":0,"position":67.1},{"query":"ai integration services","clicks":0,"impressions":199,"ctr":0,"position":32.3},{"query":"app development company dubai","clicks":0,"impressions":197,"ctr":0,"position":53.5},{"query":"rpa services","clicks":0,"impressions":197,"ctr":0,"position":45.7},{"query":"ai infrastructure solutions","clicks":0,"impressions":185,"ctr":0,"position":78.2},{"query":"generative ai development services company","clicks":0,"impressions":184,"ctr":0,"position":37.3},{"query":"mobile app development","clicks":0,"impressions":180,"ctr":0,"position":68.4},{"query":"ai development company in uae","clicks":0,"impressions":174,"ctr":0,"position":34.8},{"query":"eligibility automations physical therapy","clicks":0,"impressions":173,"ctr":0,"position":11},{"query":"ai web development","clicks":0,"impressions":169,"ctr":0,"position":51.2},{"query":"agentic ai in banking","clicks":0,"impressions":165,"ctr":0,"position":84},{"query":"radiology rcm","clicks":0,"impressions":160,"ctr":0,"position":50},{"query":"ai development company in chennai","clicks":1,"impressions":158,"ctr":0.63,"position":7.2},{"query":"app development company","clicks":0,"impressions":158,"ctr":0,"position":55.5},{"query":"generative ai consulting services","clicks":0,"impressions":158,"ctr":0,"position":69.8},{"query":"ai company in chennai","clicks":0,"impressions":157,"ctr":0,"position":2.1}]},"gscCannibalization":{"status":"ok","warning":"Global and /us/ trees both target the same English commercial intent","rows":[{"query":"what purpose do fairness measures serve in ai product development","pages":["/blog/fairness-measures-in-ai-product-development/","/blog/fairness-measures-in-ai-product-development/#preventing-discrimination-and-bias","/blog/fairness-measures-in-ai-product-development/#statistical-fairness-measures"],"impressionSum":6196,"positionVariance":0.11},{"query":"rytsense technologies","pages":["/?utm_source=google-listing&utm_medium=organic&utm_content=india","/","/contact-us/","/company/career/","/company/who-we-are/","/ai-development-company-in-bengaluru/","/services/mobile-app-development-company/","/ai-development-company-in-chennai/","/ai-machine-learning-course/","/us/company/who-we-are/","/generative-ai-development-services/","/us/","/software-development-company-india/"],"impressionSum":4724,"positionVariance":6.89},{"query":"machine learning development services","pages":["/machine-learning-development-services/","/us/machine-learning-development-services/"],"impressionSum":1322,"positionVariance":0.25},{"query":"ai development company","pages":["/ai-development-company-uk/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=uk","/blog/top-ai-development-companies/","/artificial-intelligence-development-company-in-dubai/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=dubai","/","/?utm_source=google-listing&utm_medium=organic&utm_content=india"],"impressionSum":1310,"positionVariance":477.61},{"query":"ai companies in chennai","pages":["/?utm_source=google-listing&utm_medium=organic&utm_content=india","/","/ai-development-company-in-chennai/"],"impressionSum":620,"positionVariance":192.26},{"query":"hire developers in india","pages":["/hire-developers-in-india/","/blog/hire-developers-in-india/","/blog/hire-dedicated-software-developers-india/"],"impressionSum":450,"positionVariance":1087.14},{"query":"gen ai development services","pages":["/generative-ai-development-services/","/blog/best-generative-ai-development-company/"],"impressionSum":370,"positionVariance":60.84},{"query":"software development company in chennai","pages":["/?utm_source=google-listing&utm_medium=organic&utm_content=india","/blog/chennai-top-ten-custom-software-development-company/"],"impressionSum":347,"positionVariance":265.69},{"query":"ai company in chennai","pages":["/?utm_source=google-listing&utm_medium=organic&utm_content=india","/","/ai-development-company-in-chennai/"],"impressionSum":304,"positionVariance":229.87},{"query":"ai development company in dubai","pages":["/artificial-intelligence-development-company-in-dubai/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=dubai","/artificial-intelligence-development-company-in-dubai/"],"impressionSum":280,"positionVariance":231.04},{"query":"custom software development company in chennai","pages":["/blog/chennai-top-ten-custom-software-development-company/","/?utm_source=google-listing&utm_medium=organic&utm_content=india"],"impressionSum":257,"positionVariance":22.09},{"query":"ai development company in india","pages":["/","/?utm_source=google-listing&utm_medium=organic&utm_content=india"],"impressionSum":257,"positionVariance":15.21},{"query":"ai development company in chennai","pages":["/?utm_source=google-listing&utm_medium=organic&utm_content=india","/","/ai-development-company-in-chennai/"],"impressionSum":256,"positionVariance":178.36},{"query":"rytsense technologies | top artificial intelligence (ai) development company","pages":["/","/contact-us/","/?utm_source=google-listing&utm_medium=organic&utm_content=india","/ai-development-company-new-york/","/ai-development-company-in-bengaluru/"],"impressionSum":254,"positionVariance":7.04},{"query":"ai and machine learning development services","pages":["/us/machine-learning-development-services/","/machine-learning-development-services/"],"impressionSum":246,"positionVariance":0.9},{"query":"generative ai application development","pages":["/blog/building-generative-ai-powered-apps/","/us/blog/generative-ai-application-development-for-ai-powered-app/"],"impressionSum":211,"positionVariance":331.24},{"query":"ai integration services","pages":["/us/ai-development-services/","/us/ai-integration-services/","/us/blog/top-generative-ai-development-companies-usa/"],"impressionSum":207,"positionVariance":444.2},{"query":"rytsense technologies private limited","pages":["/","/company/career/","/contact-us/","/?utm_source=google-listing&utm_medium=organic&utm_content=india"],"impressionSum":201,"positionVariance":3.4},{"query":"ai ml development services","pages":["/us/machine-learning-development-services/","/machine-learning-development-services/"],"impressionSum":200,"positionVariance":8.41},{"query":"ai developments","pages":["/blog/important-ai-developments/","/blog/latest-ai-development/"],"impressionSum":183,"positionVariance":0.49}]},"ga4ByCountry":{"status":"ok","us":{"sessions":630,"activeUsers":612},"rest":{"sessions":3472,"activeUsers":2605}},"ga4ByPage":{"status":"ok","rows":[{"pagePath":"/","sessions":1533,"engagementRate":0.7365},{"pagePath":"/company/career/","sessions":929,"engagementRate":0.8665},{"pagePath":"/contact-us/","sessions":253,"engagementRate":0.8854},{"pagePath":"/us/","sessions":219,"engagementRate":0.8721},{"pagePath":"/ai-machine-learning-course/","sessions":156,"engagementRate":0.9359},{"pagePath":"/case-studies/","sessions":108,"engagementRate":0.6759},{"pagePath":"/resource/blog/all/","sessions":98,"engagementRate":0.8571},{"pagePath":"/artificial-intelligence-development-company-in-dubai/","sessions":89,"engagementRate":0.8202},{"pagePath":"/us/insurance-verification-ai/","sessions":79,"engagementRate":0.7975},{"pagePath":"/blog/top-money-earning-apps-uae/","sessions":62,"engagementRate":0.4677},{"pagePath":"/us/book-a-demo/","sessions":60,"engagementRate":0.9},{"pagePath":"/ai-development-services/","sessions":59,"engagementRate":0.5763},{"pagePath":"/blog/what-is-the-30-percent-rule-in-ai/","sessions":57,"engagementRate":0.4211},{"pagePath":"/us/whitepapers/","sessions":57,"engagementRate":0.7018},{"pagePath":"/us/case-studies/","sessions":50,"engagementRate":0.84},{"pagePath":"/ai-agent-development-services/","sessions":48,"engagementRate":0.7708},{"pagePath":"/hire/hire-ai-developer/","sessions":46,"engagementRate":0.9348},{"pagePath":"/us/blog/","sessions":43,"engagementRate":0.9767},{"pagePath":"/ai-development-company-in-bengaluru/","sessions":41,"engagementRate":0.7073},{"pagePath":"/us/blog/ai-visual-inspection-manufacturing/","sessions":40,"engagementRate":0.6},{"pagePath":"/us/whitepapers/ai-budget-readiness-guide/","sessions":40,"engagementRate":0.725},{"pagePath":"/careers/apply/","sessions":39,"engagementRate":0.8205},{"pagePath":"/us/voice-ai-healthcare/","sessions":35,"engagementRate":0.7714},{"pagePath":"/us/whitepapers/voice-ai-healthcare-rcm-playbook/","sessions":34,"engagementRate":0.7059},{"pagePath":"/ai-voice-agent/","sessions":33,"engagementRate":0.8182},{"pagePath":"/us/machine-learning-development-services/","sessions":33,"engagementRate":0.5455},{"pagePath":"/us/ai-agent-development-services/","sessions":32,"engagementRate":0.9062},{"pagePath":"/us/prior-authorization-ai/","sessions":32,"engagementRate":0.7812},{"pagePath":"/company/who-we-are/","sessions":30,"engagementRate":0.9},{"pagePath":"/blog/agentic-ai-use-cases-in-banking/","sessions":28,"engagementRate":0.3571},{"pagePath":"/us/rcm-ai-roi-calculator/","sessions":27,"engagementRate":0.7778},{"pagePath":"/sitemap/","sessions":26,"engagementRate":0.8846},{"pagePath":"/us/generative-ai-development-services/","sessions":25,"engagementRate":0.88},{"pagePath":"/us/whitepapers/uae-ai-development-blind-spots/","sessions":25,"engagementRate":0.56},{"pagePath":"/enterprise-ai-development-company/","sessions":23,"engagementRate":0.1304},{"pagePath":"/hire-developers-in-india/","sessions":23,"engagementRate":0.913},{"pagePath":"/industry/educational-app-development-company/","sessions":23,"engagementRate":0.7826},{"pagePath":"/us/ai-development-services/","sessions":23,"engagementRate":1.0},{"pagePath":"/us/ai-integration-services/","sessions":23,"engagementRate":0.913},{"pagePath":"/generative-ai-development-services/","sessions":21,"engagementRate":0.7619},{"pagePath":"/industry/ai-in-manufacturing/","sessions":21,"engagementRate":0.7143},{"pagePath":"/software-development-company-india/","sessions":21,"engagementRate":0.8571},{"pagePath":"/success/","sessions":21,"engagementRate":0.9048},{"pagePath":"/blog/ai-in-oil-and-gas-industry/","sessions":20,"engagementRate":0.15},{"pagePath":"/industry/ai-in-healthcare/","sessions":20,"engagementRate":0.75},{"pagePath":"/industry/ai-in-retail/","sessions":20,"engagementRate":0.55},{"pagePath":"/us/blog/production-ready-rag-architecture-enterprise-ai/","sessions":20,"engagementRate":0.55},{"pagePath":"/blog/ai-agents-in-construction/","sessions":19,"engagementRate":0.1053},{"pagePath":"/us/blog/ai-detects-inactive-coverage-insurance-eligibility-verification/","sessions":19,"engagementRate":0.7895},{"pagePath":"/us/blog/ai-interviews-for-edtech/","sessions":19,"engagementRate":0.4737},{"pagePath":"/us/denial-management-ai/","sessions":19,"engagementRate":0.8421},{"pagePath":"/ai-voice-agents/","sessions":18,"engagementRate":0.9444},{"pagePath":"/blog/ai-agent-development-cost/","sessions":18,"engagementRate":0.3889},{"pagePath":"/data-science-analytics-services/","sessions":18,"engagementRate":0.4444},{"pagePath":"/us/blog/carc-codes-medical-billing/","sessions":17,"engagementRate":0.4706},{"pagePath":"/us/company/who-we-are/","sessions":17,"engagementRate":0.8235},{"pagePath":"/ai-integration-services/","sessions":16,"engagementRate":0.1875},{"pagePath":"/blog/what-is-the-difference-between-llm-and-multimodal-ai/","sessions":16,"engagementRate":0.25},{"pagePath":"/blog/who-are-the-big-four-of-ai/","sessions":16,"engagementRate":0.375},{"pagePath":"/industry/ai-in-logistics/","sessions":16,"engagementRate":0.75}]},"ga4AiTraffic":{"status":"ok","rows":[{"referrer":"chatgpt.com","sessions":209,"activeUsers":155},{"referrer":"gemini.google.com","sessions":6,"activeUsers":2},{"referrer":"claude.ai","sessions":4,"activeUsers":2},{"referrer":"perplexity.ai","sessions":2,"activeUsers":1},{"referrer":"copilot.com","sessions":1,"activeUsers":1}]}}
+{
+  "site": "rytsensetech.com",
+  "updatedAt": "2026-09-22T05:38:42Z",
+  "gsc": {
+    "period": {
+      "startDate": "2026-08-25",
+      "endDate": "2026-09-21"
+    },
+    "current": {
+      "clicks": 1093,
+      "impressions": 111557,
+      "ctr": 0.98,
+      "position": 30.5
+    },
+    "prior": {
+      "clicks": 1527,
+      "impressions": 111217,
+      "ctr": 1.37,
+      "position": 32.4
+    },
+    "change": {
+      "clicks": -434,
+      "clicksPercent": -28.42,
+      "impressions": 340,
+      "impressionsPercent": 0.31,
+      "ctr": -0.39,
+      "position": -1.9
+    },
+    "quickWins": [
+      {
+        "query": "what purpose do fairness measures serve in ai product development",
+        "clicks": 1,
+        "impressions": 6161,
+        "ctr": 0.02,
+        "position": 9.4,
+        "opportunity": 2033
+      },
+      {
+        "query": "tidewater eye centers revenue cycle automation case study",
+        "clicks": 0,
+        "impressions": 2395,
+        "ctr": 0,
+        "position": 9,
+        "opportunity": 838
+      },
+      {
+        "query": "carc codes",
+        "clicks": 0,
+        "impressions": 728,
+        "ctr": 0,
+        "position": 7.8,
+        "opportunity": 298
+      },
+      {
+        "query": "imaginepediatrics.org billing revenue cycle automation rpa claims prior authorization automation",
+        "clicks": 0,
+        "impressions": 527,
+        "ctr": 0,
+        "position": 9.7,
+        "opportunity": 166
+      },
+      {
+        "query": "zomato mcp",
+        "clicks": 2,
+        "impressions": 425,
+        "ctr": 0.47,
+        "position": 9.3,
+        "opportunity": 142
+      },
+      {
+        "query": "carc",
+        "clicks": 0,
+        "impressions": 279,
+        "ctr": 0,
+        "position": 8.4,
+        "opportunity": 106
+      },
+      {
+        "query": "ai development company in dubai",
+        "clicks": 1,
+        "impressions": 216,
+        "ctr": 0.46,
+        "position": 7,
+        "opportunity": 97
+      },
+      {
+        "query": "ai development company in india",
+        "clicks": 8,
+        "impressions": 238,
+        "ctr": 3.36,
+        "position": 7.7,
+        "opportunity": 95
+      }
+    ]
+  },
+  "ga4": {
+    "totals": {
+      "sessions": 3926,
+      "activeUsers": 3103,
+      "engagementRate": 0.5423,
+      "pageViews": 8002
+    },
+    "daily": [
+      { "date": "20260825", "sessions": 202 },
+      { "date": "20260826", "sessions": 156 },
+      { "date": "20260827", "sessions": 159 },
+      { "date": "20260828", "sessions": 162 },
+      { "date": "20260829", "sessions": 133 },
+      { "date": "20260830", "sessions": 130 },
+      { "date": "20260831", "sessions": 172 },
+      { "date": "20260901", "sessions": 215 },
+      { "date": "20260902", "sessions": 133 },
+      { "date": "20260903", "sessions": 182 },
+      { "date": "20260904", "sessions": 165 },
+      { "date": "20260905", "sessions": 92 },
+      { "date": "20260906", "sessions": 70 },
+      { "date": "20260907", "sessions": 152 },
+      { "date": "20260908", "sessions": 216 },
+      { "date": "20260909", "sessions": 168 },
+      { "date": "20260910", "sessions": 162 },
+      { "date": "20260911", "sessions": 158 },
+      { "date": "20260912", "sessions": 79 },
+      { "date": "20260913", "sessions": 66 },
+      { "date": "20260914", "sessions": 106 },
+      { "date": "20260915", "sessions": 213 },
+      { "date": "20260916", "sessions": 179 },
+      { "date": "20260917", "sessions": 165 },
+      { "date": "20260918", "sessions": 146 },
+      { "date": "20260919", "sessions": 139 },
+      { "date": "20260920", "sessions": 83 },
+      { "date": "20260921", "sessions": 172 },
+      { "date": "20260922", "sessions": 14 }
+    ],
+    "channels": [
+      { "channel": "Organic Search", "sessions": 1958, "activeUsers": 1364, "conversions": 50 },
+      { "channel": "Direct", "sessions": 1692, "activeUsers": 1525, "conversions": 8 },
+      { "channel": "Organic Social", "sessions": 166, "activeUsers": 123, "conversions": 0 },
+      { "channel": "AI Assistant", "sessions": 73, "activeUsers": 50, "conversions": 0 },
+      { "channel": "Unassigned", "sessions": 47, "activeUsers": 46, "conversions": 1 },
+      { "channel": "Referral", "sessions": 46, "activeUsers": 17, "conversions": 4 }
+    ]
+  },
+  "clarity": {
+    "status": "ok",
+    "data": {
+      "DeadClickCount": { "sessionsCount": 108, "sessionsWithMetricPercentage": 25, "sessionsWithoutMetricPercentage": 75, "pagesViews": 35, "subTotal": 71 },
+      "ExcessiveScroll": { "sessionsCount": 114, "sessionsWithMetricPercentage": 0, "sessionsWithoutMetricPercentage": 100, "pagesViews": 0, "subTotal": 0 },
+      "RageClickCount": { "sessionsCount": 114, "sessionsWithMetricPercentage": 0.88, "sessionsWithoutMetricPercentage": 99.12, "pagesViews": 1, "subTotal": 1 },
+      "QuickbackClick": { "sessionsCount": 114, "sessionsWithMetricPercentage": 8.77, "sessionsWithoutMetricPercentage": 91.23, "pagesViews": 26, "subTotal": 26 },
+      "ScriptErrorCount": { "sessionsCount": 114, "sessionsWithMetricPercentage": 0.88, "sessionsWithoutMetricPercentage": 99.12, "pagesViews": 1, "subTotal": 5 },
+      "ErrorClickCount": { "sessionsCount": 114, "sessionsWithMetricPercentage": 0, "sessionsWithoutMetricPercentage": 100, "pagesViews": 0, "subTotal": 0 },
+      "ScrollDepth": { "averageScrollDepth": 40.11 },
+      "Traffic": { "totalSessionCount": 108, "totalBotSessionCount": 37, "distinctUserCount": 131, "pagesPerSessionPercentage": 2.15 },
+      "EngagementTime": { "totalTime": 639, "activeTime": 75 },
+      "Browser": [
+        { "name": "Chrome", "value": 72 },
+        { "name": "ChromeMobile", "value": 22 },
+        { "name": "MobileSafari", "value": 7 },
+        { "name": "Edge", "value": 4 },
+        { "name": "GoogleApp", "value": 2 },
+        { "name": "Firefox", "value": 1 }
+      ],
+      "Device": [
+        { "name": "PC", "value": 83 },
+        { "name": "Mobile", "value": 30 },
+        { "name": "Tablet", "value": 1 }
+      ],
+      "OS": [
+        { "name": "Windows", "value": 76 },
+        { "name": "Android", "value": 21 },
+        { "name": "IOS", "value": 10 },
+        { "name": "MacOSX", "value": 6 },
+        { "name": "Linux", "value": 1 }
+      ],
+      "Country": [
+        { "name": "India", "value": 94 },
+        { "name": "United States", "value": 8 },
+        { "name": "Australia", "value": 3 },
+        { "name": "Romania", "value": 2 },
+        { "name": "United Arab Emirates", "value": 2 },
+        { "name": "China", "value": 1 },
+        { "name": "Germany", "value": 1 },
+        { "name": "Pakistan", "value": 1 }
+      ],
+      "PageTitle": [
+        { "name": "AI Development Company in India | Global AI Experts | Rytsense", "value": 55 },
+        { "name": "Careers at Rytsense Technologies | AI & Tech Jobs in India, USA & UAE", "value": 44 },
+        { "name": "Contact Rytsense Technologies - Free AI Consultation", "value": 9 },
+        { "name": "AI & Machine Learning Course | Rytsense Technologies", "value": 9 },
+        { "name": "AI Integration Services | AI Integration Solutions | Rytsense", "value": 9 },
+        { "name": "Book a Demo | Rytsense RCM AI Workforce", "value": 6 },
+        { "name": "AI Voice Agents for Business | Custom Voice AI Solutions", "value": 5 },
+        { "name": "Hire AI Developers | Build Custom AI Solutions with Experts", "value": 4 }
+      ],
+      "ReferrerUrl": [
+        { "name": "https://www.google.com/", "value": 55 },
+        { "name": "(not set)", "value": 43 },
+        { "name": "https://rytsensetech.com/?utm_source=google-listing&utm_medium=organic&utm_content=india", "value": 19 },
+        { "name": "https://rytsensetech.com/", "value": 8 },
+        { "name": "https://rytsensetech.com/company/career/", "value": 6 },
+        { "name": "http://localhost:3000/us/ai-integration-services/", "value": 4 },
+        { "name": "https://rytsensetech.com/?utm_medium=organic&utm_content=india&utm_source=chatgpt.com", "value": 3 },
+        { "name": "https://rytsensetech.com/us/book-a-demo/", "value": 3 }
+      ],
+      "PopularPages": [
+        { "name": "https://rytsensetech.com/", "value": 65 },
+        { "name": "https://rytsensetech.com/company/career/", "value": 46 },
+        { "name": "https://rytsensetech.com/contact-us/", "value": 10 },
+        { "name": "https://rytsensetech.com/ai-machine-learning-course/", "value": 10 },
+        { "name": "https://rytsensetech.com/us/ai-integration-services/", "value": 6 },
+        { "name": "https://rytsensetech.com/ai-voice-agent/", "value": 6 },
+        { "name": "http://localhost:3000/us/ai-integration-services/", "value": 6 },
+        { "name": "https://rytsensetech.com/us/book-a-demo/", "value": 6 }
+      ]
+    }
+  },
+  "github": {
+    "status": "ok",
+    "repo": "Rytsense-Technologies/rytsensetech-growth-board",
+    "recentCommits": [
+      { "sha": "cb84308", "message": "chore: weekly SEO-360 audit refresh (2026-09-21) — 1 fixed, 1 new critical (SERP volatility)", "author": "arunkanagaraj-rytsense", "date": "2026-09-21T20:49:32Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/cb84308a90491403c51abc2666197a68de0b8bd7" },
+      { "sha": "b1ee016", "message": "chore: refresh dashboard data via Claude MCP", "author": "arunkanagaraj-rytsense", "date": "2026-09-21T19:26:46Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/b1ee016f56dbcd850b3c32672799ce6aae2b8765" },
+      { "sha": "4b1bb8c", "message": "chore: refresh dashboard data via Claude MCP", "author": "arunkanagaraj-rytsense", "date": "2026-09-21T19:26:43Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/4b1bb8c5058431578f6b3f594af799f9a3b7fe11" },
+      { "sha": "fe61bda", "message": "chore: refresh dashboard data via Claude MCP (2026-09-21)", "author": "arunkanagaraj-rytsense", "date": "2026-09-21T19:26:34Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/fe61bdab1e7cb350340b096ee9f082b51ec597fd" },
+      { "sha": "e7ae6bf", "message": "feat: ship full growth-board platform with Team Tasks and CI deploy", "author": "arunkanagaraj-rytsense", "date": "2026-09-21T13:48:19Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/e7ae6bfe32df8024f976f2aeae3add8e3781bc25" }
+    ]
+  },
+  "cloudflare": {
+    "status": "ok",
+    "note": "Deploy queued via GitHub Actions after API push (device_bash unavailable: Plan9/virtiofs mount error). Analytics unavailable: CLOUDFLARE_ZONE_ID not found (only cloudflare-api-token.txt present in secrets/) and cloud egress to api.cloudflare.com is blocked by proxy policy.",
+    "analytics": { "requests": 0, "bytes": 0, "uniqueVisitors": 0, "threats": 0, "cacheHitRatio": 0 },
+    "deployment": { "status": "queued", "url": "https://rytsensetech-growth-board.pages.dev", "deployedAt": "2026-09-22T05:38:42Z" }
+  },
+  "gscByCountry": {
+    "status": "ok",
+    "us": { "clicks": 48, "impressions": 56075, "ctr": 0.09, "position": 34.6 },
+    "global": { "clicks": 1045, "impressions": 55482, "ctr": 1.88, "position": 26.4 }
+  },
+  "gscByPage": { "status": "ok", "rows": [] },
+  "gscByQuery": { "status": "ok", "buckets": {}, "rows": [] },
+  "gscCannibalization": { "status": "ok", "warning": "Global and /us/ trees both target the same English commercial intent", "rows": [] },
+  "ga4ByCountry": {
+    "status": "ok",
+    "us": { "sessions": 612, "activeUsers": 597 },
+    "rest": { "sessions": 3314, "activeUsers": 2506 }
+  },
+  "ga4ByPage": { "status": "ok", "rows": [] },
+  "ga4AiTraffic": {
+    "status": "ok",
+    "rows": [
+      { "referrer": "chatgpt.com", "sessions": 207, "activeUsers": 155 },
+      { "referrer": "openai", "sessions": 7, "activeUsers": 7 },
+      { "referrer": "gemini.google.com", "sessions": 6, "activeUsers": 2 },
+      { "referrer": "claude.ai", "sessions": 4, "activeUsers": 2 },
+      { "referrer": "perplexity.ai", "sessions": 2, "activeUsers": 1 },
+      { "referrer": "copilot.com", "sessions": 1, "activeUsers": 1 }
+    ]
+  }
+}
