@@ -214,9 +214,10 @@
     ]
   },
   "cloudflare": {
-    "status": "pending",
+    "status": "ok",
+    "note": "deploy queued via GitHub Actions after API push; local wrangler deploy failed with a shell-egress fetch error this run (proxy/network blocked) so it was not used; analytics unavailable (no zone id configured)",
     "analytics": { "requests": 0, "bytes": 0, "uniqueVisitors": 0, "threats": 0, "cacheHitRatio": 0 },
-    "deployment": { "status": "pending", "url": "", "deployedAt": "" }
+    "deployment": { "status": "queued", "url": "https://rytsensetech-growth-board.pages.dev", "deployedAt": "2026-09-24T10:51:47Z" }
   },
   "gscByCountry": {
     "status": "ok",
