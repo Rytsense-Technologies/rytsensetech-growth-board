@@ -1,1 +1,264 @@
-{&#10;  &quot;site&quot;: &quot;rytsensetech.com&quot;,&#10;  &quot;updatedAt&quot;: &quot;2026-09-22T08:03:55Z&quot;,&#10;  &quot;gsc&quot;: {&#10;    &quot;period&quot;: {&#10;      &quot;startDate&quot;: &quot;2026-08-25&quot;,&#10;      &quot;endDate&quot;: &quot;2026-09-21&quot;&#10;    },&#10;    &quot;current&quot;: {&#10;      &quot;clicks&quot;: 1108,&#10;      &quot;impressions&quot;: 112098,&#10;      &quot;ctr&quot;: 0.99,&#10;      &quot;position&quot;: 30.4&#10;    }&#10;  }&#10;}&#10;
+{
+  "site": "rytsensetech.com",
+  "updatedAt": "2026-09-24T05:45:50Z",
+  "gsc": {
+    "period": {
+      "startDate": "2026-08-27",
+      "endDate": "2026-09-23"
+    },
+    "current": {
+      "clicks": 1082,
+      "impressions": 108789,
+      "ctr": 0.99,
+      "position": 29.6
+    },
+    "prior": {
+      "clicks": 1456,
+      "impressions": 110620,
+      "ctr": 1.32,
+      "position": 33
+    },
+    "change": {
+      "clicks": -374,
+      "clicksPercent": -25.69,
+      "impressions": -1831,
+      "impressionsPercent": -1.66,
+      "ctr": -0.33,
+      "position": -3.4
+    },
+    "quickWins": [
+      {
+        "query": "what purpose do fairness measures serve in ai product development",
+        "clicks": 1,
+        "impressions": 6323,
+        "ctr": 0.02,
+        "position": 9.3,
+        "opportunity": 2118
+      },
+      {
+        "query": "tidewater eye centers revenue cycle automation case study",
+        "clicks": 0,
+        "impressions": 2395,
+        "ctr": 0,
+        "position": 9,
+        "opportunity": 838
+      },
+      {
+        "query": "carc codes",
+        "clicks": 0,
+        "impressions": 777,
+        "ctr": 0,
+        "position": 7.8,
+        "opportunity": 319
+      },
+      {
+        "query": "imaginepediatrics.org billing revenue cycle automation rpa claims prior authorization automation",
+        "clicks": 0,
+        "impressions": 527,
+        "ctr": 0,
+        "position": 9.7,
+        "opportunity": 166
+      },
+      {
+        "query": "zomato mcp",
+        "clicks": 2,
+        "impressions": 436,
+        "ctr": 0.46,
+        "position": 9.4,
+        "opportunity": 143
+      },
+      {
+        "query": "ai development company in india",
+        "clicks": 9,
+        "impressions": 239,
+        "ctr": 3.77,
+        "position": 7,
+        "opportunity": 103
+      },
+      {
+        "query": "ai development company in dubai",
+        "clicks": 2,
+        "impressions": 222,
+        "ctr": 0.9,
+        "position": 7.5,
+        "opportunity": 94
+      },
+      {
+        "query": "carc",
+        "clicks": 0,
+        "impressions": 247,
+        "ctr": 0,
+        "position": 8.5,
+        "opportunity": 93
+      }
+    ]
+  },
+  "ga4": {
+    "totals": {
+      "sessions": 4108,
+      "activeUsers": 3215,
+      "engagementRate": 0.5377,
+      "pageViews": 8271
+    },
+    "daily": [
+      { "date": "20260827", "sessions": 159 },
+      { "date": "20260828", "sessions": 162 },
+      { "date": "20260829", "sessions": 133 },
+      { "date": "20260830", "sessions": 130 },
+      { "date": "20260831", "sessions": 172 },
+      { "date": "20260901", "sessions": 215 },
+      { "date": "20260902", "sessions": 133 },
+      { "date": "20260903", "sessions": 182 },
+      { "date": "20260904", "sessions": 165 },
+      { "date": "20260905", "sessions": 92 },
+      { "date": "20260906", "sessions": 70 },
+      { "date": "20260907", "sessions": 152 },
+      { "date": "20260908", "sessions": 216 },
+      { "date": "20260909", "sessions": 168 },
+      { "date": "20260910", "sessions": 162 },
+      { "date": "20260911", "sessions": 158 },
+      { "date": "20260912", "sessions": 79 },
+      { "date": "20260913", "sessions": 66 },
+      { "date": "20260914", "sessions": 106 },
+      { "date": "20260915", "sessions": 213 },
+      { "date": "20260916", "sessions": 179 },
+      { "date": "20260917", "sessions": 165 },
+      { "date": "20260918", "sessions": 146 },
+      { "date": "20260919", "sessions": 139 },
+      { "date": "20260920", "sessions": 83 },
+      { "date": "20260921", "sessions": 172 },
+      { "date": "20260922", "sessions": 144 },
+      { "date": "20260923", "sessions": 157 },
+      { "date": "20260924", "sessions": 16 }
+    ],
+    "channels": [
+      { "channel": "Organic Search", "sessions": 2045, "activeUsers": 1409, "conversions": 49 },
+      { "channel": "Direct", "sessions": 1748, "activeUsers": 1585, "conversions": 8 },
+      { "channel": "Organic Social", "sessions": 170, "activeUsers": 124, "conversions": 0 },
+      { "channel": "AI Assistant", "sessions": 75, "activeUsers": 57, "conversions": 0 },
+      { "channel": "Unassigned", "sessions": 46, "activeUsers": 45, "conversions": 1 },
+      { "channel": "Referral", "sessions": 44, "activeUsers": 17, "conversions": 4 }
+    ]
+  },
+  "clarity": {
+    "status": "ok",
+    "data": {
+      "DeadClickCount": { "sessionsCount": 94, "sessionsWithMetricPercentage": 23.4, "sessionsWithoutMetricPercentage": 76.6, "pagesViews": 25, "subTotal": 35 },
+      "ExcessiveScroll": { "sessionsCount": 94, "sessionsWithMetricPercentage": 0, "sessionsWithoutMetricPercentage": 100, "pagesViews": 0, "subTotal": 0 },
+      "RageClickCount": { "sessionsCount": 94, "sessionsWithMetricPercentage": 0, "sessionsWithoutMetricPercentage": 100, "pagesViews": 0, "subTotal": 0 },
+      "QuickbackClick": { "sessionsCount": 94, "sessionsWithMetricPercentage": 12.77, "sessionsWithoutMetricPercentage": 87.23, "pagesViews": 17, "subTotal": 17 },
+      "ScriptErrorCount": { "sessionsCount": 94, "sessionsWithMetricPercentage": 0, "sessionsWithoutMetricPercentage": 100, "pagesViews": 0, "subTotal": 0 },
+      "ErrorClickCount": { "sessionsCount": 94, "sessionsWithMetricPercentage": 0, "sessionsWithoutMetricPercentage": 100, "pagesViews": 0, "subTotal": 0 },
+      "ScrollDepth": { "averageScrollDepth": 33.74 },
+      "Traffic": { "totalSessionCount": 94, "totalBotSessionCount": 31, "distinctUserCount": 102, "pagesPerSessionPercentage": 2.141843971631206 },
+      "EngagementTime": { "totalTime": 573, "activeTime": 63 },
+      "Browser": [
+        { "name": "Chrome", "value": 73 },
+        { "name": "ChromeMobile", "value": 12 },
+        { "name": "Edge", "value": 7 },
+        { "name": "GoogleApp", "value": 2 }
+      ],
+      "Device": [
+        { "name": "PC", "value": 80 },
+        { "name": "Mobile", "value": 14 }
+      ],
+      "OS": [
+        { "name": "Windows", "value": 70 },
+        { "name": "Android", "value": 12 },
+        { "name": "MacOSX", "value": 7 },
+        { "name": "Linux", "value": 3 },
+        { "name": "IOS", "value": 2 }
+      ],
+      "Country": [
+        { "name": "India", "value": 72 },
+        { "name": "United States", "value": 9 },
+        { "name": "Switzerland", "value": 3 },
+        { "name": "Pakistan", "value": 2 },
+        { "name": "Viet Nam", "value": 1 },
+        { "name": "Brazil", "value": 1 },
+        { "name": "Ukraine", "value": 1 },
+        { "name": "United Arab Emirates", "value": 1 }
+      ],
+      "PageTitle": [
+        { "name": "AI Development Company in India | Global AI Experts | Rytsense", "value": 42 },
+        { "name": "Careers at Rytsense Technologies | AI & Tech Jobs in India, USA & UAE", "value": 21 },
+        { "name": "Custom AI Development Company in USA | Rytsense Technologies", "value": 10 },
+        { "name": "AI Voice Receptionist for HVAC Contractors | Rytsense", "value": 6 },
+        { "name": "Security & Trust | Rytsense Technologies", "value": 6 },
+        { "name": "AI, Cloud & Technology Partnerships | Rytsense Technologies", "value": 6 },
+        { "name": "Contact Rytsense Technologies - Free AI Consultation", "value": 5 },
+        { "name": "10 Best AI Product Development Companies to Build Enterprise AI Solutions", "value": 5 }
+      ],
+      "ReferrerUrl": [
+        { "name": null, "value": 50 },
+        { "name": "https://www.google.com/", "value": 45 },
+        { "name": "https://rytsensetech.com/?utm_source=google-listing&utm_medium=organic&utm_content=india", "value": 11 },
+        { "name": "https://rytsensetech.com/", "value": 6 },
+        { "name": "https://rytsensetech.com/company/career/", "value": 4 },
+        { "name": "https://www.bing.com/", "value": 4 },
+        { "name": "https://rytsensetech.com/?utm_medium=organic&utm_content=india&utm_source=chatgpt.com", "value": 3 },
+        { "name": "https://www.linkedin.com/", "value": 2 }
+      ],
+      "PopularPages": []
+    }
+  },
+  "github": {
+    "status": "ok",
+    "repo": "Rytsense-Technologies/rytsensetech-growth-board",
+    "recentCommits": [
+      { "sha": "3654cf9", "message": "chore: refresh dashboard data via Claude MCP (history only \u2014 latest.json too large for Contents API this run, full copy written locally)", "author": "arunkanagaraj-rytsense", "date": "2026-09-23T19:31:41Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/3654cf97287b15a4ca110117535eb7be8473d2cd" },
+      { "sha": "bb21fe9", "message": "Weekly SEO-360 review 2026-09-22: C2 reclassified REGRESSED (dead-DNS canonical host confirmed), C3/C5 reclassified UNKNOWN (tooling-blocked / sample ambiguity, QA-gated), C4/C6 confirmed STILL_TRUE with fresh evidence. Pushed via GitHub API fallback (live board POST endpoints blocked by device/egress issues this run).", "author": "arunkanagaraj-rytsense", "date": "2026-09-22T08:15:01Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/bb21fe9c0c30f5754afdee22e1360a89906ff569" },
+      { "sha": "8ba0b0b", "message": "chore: refresh dashboard data via Claude MCP", "author": "arunkanagaraj-rytsense", "date": "2026-09-22T08:08:04Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/8ba0b0b906df6b15d56f201eae2ff084fcd2b2d9" },
+      { "sha": "4001e03", "message": "chore: refresh dashboard data via Claude MCP", "author": "arunkanagaraj-rytsense", "date": "2026-09-22T08:08:01Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/4001e03f18ce9a515b194121e77e3909c21680e2" },
+      { "sha": "fde839c", "message": "chore: refresh dashboard data via Claude MCP", "author": "arunkanagaraj-rytsense", "date": "2026-09-22T08:07:53Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/fde839c1360289c3d15bfeb120134dfb9981d55c" }
+    ]
+  },
+  "cloudflare": {
+    "status": "pending",
+    "analytics": { "requests": 0, "bytes": 0, "uniqueVisitors": 0, "threats": 0, "cacheHitRatio": 0 },
+    "deployment": { "status": "pending", "url": "", "deployedAt": "" }
+  },
+  "gscByCountry": {
+    "status": "ok",
+    "us": { "clicks": 42, "impressions": 54346, "ctr": 0.08, "position": 34 },
+    "global": { "clicks": 1040, "impressions": 54443, "ctr": 1.91, "position": 25.2 },
+    "note": "'global' computed from 169 non-US country rows (all countries returned by GSC for the period) plus a residual from long-tail rows outside that set."
+  },
+  "gscByPage": {
+    "status": "unavailable",
+    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json and local git commit acfad87, but could not be safely pushed to GitHub via this session's tool interface this run. No data was lost or shrunk -- see the local file for the complete rows."
+  },
+  "gscByQuery": {
+    "status": "unavailable",
+    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json and local git commit acfad87, but could not be safely pushed to GitHub via this session's tool interface this run. No data was lost or shrunk -- see the local file for the complete rows."
+  },
+  "gscCannibalization": {
+    "status": "unavailable",
+    "note": "Full row-level data (25 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json and local git commit acfad87, but could not be safely pushed to GitHub via this session's tool interface this run. No data was lost or shrunk -- see the local file for the complete rows."
+  },
+  "ga4ByCountry": {
+    "status": "ok",
+    "us": { "sessions": 629, "activeUsers": 611 },
+    "rest": { "sessions": 3479, "activeUsers": 2604 }
+  },
+  "ga4ByPage": {
+    "status": "unavailable",
+    "note": "Full row-level data (549 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json and local git commit acfad87, but could not be safely pushed to GitHub via this session's tool interface this run. No data was lost or shrunk -- see the local file for the complete rows."
+  },
+  "ga4AiTraffic": {
+    "status": "ok",
+    "rows": [
+      { "referrer": "chatgpt.com", "sessions": 218, "activeUsers": 170 },
+      { "referrer": "gemini.google.com", "sessions": 7, "activeUsers": 3 },
+      { "referrer": "openai", "sessions": 7, "activeUsers": 7 },
+      { "referrer": "claude.ai", "sessions": 4, "activeUsers": 2 },
+      { "referrer": "perplexity.ai", "sessions": 2, "activeUsers": 1 },
+      { "referrer": "gemini", "sessions": 1, "activeUsers": 1 },
+      { "referrer": "copilot.com", "sessions": 1, "activeUsers": 1 }
+    ]
+  },
+  "opportunities": {
+    "status": "unavailable",
+    "note": "Full row-level data (50 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json and local git commit acfad87, but could not be safely pushed to GitHub via this session's tool interface this run. No data was lost or shrunk -- see the local file for the complete rows."
+  }
+}
