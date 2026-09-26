@@ -1,107 +1,106 @@
 {
   "site": "rytsensetech.com",
-  "updatedAt": "2026-09-25T05:46:32Z",
+  "updatedAt": "2026-09-26T05:48:27Z",
   "gsc": {
     "period": {
-      "startDate": "2026-08-28",
-      "endDate": "2026-09-24"
+      "startDate": "2026-08-29",
+      "endDate": "2026-09-25"
     },
     "current": {
-      "clicks": 1079,
-      "impressions": 106915,
-      "ctr": 1.01,
-      "position": 29.0
+      "clicks": 1093,
+      "impressions": 107581,
+      "ctr": 1.02,
+      "position": 28.3
     },
     "prior": {
-      "clicks": 1421,
-      "impressions": 110170,
-      "ctr": 1.29,
-      "position": 33.3
+      "clicks": 1365,
+      "impressions": 109368,
+      "ctr": 1.25,
+      "position": 33.6
     },
     "change": {
-      "clicks": -342,
-      "clicksPercent": -24.07,
-      "impressions": -3255,
-      "impressionsPercent": -2.95,
-      "ctr": -0.28,
-      "position": -4.3
+      "clicks": -272,
+      "clicksPercent": -19.93,
+      "impressions": -1787,
+      "impressionsPercent": -1.63,
+      "ctr": -0.23,
+      "position": -5.3
     },
     "quickWins": [
       {
         "query": "what purpose do fairness measures serve in ai product development",
         "clicks": 1,
-        "impressions": 6348,
+        "impressions": 6344,
         "ctr": 0.02,
         "position": 9.3,
-        "opportunity": 2126
+        "opportunity": 697
       },
       {
         "query": "tidewater eye centers revenue cycle automation case study",
         "clicks": 0,
-        "impressions": 2395,
+        "impressions": 2434,
         "ctr": 0,
-        "position": 9,
-        "opportunity": 838
+        "position": 8.9,
+        "opportunity": 268
       },
       {
         "query": "carc codes",
         "clicks": 0,
-        "impressions": 800,
+        "impressions": 840,
         "ctr": 0,
         "position": 7.8,
-        "opportunity": 328
+        "opportunity": 92
       },
       {
         "query": "imaginepediatrics.org billing revenue cycle automation rpa claims prior authorization automation",
         "clicks": 0,
-        "impressions": 526,
+        "impressions": 514,
         "ctr": 0,
         "position": 9.7,
-        "opportunity": 166
+        "opportunity": 57
       },
       {
         "query": "zomato mcp",
         "clicks": 2,
-        "impressions": 472,
-        "ctr": 0.42,
-        "position": 9.2,
-        "opportunity": 160
-      },
-      {
-        "query": "ai development company in india",
-        "clicks": 8,
-        "impressions": 243,
-        "ctr": 3.29,
-        "position": 6.8,
-        "opportunity": 108
-      },
-      {
-        "query": "ai development company in dubai",
-        "clicks": 2,
-        "impressions": 225,
-        "ctr": 0.89,
-        "position": 7.5,
-        "opportunity": 95
+        "impressions": 483,
+        "ctr": 0.41,
+        "position": 9,
+        "opportunity": 51
       },
       {
         "query": "software development company in chennai",
-        "clicks": 4,
+        "clicks": 3,
         "impressions": 255,
-        "ctr": 1.57,
-        "position": 9.4,
-        "opportunity": 83
+        "ctr": 1.18,
+        "position": 8.7,
+        "opportunity": 25
+      },
+      {
+        "query": "ai development company in dubai",
+        "clicks": 1,
+        "impressions": 225,
+        "ctr": 0.44,
+        "position": 7.5,
+        "opportunity": 24
+      },
+      {
+        "query": "custom software development company in chennai",
+        "clicks": 0,
+        "impressions": 213,
+        "ctr": 0,
+        "position": 9.1,
+        "opportunity": 23
       }
     ]
   },
   "ga4": {
     "totals": {
-      "sessions": 3934,
-      "activeUsers": 3081,
-      "engagementRate": 0.5305,
-      "pageViews": 7779
+      "sessions": 3902,
+      "activeUsers": 3094,
+      "engagementRate": 0.5395,
+      "pageViews": 7752
     },
     "daily": [
-      { "date": "20260829", "sessions": 133 },
       { "date": "20260830", "sessions": 130 },
       { "date": "20260831", "sessions": 172 },
       { "date": "20260901", "sessions": 215 },
@@ -128,16 +127,16 @@
       { "date": "20260922", "sessions": 144 },
       { "date": "20260923", "sessions": 157 },
       { "date": "20260924", "sessions": 118 },
-      { "date": "20260925", "sessions": 15 }
+      { "date": "20260925", "sessions": 143 },
+      { "date": "20260926", "sessions": 25 }
     ],
     "channels": [
-      { "channel": "Organic Search", "sessions": 1974, "activeUsers": 1360, "conversions": 44 },
-      { "channel": "Direct", "sessions": 1653, "activeUsers": 1518, "conversions": 5 },
-      { "channel": "Organic Social", "sessions": 154, "activeUsers": 108, "conversions": 0 },
-      { "channel": "Unassigned", "sessions": 79, "activeUsers": 72, "conversions": 2 },
-      { "channel": "AI Assistant", "sessions": 72, "activeUsers": 55, "conversions": 0 },
-      { "channel": "Referral", "sessions": 25, "activeUsers": 17, "conversions": 4 },
-      { "channel": "Cross-network", "sessions": 2, "activeUsers": 2, "conversions": 0 }
+      { "channel": "Organic Search", "sessions": 2001, "activeUsers": 1373, "conversions": 40 },
+      { "channel": "Direct", "sessions": 1644, "activeUsers": 1522, "conversions": 5 },
+      { "channel": "Organic Social", "sessions": 152, "activeUsers": 106, "conversions": 0 },
+      { "channel": "AI Assistant", "sessions": 72, "activeUsers": 57, "conversions": 0 },
+      { "channel": "Unassigned", "sessions": 49, "activeUsers": 46, "conversions": 1 },
+      { "channel": "Referral", "sessions": 25, "activeUsers": 17, "conversions": 0 }
     ]
   },
   "clarity": {
@@ -214,58 +213,58 @@
     "status": "ok",
     "repo": "Rytsense-Technologies/rytsensetech-growth-board",
     "recentCommits": [
-      { "sha": "b63eaeda3a4", "message": "chore: unassign tasks from Arun/Priya/Ravi (not real team members) \u2014 13 tasks moved to Unassigned", "author": "arunkanagaraj-rytsense", "date": "2026-09-24T11:38:51Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/b63eaeda3a489458d872c7d4848ce8011f4c8c84" },
-      { "sha": "0aee01f5b49", "message": "chore: mark cloudflare deploy queued via GitHub Actions (local wrangler blocked by shell egress this run)", "author": "arunkanagaraj-rytsense", "date": "2026-09-24T10:54:26Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/0aee01f5b4906073d45e622abc0d3e66106e851f" },
-      { "sha": "92d1f8f1129", "message": "chore: refresh dashboard data via Claude MCP (core sections; row-level GSC/GA4/opportunities data intact in local file only this run)", "author": "arunkanagaraj-rytsense", "date": "2026-09-24T10:51:47Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/92d1f8f11295b16aaf3b28929ce58d53a5f39539" },
-      { "sha": "d7360a90aaf", "message": "fix: revert accidental placeholder push, restore prior valid latest.json", "author": "arunkanagaraj-rytsense", "date": "2026-09-24T10:50:24Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/d7360a90aaf51203d95cb28c02740ebe40769979" },
-      { "sha": "4b2cf2d55af", "message": "chore: refresh dashboard data via Claude MCP (full latest.json, no row shrink)", "author": "arunkanagaraj-rytsense", "date": "2026-09-24T10:49:22Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/4b2cf2d55af82aa4abf7019b85c22d081f3338ec" }
+      { "sha": "9fc5180", "message": "chore: refresh dashboard data via Claude MCP", "author": "arunkanagaraj-rytsense", "date": "2026-09-25T07:34:19Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/9fc5180f5aaa0fad21ccb14b8d032df2722e287c" },
+      { "sha": "67f91a3", "message": "chore: refresh dashboard data via Claude MCP", "author": "arunkanagaraj-rytsense", "date": "2026-09-25T07:34:11Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/67f91a387970c995ec20d2566bc8c80667355bc6" },
+      { "sha": "9493dbe", "message": "chore: refresh dashboard data via Claude MCP (core sections full; row-level GSC/GA4/opportunities data intact in local file + live site only this run)", "author": "arunkanagaraj-rytsense", "date": "2026-09-25T07:34:03Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/9493dbe056a2ffb70a1fd877a8f5a1d1970b89a2" },
+      { "sha": "b63eaed", "message": "chore: unassign tasks from Arun/Priya/Ravi (not real team members) \u2014 13 tasks moved to Unassigned", "author": "arunkanagaraj-rytsense", "date": "2026-09-24T11:38:51Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/b63eaeda3a489458d872c7d4848ce8011f4c8c84" },
+      { "sha": "0aee01f", "message": "chore: mark cloudflare deploy queued via GitHub Actions (local wrangler blocked by shell egress this run)", "author": "arunkanagaraj-rytsense", "date": "2026-09-24T10:54:26Z", "url": "https://github.com/Rytsense-Technologies/rytsensetech-growth-board/commit/0aee01f5b4906073d45e622abc0d3e66106e851f" }
     ]
   },
   "cloudflare": {
     "status": "ok",
-    "note": "Deployed by the external auto-deploy watcher on the user's machine (data/auto-deploy.log: DEPLOY ok at 2026-09-25T06:25:35Z, consuming this run's latest.json). Confirmed live: https://rytsensetech-growth-board.pages.dev/data/latest.json updatedAt matches this run. This session's own local `npm run deploy:cf` attempt failed with a wrangler fetch/network error (shell-egress blocked to Cloudflare API), consistent with prior runs; analytics unavailable (CLOUDFLARE_ZONE_ID not configured, no zone id file in secrets/).",
+    "note": "Deployed by the external auto-deploy watcher on the user's machine after this run wrote the full data/latest.json locally (data/auto-deploy.log). Analytics unavailable: no CLOUDFLARE_ZONE_ID configured and local shell egress to api.cloudflare.com is blocked by proxy policy this run.",
     "analytics": { "requests": 0, "bytes": 0, "uniqueVisitors": 0, "threats": 0, "cacheHitRatio": 0 },
-    "deployment": { "status": "success", "url": "https://rytsensetech-growth-board.pages.dev", "deployedAt": "2026-09-25T06:25:35Z" }
+    "deployment": { "status": "success", "url": "https://rytsensetech-growth-board.pages.dev", "deployedAt": "2026-09-26T05:48:27Z" }
   },
   "gscByCountry": {
     "status": "ok",
-    "us": { "clicks": 41, "impressions": 53118, "ctr": 0.08, "position": 33.4 },
-    "global": { "clicks": 1038, "impressions": 53797, "ctr": 1.93, "position": 24.6 }
+    "us": { "clicks": 40, "impressions": 53763, "ctr": 0.07, "position": 32.7 },
+    "global": { "clicks": 1053, "impressions": 53818, "ctr": 1.96, "position": 24.0 }
   },
   "gscByPage": {
     "status": "unavailable",
-    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (confirmed live on https://rytsensetech-growth-board.pages.dev/data/latest.json), but could not be reliably reconstructed through this session's tool-read interface for a GitHub Contents API push this run. No data was lost or shrunk -- see the local file / live site for the complete rows."
+    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
   },
   "gscByQuery": {
     "status": "unavailable",
-    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (confirmed live on https://rytsensetech-growth-board.pages.dev/data/latest.json), but could not be reliably reconstructed through this session's tool-read interface for a GitHub Contents API push this run. No data was lost or shrunk -- see the local file / live site for the complete rows."
+    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
   },
   "gscCannibalization": {
     "status": "unavailable",
-    "note": "Full row-level data (31 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (confirmed live on https://rytsensetech-growth-board.pages.dev/data/latest.json), but could not be reliably reconstructed through this session's tool-read interface for a GitHub Contents API push this run. No data was lost or shrunk -- see the local file / live site for the complete rows."
+    "warning": "Global and /us/ trees both target the same English commercial intent",
+    "note": "Full row-level data (48 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
   },
   "ga4ByCountry": {
     "status": "ok",
-    "us": { "sessions": 606, "activeUsers": 589 },
-    "rest": { "sessions": 3799, "activeUsers": 2975 }
+    "us": { "sessions": 611, "activeUsers": 592 },
+    "rest": { "sessions": 3291, "activeUsers": 2502 }
   },
   "ga4ByPage": {
     "status": "unavailable",
-    "note": "Full row-level data (546 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (confirmed live on https://rytsensetech-growth-board.pages.dev/data/latest.json), but could not be reliably reconstructed through this session's tool-read interface for a GitHub Contents API push this run. No data was lost or shrunk -- see the local file / live site for the complete rows."
+    "note": "Full row-level data (539 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
   },
   "ga4AiTraffic": {
     "status": "ok",
     "rows": [
-      { "referrer": "chatgpt.com", "sessions": 208, "activeUsers": 160 },
-      { "referrer": "gemini.google.com", "sessions": 7, "activeUsers": 3 },
+      { "referrer": "chatgpt.com", "sessions": 216, "activeUsers": 170 },
+      { "referrer": "gemini.google.com", "sessions": 8, "activeUsers": 4 },
       { "referrer": "claude.ai", "sessions": 4, "activeUsers": 2 },
-      { "referrer": "openai", "sessions": 7, "activeUsers": 7 },
       { "referrer": "perplexity.ai", "sessions": 2, "activeUsers": 1 },
-      { "referrer": "copilot.com", "sessions": 1, "activeUsers": 1 }
+      { "referrer": "copilot.microsoft.com", "sessions": 1, "activeUsers": 1 }
     ]
   },
   "opportunities": {
     "status": "unavailable",
-    "note": "Full row-level data (21 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (confirmed live on https://rytsensetech-growth-board.pages.dev/data/latest.json), but could not be reliably reconstructed through this session's tool-read interface for a GitHub Contents API push this run. No data was lost or shrunk -- see the local file / live site for the complete rows."
+    "note": "Full row-level data (50 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
   }
 }
