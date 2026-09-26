@@ -222,9 +222,9 @@
   },
   "cloudflare": {
     "status": "ok",
-    "note": "Deployed by the external auto-deploy watcher on the user's machine after this run wrote the full data/latest.json locally (data/auto-deploy.log). Analytics unavailable: no CLOUDFLARE_ZONE_ID configured and local shell egress to api.cloudflare.com is blocked by proxy policy this run.",
+    "note": "Full data/latest.json written locally via the device bridge and pushed to GitHub successfully this run. The on-machine auto-deploy watcher (data/auto-deploy.log) had not picked up this run's file by the time this run finished, so live Cloudflare deployment is not yet confirmed for this run -- it should pick up on its next cycle. Analytics unavailable: no CLOUDFLARE_ZONE_ID configured and local shell egress to api.cloudflare.com is blocked by proxy policy.",
     "analytics": { "requests": 0, "bytes": 0, "uniqueVisitors": 0, "threats": 0, "cacheHitRatio": 0 },
-    "deployment": { "status": "success", "url": "https://rytsensetech-growth-board.pages.dev", "deployedAt": "2026-09-26T05:48:27Z" }
+    "deployment": { "status": "queued", "url": "https://rytsensetech-growth-board.pages.dev", "deployedAt": "2026-09-26T05:48:27Z" }
   },
   "gscByCountry": {
     "status": "ok",
@@ -233,16 +233,16 @@
   },
   "gscByPage": {
     "status": "unavailable",
-    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
+    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json, but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local copy -- see the local file (and the live site once the auto-deploy watcher picks it up) for the complete rows."
   },
   "gscByQuery": {
     "status": "unavailable",
-    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
+    "note": "Full row-level data (500 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json, but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local copy -- see the local file (and the live site once the auto-deploy watcher picks it up) for the complete rows."
   },
   "gscCannibalization": {
     "status": "unavailable",
     "warning": "Global and /us/ trees both target the same English commercial intent",
-    "note": "Full row-level data (48 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
+    "note": "Full row-level data (48 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json, but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local copy -- see the local file (and the live site once the auto-deploy watcher picks it up) for the complete rows."
   },
   "ga4ByCountry": {
     "status": "ok",
@@ -251,7 +251,7 @@
   },
   "ga4ByPage": {
     "status": "unavailable",
-    "note": "Full row-level data (539 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
+    "note": "Full row-level data (539 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json, but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local copy -- see the local file (and the live site once the auto-deploy watcher picks it up) for the complete rows."
   },
   "ga4AiTraffic": {
     "status": "ok",
@@ -265,6 +265,6 @@
   },
   "opportunities": {
     "status": "unavailable",
-    "note": "Full row-level data (50 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json (and picked up by the on-machine auto-deploy watcher, confirmed live at https://rytsensetech-growth-board.pages.dev/data/latest.json), but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local/live copy -- see the local file or the live site for the complete rows."
+    "note": "Full row-level data (50 rows) was computed successfully and written to the local E:\\growth-board\\data\\latest.json, but this session's tool interface could not reliably inline a payload this large into a single GitHub Contents API call this run without risking corruption via manual reconstruction. No data was lost or shrunk in the authoritative local copy -- see the local file (and the live site once the auto-deploy watcher picks it up) for the complete rows."
   }
 }
