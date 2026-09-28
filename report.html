@@ -10,6 +10,43 @@
 <link rel="stylesheet" href="assets/rts-report.css">
 <link rel="stylesheet" href="assets/site-nav.css">
 <style>html,body{margin:0;background:#f4f6f5}html[data-theme="dark"],html[data-theme="dark"] body{background:#0e1416}</style>
+<style>
+  /* Provenance UI for this page.
+   *
+   * WHY these live here rather than coming from assets/board-tokens.css:
+   * that file also redefines the whole :root palette, which this report does
+   * not share (it runs on the .rts-report scale in assets/rts-report.css).
+   * Pulling it in for four classes would silently restyle every element on the
+   * page. Same class NAMES as index/platform/ops so the vocabulary is
+   * identical; values mapped onto this page's own tokens.
+   */
+
+  /* A pill that names WHERE a number came from. It replaced a pill that said
+     "Verified" — see the tile() comment in the script for why that was a lie. */
+  .rts-report .srcpill.sp-src {
+    background: var(--info-soft);
+    color: var(--info);
+  }
+
+  /* "sample · 30 of 500 rows". A truncated table must say so in its own
+     heading, not in a footnote under the fold. */
+  .rts-report .gb-sample {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: none;
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+
+  /* Value that was never retrieved. Greyed so it cannot be read as a figure. */
+  .rts-report .tile .v.gb-nm { color: var(--ink-3); }
+</style>
 <script>
 (function(){
   try{
@@ -126,23 +163,94 @@
   </div>
 </div>
 
+<script src="assets/board-format.js"></script>
 <script>
 (function(){
-  var fmt=new Intl.NumberFormat('en-US');
-  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-  function num(n){if(n==null||n===''||isNaN(n))return '–';return fmt.format(Math.round(+n))}
-  function pct(n,d){if(n==null||isNaN(n))return '–';return (+n).toFixed(d==null?1:d)+'%'}
+  /* Formatters come from assets/board-format.js — this page used to carry its
+     own esc/num/pct, and they had already drifted from the other four pages
+     (report's pct() took a decimals argument, everyone else's was hardcoded to
+     1dp, so the same CTR printed differently depending on the page you opened).
+     esc() is unchanged in behaviour: every interpolated value still goes
+     through it, which is why this app has no XSS. Do not regress that. */
+  var esc=GB.esc, num=GB.num, pct=GB.pct, pos=GB.pos, NM=GB.NOT_MEASURED;
+
   function pendNote(extra){
-    return '<div class="pendbar"><span class="pill">Pending</span><p class="note"><strong>Values read 0 because no data source is attached.</strong> This is a not-measured state, not a measured zero.'+(extra?' '+extra:'')+'</p></div>';
+    return '<div class="pendbar"><span class="pill">Pending</span><p class="note"><strong>These figures read &ldquo;'+esc(NM)+'&rdquo; because no data source is attached.</strong> Nothing here was measured — it is not a measured zero.'+(extra?' '+extra:'')+'</p></div>';
   }
+
+  /* A standing caveat that is NOT conditional on the live sources.
+     THE DEFECT (#3): this bar used to be printed by `if(!execLive)`, so the
+     moment Search Console and GA4 started answering it disappeared — and
+     "Leads: 0" and "Referring domains: 0" were left sitting in the same tile
+     row as real clicks and sessions, with nothing left on screen to say that
+     no CRM and no Ahrefs account have ever been connected. The sources that
+     are not connected do not become connected because other ones are. */
+  function notConnectedNote(sources){
+    return '<div class="pendbar"><span class="pill">Not connected</span><p class="note"><strong>'+
+      esc(sources.join(' and '))+' '+(sources.length>1?'are':'is')+' not connected.</strong> '+
+      'Those tiles read &ldquo;'+esc(NM)+'&rdquo;, never 0 — nobody has wired the source up, so no '+
+      'value exists to be zero.</p></div>';
+  }
+
+  /* Render a source’s own note (truncation, tool ceilings, caveats).
+     gscByPage/gscByQuery/ga4ByPage each ship a `note` saying the rows were
+     capped, and this page rendered none of them. */
+  function sourceNote(text){
+    if(!text) return '';
+    return '<div class="pendbar"><span class="pill">Source note</span><p class="note">'+esc(text)+'</p></div>';
+  }
+
+  /* Audit findings carry the engagement window they came out of, the same way
+     GSC/GA4 figures carry theirs. Plain text; the caller escapes. */
+  function auditWindowOf(a){
+    return (a&&a.auditedRange)?('audit '+a.auditedRange):'audit window not stated';
+  }
+
+  /* "GSC · Aug 30 – Sep 26" — the window a figure covers, printed beside it.
+     gsc.period was in latest.json and was rendered on zero pages.
+     Returns PLAIN text: the single caller escapes it. */
+  function windowLine(source, period, updatedAt){
+    var label=GB.periodLabel(period);
+    if(!label) return source+' · window not stated in feed';
+    return source+' · '+label+(GB.isProvisional(period, updatedAt)?' · last '+GB.GSC_LAG_DAYS+'d provisional':'');
+  }
+
+  /* One tile.
+   *
+   * THE DEFECT (#1): the pill used to read "Verified" whenever `live` was
+   * truthy — and `live` was set from nothing more than "does this key exist in
+   * latest.json" (`live:!!(g.current)`, `live:ok(section)`). Nothing on this
+   * page verifies anything. The board stamped "Verified" on a corpus total
+   * computed from a 30-row sample (#2) and on figures whose window it never
+   * printed. A pill can state PROVENANCE — which source, which window. It
+   * cannot state verification, so there is no longer a state that claims it.
+   *
+   * Three honest states:
+   *   live    — the named source returned this figure in this sync
+   *   pending — the source is wired but returned nothing this run
+   *   none    — nobody has ever connected this source (CRM, Ahrefs, Ads)
+   */
   function tile(opts){
-    var live=!!opts.live;
-    var cls='tile '+(live?'is-live':'is-pending')+(opts.crit?' is-crit':'')+(opts.good?' is-good':'');
+    var st=opts.state||(opts.live?'live':'pending');
+    var live=st==='live';
+    var none=st==='none';
+    var src=opts.source||'—';
+    var value=none?NM:(opts.v==null||opts.v===''?NM:String(opts.v));
+    var isNm=value===NM;
+    var cls='tile '+(live?'is-live':'is-pending')+(opts.crit&&live?' is-crit':'')+(opts.good&&live?' is-good':'');
     var pill=live
-      ?'<span class="srcpill sp-live">Verified</span>'
-      :'<span class="srcpill sp-pend">'+esc(opts.source||'—')+'</span>';
-    return '<div class="'+cls+'"><div class="k">'+esc(opts.k)+'</div><div class="v mono">'+esc(opts.v)+'</div>'+
-      (opts.s?'<div class="s">'+esc(opts.s)+'</div>':'')+pill+'</div>';
+      ?'<span class="srcpill sp-src">'+esc(src)+'</span>'
+      :'<span class="srcpill sp-pend">'+esc(src+(none?' · not connected':' · pending'))+'</span>';
+    var sub=opts.s||'';
+    /* hasOwnProperty, not `!== undefined`: ga4 ships no `period` at all, and
+       "window not stated in feed" is exactly the thing a reader needs told. */
+    if(live&&Object.prototype.hasOwnProperty.call(opts,'period')){
+      var w=windowLine(src,opts.period,opts.updatedAt);
+      sub=sub?(sub+' · '+w):w;
+    }
+    else if(none&&!sub) sub='No value was retrieved — this is not a measured zero.';
+    return '<div class="'+cls+'"><div class="k">'+esc(opts.k)+'</div><div class="v mono'+(isNm?' gb-nm':'')+'">'+esc(value)+'</div>'+
+      (sub?'<div class="s">'+esc(sub)+'</div>':'')+pill+'</div>';
   }
   function scoreBar(score,max,mod){
     var m=max||5,s=Math.max(0,Math.min(m,+score||0));
@@ -198,26 +306,31 @@
   /* —— Audit sections —— */
   function renderSummary(a){
     var b=a.baselines||{};
+    /* Audit figures are findings from a dated manual engagement, not a live
+       measurement — so they name that engagement's window, same as the GSC and
+       GA4 tiles name theirs. `Audit` is the source; nothing here is "Verified". */
+    var auditWindow=auditWindowOf(a);
     var html='<p class="lede">'+esc(a.verdict.summary)+'</p>';
     html+='<div class="tiles four">'+
-      tile({k:'Critical',v:a.verdict.criticalCount,live:true,crit:true,s:'Open blockers'})+
-      tile({k:'High',v:a.verdict.highCount,live:true,s:'Priority defects'})+
-      tile({k:'URLs audited',v:num(a.pageInventory.totalUrls),live:true,s:a.auditedRange})+
-      tile({k:'US top-10 queries',v:b.usCommercialQueriesInTop10||'0/30',live:true,crit:true,s:'Commercial set'})+
+      tile({k:'Critical',v:a.verdict.criticalCount,live:true,crit:true,source:'Audit',s:'Open blockers · '+auditWindow})+
+      tile({k:'High',v:a.verdict.highCount,live:true,source:'Audit',s:'Priority defects · '+auditWindow})+
+      tile({k:'URLs audited',v:num(a.pageInventory.totalUrls),live:true,source:'Audit',s:auditWindow})+
+      tile({k:'US top-10 queries',v:b.usCommercialQueriesInTop10,live:true,crit:true,source:'Audit',s:'Commercial set · '+auditWindow})+
       '</div>';
     html+='<div class="h2">Dimension scores</div><div class="tiles">';
     a.scores.forEach(function(s){
       var mod=s.score<=2?'c':(s.score>=4?'g':'');
       html+='<div class="tile is-live"><div class="k">'+esc(s.dimension)+'</div>'+
         '<div class="v mono" style="font-size:20px">'+(s.score)+'<span style="font-size:12px;color:var(--ink-3)">/'+s.max+'</span></div>'+
-        scoreBar(s.score,s.max,mod)+'<span class="srcpill sp-live">Verified</span></div>';
+        scoreBar(s.score,s.max,mod)+'<span class="srcpill sp-src">Audit</span></div>';
     });
     html+='</div>';
     html+='<div class="h2">Baselines</div><div class="tiles four">'+
-      tile({k:'Blog posts',v:num(b.blogPosts),live:true})+
-      tile({k:'US service pages',v:num(b.usServicePages),live:true})+
-      tile({k:'AI cite non-brand',v:pct((b.aiCitationRateNonBranded||0)*100),live:true})+
-      tile({k:'SoV vs LeewayHertz',v:b.aiShareOfVoiceVsLeewayHertz||'—',live:true})+
+      tile({k:'Blog posts',v:num(b.blogPosts),live:true,source:'Audit',s:auditWindow})+
+      tile({k:'US service pages',v:num(b.usServicePages),live:true,source:'Audit',s:auditWindow})+
+      /* `(x||0)*100` turned a missing rate into a measured 0.0%. Pass null. */
+      tile({k:'AI cite non-brand',v:pct(b.aiCitationRateNonBranded==null?null:b.aiCitationRateNonBranded*100),live:true,source:'Audit',s:auditWindow})+
+      tile({k:'SoV vs LeewayHertz',v:b.aiShareOfVoiceVsLeewayHertz,live:true,source:'Audit',s:auditWindow})+
       '</div>';
     document.getElementById('summary').innerHTML=html;
   }
@@ -277,10 +390,10 @@
     var th=a.technicalHealth;
     var html='<p class="lede">'+th.passing+'/'+th.totalChecks+' checks passing · '+th.failing+' failing.</p>';
     html+='<div class="tiles four">'+
-      tile({k:'Passing',v:th.passing,live:true,good:true})+
-      tile({k:'Failing',v:th.failing,live:true,crit:true})+
-      tile({k:'Warn',v:th.checks.filter(function(c){return c.status==='warn'}).length,live:true})+
-      tile({k:'Total',v:th.totalChecks,live:true})+
+      tile({k:'Passing',v:th.passing,live:true,good:true,source:'Audit',s:auditWindowOf(a)})+
+      tile({k:'Failing',v:th.failing,live:true,crit:true,source:'Audit',s:auditWindowOf(a)})+
+      tile({k:'Warn',v:th.checks.filter(function(c){return c.status==='warn'}).length,live:true,source:'Audit',s:auditWindowOf(a)})+
+      tile({k:'Total',v:th.totalChecks,live:true,source:'Audit',s:auditWindowOf(a)})+
       '</div><div class="h2">Checks</div><div class="stack">';
     th.checks.forEach(function(c){
       var sev=c.status==='fail'?'crit':(c.status==='warn'?'warn':'good');
@@ -313,11 +426,13 @@
     var inv=a.pageInventory;
     var max=Math.max.apply(null,inv.segments.map(function(s){return s.urls}))||1;
     var html='<p class="lede">'+num(inv.totalUrls)+' URLs · '+num(inv.globalUrls)+' global / '+num(inv.usUrls)+' US · '+num(inv.unlinkedBlogToMoney)+' posts unlinked to money pages.</p>';
+    /* pageInventory.note is in audit.json and was rendered nowhere. */
+    html+=sourceNote(inv.note);
     html+='<div class="tiles four">'+
-      tile({k:'Total URLs',v:num(inv.totalUrls),live:true})+
-      tile({k:'Blog posts',v:num(inv.blogPostCount),live:true})+
-      tile({k:'Unlinked blogs',v:num(inv.unlinkedBlogToMoney),live:true,crit:true})+
-      tile({k:'US URLs',v:num(inv.usUrls),live:true})+
+      tile({k:'Total URLs',v:num(inv.totalUrls),live:true,source:'Audit',s:auditWindowOf(a)})+
+      tile({k:'Blog posts',v:num(inv.blogPostCount),live:true,source:'Audit',s:auditWindowOf(a)})+
+      tile({k:'Unlinked blogs',v:num(inv.unlinkedBlogToMoney),live:true,crit:true,source:'Audit',s:auditWindowOf(a)})+
+      tile({k:'US URLs',v:num(inv.usUrls),live:true,source:'Audit',s:auditWindowOf(a)})+
       '</div><div class="h2">Sitemap segments</div>';
     inv.segments.forEach(function(s){
       var w=(s.urls/max*100).toFixed(1);
@@ -364,23 +479,31 @@
     var L=state.live||{};
     var a=state.audit||{};
     var g=L.gsc||{}, ga=L.ga4||{};
+    var syncedAt=L.updatedAt;
+    var gPeriod=g.period, gaPeriod=ga.period;
 
     /* m-exec — live from core gsc/ga4 */
     var execLive=!!(g.current&&ga.totals);
     setNavState('m-exec', execLive?'good':'pend');
     var ch=(ga.channels)||[];
     function chFind(n){var x=ch.find(function(c){return c.channel===n});return x?x.sessions:null}
-    var hex='<p class="lede">Organic pulse from the daily growth-board refresh. Leads and backlinks stay pending until Phase 4 vendors connect.</p>';
+    var hex='<p class="lede">Organic pulse from the daily growth-board refresh. Leads and backlinks have no vendor attached at all.</p>';
+    /* Unconditional: see notConnectedNote(). Whether GSC and GA4 answered has
+       no bearing on whether a CRM or Ahrefs account exists. */
+    hex+=notConnectedNote(['CRM (leads)','Ahrefs (referring domains)']);
     if(!execLive) hex+=pendNote();
     hex+='<div class="h2">Metrics</div><div class="tiles four">'+
-      tile({k:'Clicks 28d',v:num(g.current&&g.current.clicks),live:!!(g.current),source:'GSC',s:g.change?((g.change.clicksPercent>0?'+':'')+pct(g.change.clicksPercent)+' vs prior'):'',crit:g.change&&g.change.clicksPercent<=-15})+
-      tile({k:'Impressions',v:num(g.current&&g.current.impressions),live:!!(g.current),source:'GSC'})+
-      tile({k:'CTR',v:g.current?pct(g.current.ctr):'–',live:!!(g.current),source:'GSC'})+
-      tile({k:'Avg position',v:g.current&&g.current.position!=null?Number(g.current.position).toFixed(1):'–',live:!!(g.current),source:'GSC'})+
-      tile({k:'Sessions',v:num(ga.totals&&ga.totals.sessions),live:!!(ga.totals),source:'GA4'})+
-      tile({k:'Organic Search',v:num(chFind('Organic Search')),live:ch.length>0,source:'GA4'})+
-      tile({k:'Leads',v:'0',live:false,source:'CRM'})+
-      tile({k:'Referring domains',v:'0',live:false,source:'Ahrefs'})+
+      tile({k:'Clicks 28d',v:num(g.current&&g.current.clicks),live:!!(g.current),source:'GSC',period:gPeriod,updatedAt:syncedAt,s:g.change&&g.change.clicksPercent!=null?((g.change.clicksPercent>0?'+':'')+pct(g.change.clicksPercent)+' vs prior'):'',crit:!!(g.change&&g.change.clicksPercent<=-15)})+
+      tile({k:'Impressions',v:num(g.current&&g.current.impressions),live:!!(g.current),source:'GSC',period:gPeriod,updatedAt:syncedAt})+
+      tile({k:'CTR',v:g.current?pct(g.current.ctr):NM,live:!!(g.current),source:'GSC',period:gPeriod,updatedAt:syncedAt})+
+      tile({k:'Avg position',v:pos(g.current&&g.current.position),live:!!(g.current),source:'GSC',period:gPeriod,updatedAt:syncedAt})+
+      tile({k:'Sessions',v:num(ga.totals&&ga.totals.sessions),live:!!(ga.totals),source:'GA4',period:gaPeriod,updatedAt:syncedAt})+
+      tile({k:'Organic Search',v:num(chFind('Organic Search')),live:ch.length>0,source:'GA4',period:gaPeriod,updatedAt:syncedAt})+
+      /* NOT 0. No CRM and no Ahrefs account have ever been connected, so there
+         is no number here to be zero. `state:'none'` forces the NOT_MEASURED
+         glyph and a "not connected" pill. */
+      tile({k:'Leads',state:'none',source:'CRM'})+
+      tile({k:'Referring domains',state:'none',source:'Ahrefs'})+
       '</div>';
     document.getElementById('m-exec').innerHTML=hex;
 
@@ -399,44 +522,61 @@
     var geoH='<p class="lede">US vs rest-of-world rollups for Search Console and GA4.</p>';
     if(!geoLive) geoH+=pendNote('Needs <strong>gscByCountry</strong> / <strong>ga4ByCountry</strong> from the daily Claude refresh.');
     geoH+='<div class="h2">Metrics</div><div class="tiles four">'+
-      tile({k:'GSC US clicks',v:num(geo&&geo.us&&geo.us.clicks),live:ok(geo),source:'GSC'})+
-      tile({k:'GSC rest clicks',v:num(geo&&geo.global&&geo.global.clicks),live:ok(geo),source:'GSC'})+
-      tile({k:'GA4 US sessions',v:num(gaGeo&&gaGeo.us&&gaGeo.us.sessions),live:ok(gaGeo),source:'GA4'})+
-      tile({k:'GA4 rest sessions',v:num(gaGeo&&gaGeo.rest&&gaGeo.rest.sessions),live:ok(gaGeo),source:'GA4'})+
+      tile({k:'GSC US clicks',v:num(geo&&geo.us&&geo.us.clicks),live:ok(geo),source:'GSC',period:gPeriod,updatedAt:syncedAt})+
+      tile({k:'GSC rest clicks',v:num(geo&&geo.global&&geo.global.clicks),live:ok(geo),source:'GSC',period:gPeriod,updatedAt:syncedAt})+
+      tile({k:'GA4 US sessions',v:num(gaGeo&&gaGeo.us&&gaGeo.us.sessions),live:ok(gaGeo),source:'GA4',period:gaPeriod,updatedAt:syncedAt})+
+      tile({k:'GA4 rest sessions',v:num(gaGeo&&gaGeo.rest&&gaGeo.rest.sessions),live:ok(gaGeo),source:'GA4',period:gaPeriod,updatedAt:syncedAt})+
       '</div><div class="h2">Fields tracked</div><div class="modlist"><span><b>GSC</b>clicks, impressions, CTR, position by country</span><span><b>GA4</b>sessions, activeUsers by country</span></div>';
     document.getElementById('m-geo').innerHTML=geoH;
 
     var pages=L.gscByPage;
+    /* THE DEFECT (#2): gscByPage publishes 30 of ~500 rows and says so in its
+       own `note` ("GitHub push capped at top 30 of 500 rows"). That note was
+       rendered on no page, the table was headed "Top pages" as if it were the
+       whole corpus, and a site-wide count was computed over it (see m-content).
+       A truncated table must announce its own n-of-M. */
+    var pagesSample=GB.sampleInfo(pages);
+    var pagesLabel=GB.sampleLabel(pagesSample);
     setNavState('m-page', ok(pages)?'good':'pend');
     var pageH='<p class="lede">Top URLs by impressions with GA4 sessions join when both sides are present.</p>';
     if(!ok(pages)) pageH+=pendNote('Needs <strong>gscByPage</strong>.');
     else {
-      pageH+='<div class="h2">Top pages</div><div class="tblwrap"><table><thead><tr><th>URL</th><th class="n">Impr</th><th class="n">Clicks</th><th class="n">CTR</th><th class="n">Pos</th></tr></thead><tbody>';
+      pageH+=sourceNote(pagesSample.note);
+      pageH+='<div class="h2">Top pages'+(pagesLabel?'<span class="gb-sample">'+esc(pagesLabel)+'</span>':'')+'</div>'+
+        '<div class="tblwrap"><table><thead><tr><th>URL</th><th class="n">Impr</th><th class="n">Clicks</th><th class="n">CTR</th><th class="n">Pos</th></tr></thead><tbody>';
       (pages.rows||[]).slice(0,25).forEach(function(r){
-        pageH+='<tr><td class="u">'+esc(r.page)+'</td><td class="n">'+num(r.impressions)+'</td><td class="n">'+num(r.clicks)+'</td><td class="n">'+pct(r.ctr)+'</td><td class="n">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>';
+        pageH+='<tr><td class="u">'+esc(r.page)+'</td><td class="n">'+num(r.impressions)+'</td><td class="n">'+num(r.clicks)+'</td><td class="n">'+pct(r.ctr)+'</td><td class="n">'+pos(r.position)+'</td></tr>';
       });
       pageH+='</tbody></table></div>';
     }
-    if(!ok(pages)) pageH+='<div class="h2">Metrics</div><div class="tiles four">'+tile({k:'Pages tracked',v:'0',live:false,source:'GSC'})+tile({k:'With sessions',v:'0',live:false,source:'GA4'})+'</div>';
+    if(!ok(pages)) pageH+='<div class="h2">Metrics</div><div class="tiles four">'+tile({k:'Pages tracked',live:false,source:'GSC'})+tile({k:'With sessions',live:false,source:'GA4'})+'</div>';
     document.getElementById('m-page').innerHTML=pageH;
 
     var qw=(g.quickWins)||[];
     var fullQ=ok(L.gscByQuery);
+    /* gscByQuery is doubly capped: the GSC MCP tool ceiling at 500 rows, then
+       the push capped at 30. Its buckets ARE computed from the full local set
+       (the note says so) so those stay; the row table does not. */
+    var qSample=GB.sampleInfo(L.gscByQuery);
+    var qLabel=GB.sampleLabel(qSample);
     setNavState('m-kw', (fullQ||qw.length)?'good':'pend');
     var kwH='<p class="lede">Position buckets and query table. Full set arrives with gscByQuery; quickWins cover the near-miss slice today.</p>';
     if(!fullQ&&!qw.length) kwH+=pendNote();
+    if(fullQ) kwH+=sourceNote(qSample.note);
     var rows=fullQ?(L.gscByQuery.rows||[]):qw;
     var buckets=fullQ&&L.gscByQuery.buckets?L.gscByQuery.buckets:{'1':0,'2-3':0,'4-5':0,'6-10':0,'11-20':0,'21-50':0,'51-100':0};
     if(!fullQ) rows.forEach(function(r){var p=r.position||99;var b=p<=1?'1':p<=3?'2-3':p<=5?'4-5':p<=10?'6-10':p<=20?'11-20':p<=50?'21-50':'51-100';buckets[b]=(buckets[b]||0)+1});
     kwH+='<div class="h2">Metrics</div><div class="tiles">';
     ['1','2-3','4-5','6-10','11-20','21-50','51-100'].forEach(function(k){
-      kwH+=tile({k:'Pos '+k,v:num(buckets[k]),live:!!(fullQ||qw.length),source:'GSC'});
+      kwH+=tile({k:'Pos '+k,v:num(buckets[k]),live:!!(fullQ||qw.length),source:'GSC',period:gPeriod,updatedAt:syncedAt,s:fullQ?'buckets over the full query set':'buckets over the quickWins slice only'});
     });
     kwH+='</div>';
     if(rows.length){
-      kwH+='<div class="h2">Queries</div><div class="tblwrap"><table><thead><tr><th>Query</th><th class="n">Impr</th><th class="n">Clicks</th><th class="n">Pos</th></tr></thead><tbody>';
+      var rowLabel=fullQ?qLabel:('near-miss slice · '+num(rows.length)+' quickWins rows');
+      kwH+='<div class="h2">Queries'+(rowLabel?'<span class="gb-sample">'+esc(rowLabel)+'</span>':'')+'</div>'+
+        '<div class="tblwrap"><table><thead><tr><th>Query</th><th class="n">Impr</th><th class="n">Clicks</th><th class="n">Pos</th></tr></thead><tbody>';
       rows.slice(0,20).forEach(function(r){
-        kwH+='<tr'+(fullQ?'':' class="dim"')+'><td>'+esc(r.query)+'</td><td class="n">'+num(r.impressions)+'</td><td class="n">'+num(r.clicks)+'</td><td class="n">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>';
+        kwH+='<tr'+(fullQ?'':' class="dim"')+'><td>'+esc(r.query)+'</td><td class="n">'+num(r.impressions)+'</td><td class="n">'+num(r.clicks)+'</td><td class="n">'+pos(r.position)+'</td></tr>';
       });
       kwH+='</tbody></table></div>';
     }
@@ -446,12 +586,14 @@
     var oppH='<p class="lede">Near-miss opportunities (position 4–15, high impressions) scored by the daily refresh.</p>';
     if(!qw.length) oppH+=pendNote();
     else {
+      /* Counts OF the quickWins list, not counts of the site — the label says
+         which, because the list is itself a pre-filtered slice. */
       oppH+='<div class="h2">Metrics</div><div class="tiles four">'+
-        tile({k:'Quick wins',v:num(qw.length),live:true,source:'GSC'})+
-        tile({k:'Zero-click slice',v:num(qw.filter(function(r){return !r.clicks&&(r.impressions||0)>=100}).length),live:true,source:'GSC'})+
+        tile({k:'Quick wins',v:num(qw.length),live:true,source:'GSC',period:gPeriod,updatedAt:syncedAt,s:'rows in the quickWins list'})+
+        tile({k:'Zero-click slice',v:num(qw.filter(function(r){return !r.clicks&&(r.impressions||0)>=100}).length),live:true,source:'GSC',period:gPeriod,updatedAt:syncedAt,s:'of the quickWins rows above'})+
         '</div><div class="tblwrap"><table><thead><tr><th>Query</th><th class="n">Impr</th><th class="n">Pos</th><th class="n">Opp</th></tr></thead><tbody>';
       qw.slice(0,15).forEach(function(r){
-        oppH+='<tr><td>'+esc(r.query)+'</td><td class="n">'+num(r.impressions)+'</td><td class="n">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td><td class="n">'+num(r.opportunity)+'</td></tr>';
+        oppH+='<tr><td>'+esc(r.query)+'</td><td class="n">'+num(r.impressions)+'</td><td class="n">'+pos(r.position)+'</td><td class="n">'+num(r.opportunity)+'</td></tr>';
       });
       oppH+='</tbody></table></div>';
     }
@@ -475,13 +617,42 @@
     var inv=a.pageInventory||{};
     var contentLive=ok(L.gscByPage);
     setNavState('m-content', contentLive?'good':'pend');
-    var cH='<p class="lede">Content corpus performance. Audit baselines are verified; URL-level impressions need gscByPage.</p>';
+    var cH='<p class="lede">Content corpus performance. Audit baselines come from the dated engagement; URL-level impressions need the full gscByPage set.</p>';
     if(!contentLive) cH+=pendNote();
+    else cH+=sourceNote(pagesSample.note);
+
+    /* THE DEFECT (#2), where it actually misled people.
+     *
+     * This tile read:
+     *   num(gscByPage.rows.filter(<is content URL> && impressions > 0).length)
+     * over gscByPage.rows — which is 30 rows out of ~500, by the data's own
+     * note — and presented the result as "Content URLs w/ impressions", a
+     * corpus-wide total, under a pill that said "Verified". It was wrong by
+     * roughly an order of magnitude and looked authoritative.
+     *
+     * You cannot recover a site-wide count from a top-N sample, so this no
+     * longer tries. When the sample is truncated the tile reports NOT_MEASURED
+     * and says what would be needed; the sample-scoped count is shown as a
+     * separate, explicitly sample-scoped figure so the useful signal survives
+     * without impersonating a total.
+     */
+    var contentRe=/\/(blog|case-stud|resource)/i;
+    var contentInSample=contentLive
+      ? (L.gscByPage.rows||[]).filter(function(r){return contentRe.test(r.page||'')&&(r.impressions||0)>0}).length
+      : null;
+    var corpusTotalKnowable=contentLive&&!pagesSample.sampled;
+
     cH+='<div class="h2">Metrics</div><div class="tiles four">'+
-      tile({k:'Blog corpus',v:num(inv.blogPostCount),live:true,source:'Audit'})+
-      tile({k:'Unlinked to money',v:num(inv.unlinkedBlogToMoney),live:true,crit:true,source:'Audit'})+
-      tile({k:'Content URLs w/ impr',v:contentLive?num((L.gscByPage.rows||[]).filter(function(r){return /\/(blog|case-stud|resource)/i.test(r.page||'')&&(r.impressions||0)>0}).length):'0',live:contentLive,source:'GSC'})+
-      tile({k:'Case studies',v:'31',live:true,source:'Audit'})+
+      tile({k:'Blog corpus',v:num(inv.blogPostCount),live:true,source:'Audit',s:auditWindowOf(a)})+
+      tile({k:'Unlinked to money',v:num(inv.unlinkedBlogToMoney),live:true,crit:true,source:'Audit',s:auditWindowOf(a)})+
+      (corpusTotalKnowable
+        ? tile({k:'Content URLs w/ impr',v:num(contentInSample),live:true,source:'GSC',period:gPeriod,updatedAt:syncedAt,s:'full gscByPage set'})
+        : tile({k:'Content URLs w/ impr',live:false,source:'GSC',
+            s:'Not derivable — gscByPage is a truncated sample'+(pagesLabel?' ('+pagesLabel+')':'')+'. Needs the untruncated set.'}))+
+      (contentLive
+        ? tile({k:'Content URLs in sample',v:num(contentInSample),live:true,source:'GSC',period:gPeriod,updatedAt:syncedAt,
+            s:'within '+(pagesLabel||'the returned rows')+' — a sample count, NOT a corpus total'})
+        : tile({k:'Content URLs in sample',live:false,source:'GSC'}))+
       '</div>';
     document.getElementById('m-content').innerHTML=cH;
 
@@ -491,10 +662,11 @@
     var aiH='<p class="lede">AI referrer traffic plus audit citation baselines.</p>';
     if(!ok(aiT)) aiH+=pendNote('Scheduler will add <strong>ga4AiTraffic</strong> (chatgpt.com, perplexity.ai, gemini, claude, copilot).');
     aiH+='<div class="h2">Metrics</div><div class="tiles four">'+
-      tile({k:'Non-brand cite rate',v:pct((base.aiCitationRateNonBranded||0)*100),live:true,source:'Audit'})+
-      tile({k:'Branded cite',v:base.aiCitationRateBranded||'—',live:true,source:'Audit'})+
-      tile({k:'AI sessions',v:ok(aiT)?num((aiT.rows||[]).reduce(function(s,r){return s+(r.sessions||0)},0)):'0',live:ok(aiT),source:'GA4'})+
-      tile({k:'Referrers tracked',v:ok(aiT)?num((aiT.rows||[]).length):'0',live:ok(aiT),source:'GA4'})+
+      tile({k:'Non-brand cite rate',v:pct(base.aiCitationRateNonBranded==null?null:base.aiCitationRateNonBranded*100),live:true,source:'Audit',s:auditWindowOf(a)})+
+      tile({k:'Branded cite',v:base.aiCitationRateBranded,live:true,source:'Audit',s:auditWindowOf(a)})+
+      /* `:'0'` on an unretrieved source printed a measured zero. NM instead. */
+      tile({k:'AI sessions',v:ok(aiT)?num((aiT.rows||[]).reduce(function(s,r){return s+(r.sessions||0)},0)):null,live:ok(aiT),source:'GA4',period:gaPeriod,updatedAt:syncedAt})+
+      tile({k:'Referrers tracked',v:ok(aiT)?num((aiT.rows||[]).length):null,live:ok(aiT),source:'GA4',period:gaPeriod,updatedAt:syncedAt})+
       '</div>';
     if(ok(aiT)){
       aiH+='<div class="h2">Referrers</div><div class="tblwrap"><table><thead><tr><th>Referrer</th><th class="n">Sessions</th><th class="n">Users</th></tr></thead><tbody>';
@@ -542,17 +714,21 @@
     document.getElementById('m-activity').innerHTML='<p class="lede">Append-only marketing activity log.</p>'+pendNote('Log entries on <strong>platform.html#activity</strong> (KV-backed).')+
       '<div class="h2">Activity types</div><div class="modlist"><span><b>fix</b>Checklist completions</span><span><b>content</b>Publishes & refreshes</span><span><b>tech</b>Dev tickets shipped</span><span><b>agent-engagement</b>SEO-agents publish</span></div>';
 
+    /* Every tile in these three modules used to be a hardcoded '0'. There is no
+       Ahrefs account, no CRM and no Ads account behind any of them, so 0 was
+       never a measurement — it was a placeholder that reads as a business
+       result. state:'none' renders NOT_MEASURED and says "not connected". */
     setNavState('m-backlinks','pend');
-    document.getElementById('m-backlinks').innerHTML='<p class="lede">Referring domains, new/lost links, domain authority.</p>'+pendNote('Connect <strong>Ahrefs / Semrush / Moz</strong>.')+
-      '<div class="h2">Metrics</div><div class="tiles four">'+tile({k:'Referring domains',v:'0',live:false,source:'Ahrefs'})+tile({k:'New links 30d',v:'0',live:false,source:'Ahrefs'})+tile({k:'Lost links 30d',v:'0',live:false,source:'Ahrefs'})+tile({k:'Domain rating',v:'0',live:false,source:'Ahrefs'})+'</div>';
+    document.getElementById('m-backlinks').innerHTML='<p class="lede">Referring domains, new/lost links, domain authority.</p>'+notConnectedNote(['Ahrefs / Semrush / Moz'])+
+      '<div class="h2">Metrics</div><div class="tiles four">'+tile({k:'Referring domains',state:'none',source:'Ahrefs'})+tile({k:'New links 30d',state:'none',source:'Ahrefs'})+tile({k:'Lost links 30d',state:'none',source:'Ahrefs'})+tile({k:'Domain rating',state:'none',source:'Ahrefs'})+'</div>';
 
     setNavState('m-leads','pend');
-    document.getElementById('m-leads').innerHTML='<p class="lede">Pipeline and conversion rate attributed to organic.</p>'+pendNote('Connect <strong>CRM</strong> (HubSpot / Zoho / Pipedrive).')+
-      '<div class="h2">Metrics</div><div class="tiles four">'+tile({k:'Leads 28d',v:'0',live:false,source:'CRM'})+tile({k:'SQL',v:'0',live:false,source:'CRM'})+tile({k:'Conv rate',v:'0',live:false,source:'CRM'})+tile({k:'Revenue influenced',v:'0',live:false,source:'CRM'})+'</div>';
+    document.getElementById('m-leads').innerHTML='<p class="lede">Pipeline and conversion rate attributed to organic.</p>'+notConnectedNote(['A CRM (HubSpot / Zoho / Pipedrive)'])+
+      '<div class="h2">Metrics</div><div class="tiles four">'+tile({k:'Leads 28d',state:'none',source:'CRM'})+tile({k:'SQL',state:'none',source:'CRM'})+tile({k:'Conv rate',state:'none',source:'CRM'})+tile({k:'Revenue influenced',state:'none',source:'CRM'})+'</div>';
 
     setNavState('m-ads','pend');
-    document.getElementById('m-ads').innerHTML='<p class="lede">Paid search blend with organic for CAC views.</p>'+pendNote('Connect <strong>Google Ads / Bing Ads</strong>.')+
-      '<div class="h2">Metrics</div><div class="tiles four">'+tile({k:'Paid clicks',v:'0',live:false,source:'Ads'})+tile({k:'Spend',v:'0',live:false,source:'Ads'})+tile({k:'CPA',v:'0',live:false,source:'Ads'})+tile({k:'Brand vs non-brand',v:'0',live:false,source:'Ads'})+'</div>';
+    document.getElementById('m-ads').innerHTML='<p class="lede">Paid search blend with organic for CAC views.</p>'+notConnectedNote(['Google Ads / Bing Ads'])+
+      '<div class="h2">Metrics</div><div class="tiles four">'+tile({k:'Paid clicks',state:'none',source:'Ads'})+tile({k:'Spend',state:'none',source:'Ads'})+tile({k:'CPA',state:'none',source:'Ads'})+tile({k:'Brand vs non-brand',state:'none',source:'Ads'})+'</div>';
 
     /* sources */
     setNavState('m-sources','good');
@@ -598,18 +774,28 @@
   }
 
   Promise.all([
-    fetch('data/audit.json',{cache:'no-store'}).then(function(r){return r.json()}),
-    fetch('data/fixes.json',{cache:'no-store'}).then(function(r){return r.json()}),
-    fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}}),
+    /* GB.fetchJson throws a readable message instead of piping a 404 HTML error
+       page into r.json() and failing with "Unexpected token <". */
+    GB.fetchJson('data/audit.json'),
+    GB.loadJson('data/fixes.json', {items:[]}),
+    GB.loadJson('data/latest.json', {}),
     loadHistory(),
-    fetch('/api/fixes',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})
+    GB.loadJson('/api/fixes', null)
   ]).then(function(pair){
-    state.audit=pair[0]; state.live=pair[2]; state.history=pair[3];
+    state.audit=pair[0]; state.live=pair[2]||{}; state.history=pair[3];
     if(pair[4]&&pair[4].items){ state.fixes={items:pair[4].items,source:'api'}; }
-    else { state.fixes={items:mergeLocal(pair[1].items||[]),source:'local'}; }
+    else { state.fixes={items:mergeLocal((pair[1]||{}).items||[]),source:'local'}; }
 
+    /* TWO clocks, and the page used to print only the first. `updatedAt` is
+       when the refresh job ran; the GSC window's end date is what the numbers
+       actually cover, and they sit 2-3 days apart because Search Console
+       finalises late. Both, plus the audit's own window. */
+    var gscPeriod=state.live.gsc&&state.live.gsc.period;
     document.getElementById('page-meta').textContent=
-      'Audited '+state.audit.auditedRange+' · Live sync '+(state.live.updatedAt?new Date(state.live.updatedAt).toLocaleString():'—');
+      'Audited '+(state.audit.auditedRange||'range not stated')+
+      ' · Live sync '+(state.live.updatedAt?GB.fmtDate(state.live.updatedAt):'not stated in feed')+
+      ' · GSC data '+(GB.asOf(gscPeriod)||'coverage not stated in feed')+
+      (GB.isProvisional(gscPeriod, state.live.updatedAt)?' (last '+GB.GSC_LAG_DAYS+'d provisional)':'');
 
     renderSummary(state.audit);
     renderCritical(state.audit);

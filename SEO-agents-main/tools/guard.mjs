@@ -15,7 +15,9 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve, relative, sep } from 'node:path';
+import { resolve, relative, sep, dirname } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const MODE = process.argv[2];
 
@@ -61,8 +63,58 @@ const LIVE_MUTATION = [
   { re: /\bshopify\b.*\b(publish|push)\b/, why: 'publishing to Shopify' },
   { re: /\bnetlify\s+deploy\b|\bvercel\s+(deploy|--prod)\b/, why: 'deploying a site' },
   { re: /\bgcloud\b.*\bdeploy\b|\baws\s+s3\s+sync\b/, why: 'deploying to cloud hosting' },
-  { re: /\bgit\s+push\b(?!.*--dry-run)/, why: 'pushing commits' },
 ];
+
+// Pushing is treated separately from the mutations above, because "never push"
+// was too blunt: it blocked publishing THIS toolkit, which is ordinary
+// development, in order to protect client properties, which is the actual
+// intent. The line that matters is whose repository you are standing in. Inside
+// the repo that contains this hook, a push is the team shipping its own code.
+// Anywhere else — a client site checkout, a content repo — it is the team
+// publishing to a property it was only ever given to read.
+function pushOutsideOwnRepo(cmd) {
+  if (!/\bgit\s+push\b/.test(cmd) || /--dry-run/.test(cmd)) return false;
+  try {
+    const top = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
+    const own = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+    return resolve(top) !== own;
+  } catch {
+    return true; // Not in a git repo, or git unavailable: refuse rather than guess.
+  }
+}
+
+// Outbound writes. curl is allow-listed in .claude/settings.json so that
+// unattended runs can fetch pages without stopping for approval — observed
+// 2026-09-23: one un-allowlisted curl held a scheduled run at a permission
+// prompt for 1h53m. Fetching is safe; sending is not, so the permission the
+// allowlist gives away is taken back here: GET/HEAD only, no request bodies,
+// no uploads.
+// A flag is only a flag when it stands alone. The first version of this rule
+// matched `-d` anywhere after `curl`, so a smoke-test run on 2026-09-25 was
+// blocked from HEADing an image at .../photo-1551288049-d574269d422f — the
+// filename contains "-d5". A guard that blocks honest work gets worked around,
+// which is worse than not having it, so each flag must be surrounded by
+// whitespace (or followed by `=`) to count.
+// The flag has to belong to the fetch command itself. Two false positives on
+// 2026-09-25 taught this the hard way: `-d5` inside an image filename, and then
+// `curl ... | tr -d '\r'`, where `tr`'s own flag was read as curl's. So split
+// the command into segments and inspect only the ones that ARE a curl or wget
+// invocation.
+const SEND_FLAGS = /(?<=\s)(-d|--data|--data-raw|--data-binary|--data-urlencode|-F|--form|-T|--upload-file)(?=[\s=]|$)/;
+const MUTATING_METHOD = /(?<=\s)-X\s*['"]?(POST|PUT|PATCH|DELETE)\b/i;
+const WGET_BODY = /(?<=\s)--(post-data|post-file|body-data|body-file)(?=[\s=]|$)/;
+
+function outboundWrite(cmd) {
+  for (const seg of cmd.split(/\||;|&&|\|\||\n/)) {
+    const s = ' ' + seg.trim();
+    if (/^\s*(sudo\s+)?curl\b/.test(s)) {
+      if (MUTATING_METHOD.test(s)) return 'curl with a mutating HTTP method';
+      if (SEND_FLAGS.test(s)) return 'curl sending a request body or file upload';
+    }
+    if (/^\s*(sudo\s+)?wget\b/.test(s) && WGET_BODY.test(s)) return 'wget sending a request body';
+  }
+  return null;
+}
 
 const SECRET_PATTERNS = [
   { re: /\bsk-[A-Za-z0-9]{20,}\b/, label: 'OpenAI-style API key' },
@@ -112,6 +164,20 @@ function preTool(p) {
         `Command: ${cmd.slice(0, 200)}`
       );
     }
+    if (pushOutsideOwnRepo(cmd)) block(
+      `GUARDRAIL: blocked — pushing commits from outside this toolkit's own repository.\n` +
+      `Pushing the SEO-agents repo itself is fine. Pushing any other repository — a client site,\n` +
+      `a content repo — is publishing to a property this team was given to read. Hand the change\n` +
+      `to the operator as a diff or a ticket instead.\n` +
+      `Command: ${cmd.slice(0, 200)}`
+    );
+    const why = outboundWrite(cmd);
+    if (why) block(
+      `GUARDRAIL: blocked — ${why}.\n` +
+      `This team reads the web; it does not write to it. Use GET/HEAD to fetch a page, and hand any\n` +
+      `submission to the operator instead.\n` +
+      `Command: ${cmd.slice(0, 200)}`
+    );
     for (const s of SECRET_PATTERNS) {
       if (s.re.test(cmd)) block(`GUARDRAIL: blocked — a ${s.label} appears in this command. Never pass secrets on a command line; use environment variables.`);
     }

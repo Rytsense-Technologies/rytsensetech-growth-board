@@ -77,8 +77,14 @@ SCHEMA (exact keys — keep gsc/ga4; extend with clarity/github/cloudflare):
     "analytics": {
       "requests": 0, "bytes": 0, "uniqueVisitors": 0, "threats": 0, "cacheHitRatio": 0
     },
-    "deployment": { "status": "success", "url": "", "deployedAt": "ISO-8601" }
+    "deployment": { "status": "success", "url": "", "deployedAt": "ISO-8601",
+                    "observedAt": "ISO-8601", "source": "wrangler-exit-code",
+                    "describes": "previous deploy" }
   },
+  (cloudflare notes: when the Analytics API was not called or failed, emit
+   "status": "unavailable", "analytics": null, "note": "<short reason>" — never zeros.
+   "deployment" is NOT yours to write: scripts/deploy-cloudflare.mjs writes it from
+   wrangler's exit code after the deploy returns. Copy the existing block through unchanged.)
 
   "gscByCountry": {
     "status": "ok",
@@ -139,53 +145,101 @@ COMPUTATION RULES:
 4) quickWins: position 4–15 AND impressions >= 100. opportunity = round(impressions * (1 - ctr/100) * 0.05 * (16 - position)). Sort opportunity desc; top 8.
 5) GA4 = last 28 days through today. engagementRate = sessions-weighted average, 4 decimals. daily[].date = YYYYMMDD. channels = sessionDefaultChannelGroup, sessions desc.
 6) github.recentCommits: up to 5; message = first line only.
-7) If analytics env/files missing or API blocked: cloudflare.status may still be "ok" after a successful Pages deploy with analytics zeros OR status "unavailable" with note — prefer: after successful npm run deploy:cf set cloudflare.status="ok", deployment.status="success", deployment.url from wrangler output, deployment.deployedAt=now, and leave analytics at 0 with a note only if you must explain missing analytics (put that in cloudflare.note). If deploy also fails, set deployment.status="failed" and note the error.
+7) CLOUDFLARE — analytics and deploy status are INDEPENDENT, and neither may be guessed.
+   a) Analytics. NEVER write a numeric zero for a value you did not read. That is fabrication and it
+      contradicts rule 3 at the top of this file. The old version of this rule said the status "may
+      still be 'ok' … with analytics zeros"; the published file then carried requests /
+      uniqueVisitors / threats / cacheHitRatio all = 0 under a green health dot, and a reader saw
+      "this site received no traffic" when the API had simply never been called.
+      If the Cloudflare Analytics API was not called, was blocked, or failed, write:
+          "cloudflare": { "status": "unavailable", "analytics": null,
+                          "note": "<short reason — no local file paths>" }
+      Only when the API actually returned numbers: "status": "ok" with those numbers.
+   b) Deploy status. Do NOT write cloudflare.deployment at all. You cannot know the outcome of a
+      deploy you have not watched finish, and writing it here is what made the one tile that would
+      reveal a failed deploy report success when it failed (commit e42d622 is a human correcting
+      exactly that field). scripts/deploy-cloudflare.mjs now writes that block from wrangler's exit
+      code after wrangler returns, and the Actions workflow commits it. Leave the existing
+      cloudflare.deployment block exactly as you found it — do not refresh its timestamps.
+   c) A failed source is recorded as failed, with its note. Never as zeros, never as "ok".
 8) Write pretty-printed JSON (2-space indent) + trailing newline. updatedAt = now UTC.
 9) Failed GitHub/Clarity: { "status": "unavailable", "note": "<short reason>" }.
 
-DEPLOY (required after writing latest.json) — shell-bridge resilient:
+VALIDATE BEFORE YOU PUSH (required — this step is not optional):
+After writing latest.json and the history files, run:
+  node scripts/validate-data.mjs
+If it exits non-zero, DO NOT push. Fix what it names (it names the file, the key, and expected vs
+actual) and re-run. If you cannot fix it, push nothing and say so in the final reply.
+This gate exists because three bad files reached the live site unnoticed: a literal "PLACEHOLDER"
+(4b2cf2d), an HTML-entity-encoded "fix" for it (d7360a9), and a silently 94%-truncated dataset that
+was still marked "ok" (2026-09-25).
+If the shell bridge is broken and you genuinely cannot run node, the same checks run in GitHub
+Actions before the deploy, so a bad push fails the workflow instead of publishing. Say in the final
+reply that you could not validate locally.
 
-PRIMARY PATH (always do this — works even when device_bash / Plan9 is broken):
-1) Write E:\growth-board\data\latest.json via the file bridge (device_stage/commit or equivalent).
+TRUNCATION — if you have to shrink a section to fit a tool-call output limit, that section is
+"status": "partial" with "rowsReturned" and "rowsAvailable", never "status": "ok" with a note
+admitting it was capped. The validator fails that exact combination.
+
+DEPLOY — ONE PATH ONLY:
+
+The GitHub Actions workflow `.github/workflows/deploy-pages.yml` is the authoritative deploy. It
+deploys git HEAD. Your job ends at the push.
+
+1) Write data/latest.json via the file bridge (device_stage/commit or equivalent).
 2) Also write history for today (see G above) the same way.
-3) Push BOTH files to GitHub via the GitHub API / github integration (Contents API create-or-update):
+3) Run the validator (above).
+4) Push ALL THREE files to GitHub via the GitHub API / github integration (Contents API
+   create-or-update), preferably in ONE commit (Git Trees API) rather than three:
      - data/latest.json
      - data/history/YYYY-MM-DD.json
      - data/history/index.json
    Commit message: "chore: refresh dashboard data via Claude MCP"
    Branch: main (or the repo default).
-4) GitHub Actions workflow `.github/workflows/deploy-pages.yml` deploys Cloudflare Pages on push to data/**.
-   Set cloudflare.deployment to:
-     { "status": "queued", "url": "https://rytsensetech-growth-board.pages.dev", "deployedAt": "<ISO now>" }
-   and cloudflare.status = "ok" with note "deploy queued via GitHub Actions after API push"
-   when the GitHub push succeeds.
+   WHY one commit: on 2026-09-25 these were three separate Contents API calls 8 seconds apart
+   (13:04:03 / 13:04:11 / 13:04:19). A run that dies between the first and the last leaves the
+   history index without that day and the trend charts silently lose it — 2026-09-20 was lost this
+   way. If you can only do three calls, push index.json LAST, and if the run dies partway, the next
+   run must repair it: `node scripts/repair-history-index.mjs` (it derives the index from the
+   snapshot files on disk).
+5) That push triggers the deploy. Do not write cloudflare.deployment — see COMPUTATION RULE 7(b).
 
-LOCAL SHELL PATH (best-effort only — do NOT fail the run if this breaks):
-If device_bash / PowerShell works on E:\growth-board:
-  npm run deploy:cf
-Auth: secrets/cloudflare-api-token.txt or CLOUDFLARE_API_TOKEN — never print the token.
-After a successful local deploy, patch cloudflare.deployment { status:"success", url, deployedAt } once — do NOT redeploy after that patch.
-If device_bash fails with "no Plan9 drive shares" / shell bridge outage: SKIP local npm/git entirely.
-  Do NOT treat that as a failed refresh — the GitHub API push + Actions deploy is the recovery path.
-  Still finish the JSON write + GitHub push.
+DO NOT ALSO RUN `npm run deploy:cf`.
+This prompt used to instruct both paths on a good day. They deploy different sources — Actions
+deploys git HEAD, the local script deploys the working tree with --commit-dirty=true — so whichever
+finished last won. On 2026-09-25 the local tree held the full 500-row dataset, the push held 30
+rows, Actions won, and the site served the truncated file for three days while the run reported
+success. One path, always.
 
-Known issue (Sept 2025+ Windows): Claude device_bash often fails with Plan9/virtiofs mount errors while file read/write still works. Prefer PRIMARY PATH every day; treat local shell as optional speed-up.
+If the GitHub push itself fails twice: report the failure in the final reply, leave the repo alone,
+and do NOT fall back to a local deploy — a local deploy would publish a tree that no commit
+describes, which is exactly how the two sources diverge. A human can run the manual path
+(README → Deploying) after checking what is on disk.
+
+Known issue (Sept 2025+ Windows): Claude device_bash often fails with Plan9/virtiofs mount errors
+while file read/write still works. That is NOT a failed refresh — the GitHub API push is the whole
+job. Note it and carry on.
 
 TASKS (do NOT modify):
 Never rewrite or overwrite data/tasks.json. Task status/assignee/notes are human-owned via /api/tasks (KV). The Growth Board already shows open-critical task counts from that API.
 
-OPTIONAL LOCAL GIT (do not block; skip when shell is broken):
+LOCAL GIT — use EITHER local git OR the Contents API, never both in one run. Both end at the same
+place (a commit on main that triggers the deploy), so doing both just races two pushes. If the shell
+works, local git is fine and is atomic for all three files at once, which is preferable:
+  node scripts/validate-data.mjs
   git add data/latest.json data/history
   git commit -m "chore: refresh dashboard data via Claude MCP"
   git push origin main
-Prefer GitHub Contents API when local git is unavailable (already covered in PRIMARY PATH).
+Still do NOT run npm run deploy:cf afterwards — the push already deploys.
 
 FINAL REPLY (one short block):
 - updatedAt
 - GSC clicks (current) + GA4 sessions (totals)
 - Clarity: ok/unavailable (+ metricName keys if ok) — confirm you used the worker URL, not MCP
 - GitHub: repo + latest short sha (or Contents API push result), or unavailable
-- Cloudflare: local deploy URL/status OR "queued via GitHub Actions" + analytics ok/unavailable
+- Cloudflare analytics: ok (with the numbers) or unavailable (with the reason). Do NOT report a
+  deploy status — you did not observe one; say "deploy triggered by push <sha>, outcome in Actions".
+- validate-data.mjs: passed / failed (with what it named) / could not run
 - Phase 1 additive: which of gscByCountry/gscByPage/gscByQuery/gscCannibalization/ga4ByCountry/ga4ByPage are ok vs unavailable
 - history file path written under data/history/
 - any errors (shell-bridge Plan9 failures are expected — note them but do not call the whole refresh "broken" if GitHub push succeeded)

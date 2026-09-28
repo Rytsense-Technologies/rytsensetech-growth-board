@@ -1,2 +1,11 @@
+# Normalise line endings. This is not housekeeping: on 2026-09-25 a concurrent
+# rewrite left 20 agent files with CRLF endings, and the static eval's
+# frontmatter regex silently matched nothing on every one of them — in
+# JavaScript, `\r` is a line terminator, so `name:` parsed as absent and a whole
+# class of checks passed by doing nothing. Text is LF in the repo, whatever the
+# checkout platform does locally.
 * text=auto eol=lf
-*.ps1 text eol=crlf
+
+*.png binary
+*.jpg binary
+*.pdf binary

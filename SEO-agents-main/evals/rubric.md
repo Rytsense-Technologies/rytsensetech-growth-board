@@ -83,11 +83,24 @@ a high score as "worth reading carefully", never as "approved".
 ## Running the evals
 
 ```bash
-node evals/run.mjs static              # validate all 49 agent definitions
-node evals/run.mjs fixture             # score output against planted defects
-node evals/run.mjs score <file>        # rubric-score one deliverable
-node tools/guard.mjs lint output/*.md  # fabrication and tactic lint
+node evals/run.mjs static                            # validate all 52 agent definitions
+node evals/run.mjs golden                            # grade claims against a LIVE re-measurement
+node evals/run.mjs fixture <fixture reports…>        # recall against the planted defects
+node evals/run.mjs score <file>                      # rubric-score one deliverable
+node tools/guard.mjs lint output/*.md                # fabrication and tactic lint
+pytest                                               # the tools and the harness itself
 ```
+
+`golden` is the mode that measures whether the analysis was **correct**, which no
+other mode does. It re-measures the site live and grades the agent against the
+live value, so a client release produces DRIFT (with a rebaseline command) rather
+than a false FAIL. See `evals/golden/README.md`.
+
+`fixture` now requires explicit report paths inside `output/fixture.example/`. It
+used to default to walking `output/` — the real client deliverables — and score
+them against a fixture site nobody had audited, reporting a meaningless 94% recall
+plus false fabrication flags on correctly sourced figures. A number that looks
+like a pass and measures nothing is worse than no number.
 
 `static` runs in milliseconds and catches the regressions that actually happen:
 a guardrail edited away, a read-only agent granted Edit, a broken cross-reference,

@@ -1,6 +1,8 @@
 {
   "fixture": "fixture.example",
   "description": "Static fixture site with 16 deliberately planted SEO/AEO defects. Used to measure agent recall and to catch fabrication.",
+  "corpusRoot": "output/fixture.example",
+  "corpusNote": "Binds this spec to its corpus. fixture mode refuses to score anything outside corpusRoot: on 2026-09-25 it was found defaulting to output/ — the real client deliverables — and reporting 94% recall plus false fabrication flags against a fixture site nobody had audited.",
   "plantedDefects": [
     { "id": "robots-blocks-ai", "severity": "CRITICAL", "agent": "crawler-access-engineer", "file": "robots.txt", "summary": "GPTBot, ClaudeBot and PerplexityBot disallowed despite a stated AEO goal", "keywords": ["gptbot", "claudebot", "perplexitybot", "disallow"] },
     { "id": "sitemap-missing", "severity": "HIGH", "agent": "technical-seo-engineer", "file": "robots.txt", "summary": "Sitemap declared in robots.txt but the file does not exist", "keywords": ["sitemap", "404", "missing", "does not exist"] },
@@ -30,6 +32,7 @@
     "severityWeight": 0.3,
     "fabricationWeight": 0.2,
     "passThreshold": 0.7,
+    "requireFileMention": true,
     "notes": "Recall is share of planted defects found. Severity credit requires matching the expected severity band. Any must-not-claim violation is an automatic fail regardless of recall — a report that finds everything and invents one number is worse than one that finds less and stays honest."
   }
 }

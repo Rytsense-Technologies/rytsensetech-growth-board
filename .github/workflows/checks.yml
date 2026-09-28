@@ -1,0 +1,48 @@
+# Checks that must pass before anything reaches main.
+#
+# Deliberately separate from deploy-pages.yml: these run on every pull request,
+# including ones that never touch data/ and so would never trigger a deploy.
+# Three bad datasets reached the live site because the only gate ran at deploy
+# time, after review had already passed.
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # validate-data.mjs compares row counts against the previous commit.
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax-check every script and function
+        run: |
+          set -e
+          for f in $(find functions scripts -name '*.js' -o -name '*.mjs'); do
+            node --check "$f"
+          done
+          echo "syntax OK"
+
+      - name: Validate data/
+        run: node scripts/validate-data.mjs --base HEAD~1
+
+      # Proves the vendored toolkit still matches its manifest and has not gone
+      # stale. It cannot diff against upstream here — upstream is a separate
+      # private repo — so it checks the two things provable locally: nobody
+      # hand-edited the copy, and it was synced recently.
+      - name: Check vendored agent copy
+        run: node scripts/check-vendor-drift.mjs

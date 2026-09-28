@@ -134,6 +134,36 @@
   .notes{display:flex;flex-direction:column;gap:8px}
   .note{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px}
   .note .who{font-size:11px;color:var(--ink-3);font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+
+  /* —— Notice rail ——
+     WHY THIS EXISTS: every write on this page used to fail silently. patch()
+     caught 401s, 409s and network errors alike, wrote the edit to localStorage
+     and returned {local:true} as though it had saved; reload() then re-read
+     /api/tasks and overwrote it from the server, so the edit disappeared with
+     nothing on screen at any point. A write that did not reach the server has
+     to say so, and has to stop claiming it succeeded. */
+  .notices{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+  .notices:empty{display:none}
+  .notice{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;
+    border:1px solid var(--line);border-left-width:3px;border-radius:10px;padding:11px 13px;background:var(--panel)}
+  .notice.error{border-left-color:var(--bad);background:var(--bad-soft)}
+  .notice.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+  .notice.info{border-left-color:var(--teal);background:var(--teal-soft)}
+  .notice .notice-body{flex:1 1 320px;min-width:0}
+  .notice strong{display:block;font-size:13px;margin-bottom:3px}
+  .notice p{margin:0;font-size:12.5px;color:var(--ink-2)}
+  .notice-list{margin:8px 0 0;padding-left:18px;font-size:12px;color:var(--ink-2)}
+  .notice-list li{font-family:'JetBrains Mono',monospace}
+  .notice-actions{display:flex;gap:6px;flex:none;flex-wrap:wrap}
+  .btn.small{padding:5px 10px;font-size:12px}
+
+  /* Keyboard affordance for what used to be click-only divs. */
+  .tcard:focus-visible,tbody tr:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+  .live.seed{background:var(--warn-soft);color:var(--warn)}
+  .live.seed i{background:var(--warn)}
+  .live.down{background:var(--bad-soft);color:var(--bad)}
+  .live.down i{background:var(--bad)}
+  .sync-line{font-size:11.5px;color:var(--ink-3);margin-top:4px;font-family:'JetBrains Mono',monospace}
 </style>
 </head>
 <body>
@@ -155,11 +185,17 @@
 </nav>
 <script src="assets/site-nav.js" defer></script>
 
-<div class="wrap">
+<!-- <main> landmark: this page had none, so a screen-reader user had no way to
+     skip the site nav and jump to the task board. -->
+<main class="wrap" id="main">
   <div class="hero">
     <div>
-      <h1>Rytsense Team Tasks <span class="live"><i></i>live</span></h1>
+      <!-- The chip ships neutral. It used to assert "live" in the markup before
+           any fetch had happened, which is the same class of lie as index.html's
+           two hardcoded green source dots (see assets/board-format.js). -->
+      <h1>Rytsense Team Tasks <span class="live seed" id="live-chip"><i></i><span id="live-text">connecting…</span></span></h1>
       <div class="sub">SEO programme · rytsensetech.com</div>
+      <div class="sync-line" id="sync-line">board version not read yet</div>
     </div>
     <div class="hero-actions">
       <a class="btn ghost" href="index.html">SEO dashboard</a>
@@ -168,6 +204,10 @@
       <button type="button" class="btn primary" id="btn-new">+ New task</button>
     </div>
   </div>
+
+  <!-- Failed writes, expired sessions and stale-version conflicts surface here.
+       aria-live so a screen reader is told when a save did not happen. -->
+  <div class="notices" id="notices" aria-live="polite" aria-atomic="false"></div>
 
   <div class="kpis" id="kpis"></div>
 
@@ -183,7 +223,7 @@
   </div>
 
   <div id="view"></div>
-</div>
+</main>
 
 <div class="modal-bg" id="modal-new" role="dialog" aria-label="New task">
   <div class="modal">
@@ -222,11 +262,20 @@
 </div>
 
 <div class="drawer-bg" id="drawer-bg"></div>
-<aside class="drawer" id="drawer" aria-hidden="true"></aside>
+<!-- aria-hidden is managed by openDrawer/closeDrawer. It used to be a static
+     attribute that openDrawer never removed, so the drawer covered the page and
+     took focus while remaining invisible to a screen reader. -->
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true"
+       aria-labelledby="drawer-title" aria-hidden="true" tabindex="-1"></aside>
 
+<script src="assets/board-format.js"></script>
 <script>
 (function(){
-  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+  /* esc() and the formatters come from assets/board-format.js. This page kept
+     its own copy, and the copies across the five pages had already drifted.
+     esc() itself is byte-for-byte the same discipline: EVERY interpolated value
+     goes through it, which is why this app has no XSS. Do not regress it. */
+  var esc=GB.esc, num=GB.num;
   function initials(name){return String(name||'?').split(/\s+/).map(function(p){return p[0]}).join('').slice(0,2).toUpperCase()}
   function teamKey(t){var x=String(t||'').toLowerCase(); if(x.indexOf('dev')>=0)return 'dev'; if(x.indexOf('mark')>=0)return 'mkt'; if(x.indexOf('cont')>=0)return 'cnt'; return 'seo'}
   function teamLabel(t){return String(t||'SEO').toUpperCase()}
@@ -246,8 +295,152 @@
   }
   function statusBadge(st){return '<span class="badge '+esc(st)+'">'+esc(st)+'</span>'}
 
-  var state={tasks:[], team:[], summary:{}, view:'person', sort:{key:'priority',dir:1}, selected:null};
+  /* `rev` / `teamRev` are the optimistic-concurrency version tokens read from
+     GET /api/tasks and GET /api/team. Every update echoes one back; a stale one
+     comes back as 409. See functions/_lib/store.js: all 24 tasks live in ONE KV
+     value, so a blind last-write-wins save usually erases somebody's edit to a
+     completely unrelated task. null means "we never got a version from the
+     server", and in that state this page must not attempt an update at all. */
+  var state={
+    tasks:[], team:[], summary:{}, view:'person', sort:{key:'priority',dir:1}, selected:null,
+    rev:null, teamRev:null, updatedAt:null, source:null, apiUp:false
+  };
   var PRI={critical:0,high:1,medium:2};
+
+  /* ——————————————————————————————————————————————————————— notice rail —— */
+
+  var noticeSeq=0;
+
+  /* One visible, dismissible message. `body` and every list entry are escaped;
+     nothing here interpolates a server string as markup. */
+  function pushNotice(o){
+    var host=document.getElementById('notices');
+    if(!host) return null;
+    var el=document.createElement('div');
+    el.className='notice '+(o.kind||'error');
+    el.id='notice-'+(++noticeSeq);
+    el.setAttribute('role', (o.kind==='error'||o.kind==='warn')?'alert':'status');
+    var actions=o.actions||[];
+    var lines=(o.lines||[]).map(function(l){ return '<li>'+esc(l)+'</li>'; }).join('');
+    el.innerHTML=
+      '<div class="notice-body"><strong>'+esc(o.title)+'</strong>'+
+        (o.body?'<p>'+esc(o.body)+'</p>':'')+
+        (lines?'<ul class="notice-list">'+lines+'</ul>':'')+
+      '</div>'+
+      '<div class="notice-actions">'+
+        actions.map(function(a,i){ return '<button type="button" class="btn small" data-act="'+i+'">'+esc(a.label)+'</button>'; }).join('')+
+        '<button type="button" class="btn small ghost" data-act="dismiss">Dismiss</button>'+
+      '</div>';
+    el.addEventListener('click', function(ev){
+      var b=ev.target.closest('button[data-act]'); if(!b) return;
+      var k=b.getAttribute('data-act');
+      if(k==='dismiss'){ el.remove(); return; }
+      var a=actions[+k];
+      if(a&&a.run){ el.remove(); a.run(); }
+    });
+    host.appendChild(el);
+    return el;
+  }
+
+  /* Turn a failed write into something the user can act on.
+   *
+   * 401 — Cloudflare Access authenticates at the EDGE, so this page carries no
+   *       token on purpose: shipping a write credential into a page every
+   *       reader can view would defeat the auth entirely. What the page owes
+   *       the user is the expired-session case, which still happens. Never
+   *       swallowed, never retried silently: signing back in needs a full
+   *       document load so Access can run its redirect.
+   * 409 — the board moved under this view. We show the server's current value
+   *       and stop. We deliberately do NOT auto-retry with the `rev` the 409
+   *       hands back: that re-sends the same stale field values against the new
+   *       version and reintroduces exactly the clobber the rev exists to
+   *       prevent. The retry is a button the user presses, after seeing what
+   *       changed, and it re-reads before it re-sends.
+   */
+  function reportFailure(res, what, retry){
+    if(res.kind==='auth'){
+      pushNotice({
+        kind:'error',
+        title:'Your session has ended — ' + what + ' was NOT saved',
+        body:'Sign in again to continue. Your change has not been stored anywhere; re-enter it after signing in. ' + (res.message||''),
+        actions:[{label:'Reload to sign in', run:function(){ location.reload(); }}]
+      });
+      return;
+    }
+    if(res.kind==='conflict'){
+      var d=res.data||{};
+      var cur=d.current&&(d.current.task||d.current);
+      var lines=[];
+      if(cur&&typeof cur==='object'){
+        ['title','status','priority','assignee','dueDate'].forEach(function(k){
+          if(cur[k]!==undefined) lines.push(k+': '+(cur[k]==null||cur[k]===''?'—':String(cur[k])));
+        });
+      }
+      pushNotice({
+        kind:'warn',
+        title:what+' was NOT saved — your view was out of date',
+        body:'Someone changed the board after this page loaded (you were on version '+
+             (res.localRev==null?'none':res.localRev)+', the board is on version '+
+             (d.expectedRev==null?(d.rev==null?'unknown':d.rev):d.expectedRev)+
+             '). Nothing was overwritten. Current server state:',
+        lines:lines.length?lines:['(the server did not include the current record)'],
+        actions:retry?[{label:'Re-read and retry my edit', run:retry}]:[]
+      });
+      return;
+    }
+    if(res.kind==='unavailable'){
+      pushNotice({
+        kind:'error',
+        title:what+' was NOT saved — task storage is unavailable',
+        body:'The deployment has no task store bound (the API answered '+(res.message||'503')+'). '+
+             'Edits cannot be stored until it is. Nothing was written locally: a local copy would be '+
+             'silently replaced by the server on the next refresh.'
+      });
+      return;
+    }
+    pushNotice({
+      kind:'error',
+      title:what+' was NOT saved',
+      body:(res.message||'The request failed.')+' Nothing was written. Check your connection and try again.',
+      actions:retry?[{label:'Retry', run:retry}]:[]
+    });
+  }
+
+  /* Every POST from this page goes through here. No auth header: Cloudflare
+     Access authenticates at the edge from the browser's own session cookie,
+     which is why credentials:'same-origin' matters and a page-side token does
+     not exist. Responses may carry `activityWarning` — the record saved but its
+     audit entry did not — which is surfaced quietly rather than dropped. */
+  async function postJson(url, body){
+    var res;
+    try{
+      res=await fetch(url,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'same-origin',
+        body:JSON.stringify(body)
+      });
+    }catch(e){
+      return {ok:false, kind:'network', message:(e&&e.message)||String(e)};
+    }
+    var data=null;
+    try{ data=await res.json(); }catch(e){ data=null; }
+    if(res.ok){
+      if(data&&data.activityWarning){
+        pushNotice({
+          kind:'warn',
+          title:'Saved — but the audit entry was not written',
+          body:String(data.activityWarning)+' The change itself is stored; the activity trail is missing this event, so the log is incomplete rather than wrong.'
+        });
+      }
+      return {ok:true, data:data||{}};
+    }
+    if(res.status===401) return {ok:false, kind:'auth', data:data, message:(data&&data.message)||''};
+    if(res.status===409) return {ok:false, kind:'conflict', data:data||{}, message:(data&&data.message)||''};
+    if(res.status===503) return {ok:false, kind:'unavailable', data:data, message:(data&&(data.error||data.message))||'HTTP 503'};
+    return {ok:false, kind:'http', status:res.status, data:data,
+            message:(data&&(data.message||data.error))||('the server returned HTTP '+res.status)};
+  }
 
   function filtered(){
     var team=document.getElementById('f-team').value;
@@ -263,19 +456,25 @@
 
   function renderKpis(){
     var s=state.summary||{};
+    /* num() renders a missing figure as "–", not as 0 — `s.open||0` printed a
+       confident zero for a summary that was never computed. */
     document.getElementById('kpis').innerHTML=
-      '<div class="kpi"><div class="l">Open tasks</div><div class="v">'+(s.open||0)+'</div></div>'+
-      '<div class="kpi"><div class="l">Overdue</div><div class="v">'+(s.overdue||0)+'</div></div>'+
-      '<div class="kpi warn"><div class="l">Due in 3 days</div><div class="v">'+(s.dueSoon||0)+'</div></div>'+
-      '<div class="kpi"><div class="l">Blocked</div><div class="v">'+(s.blocked||0)+'</div></div>'+
-      '<div class="kpi good"><div class="l">Complete</div><div class="v">'+(s.completePct||0)+'%</div></div>';
+      '<div class="kpi"><div class="l">Open tasks</div><div class="v">'+num(s.open)+'</div></div>'+
+      '<div class="kpi"><div class="l">Overdue</div><div class="v">'+num(s.overdue)+'</div></div>'+
+      '<div class="kpi warn"><div class="l">Due in 3 days</div><div class="v">'+num(s.dueSoon)+'</div></div>'+
+      '<div class="kpi"><div class="l">Blocked</div><div class="v">'+num(s.blocked)+'</div></div>'+
+      '<div class="kpi good"><div class="l">Complete</div><div class="v">'+GB.pct(s.completePct,0)+'</div></div>';
   }
 
   function cardHtml(t){
     var due=dueLabel(t.dueDate);
     var note=(t.notes&&t.notes[0])?('<p class="alert">'+esc(t.notes[0].text)+'</p>'):'';
     var who=t.assignee||'Unassigned';
-    return '<div class="tcard" data-id="'+esc(t.id)+'">'+
+    /* role/tabindex/aria-label: this was a bare <div> with a click handler, so
+       it was invisible to the keyboard and announced as nothing. It opens a
+       dialog, so it is a button, and it says which task it opens. */
+    return '<div class="tcard" role="button" tabindex="0" data-id="'+esc(t.id)+'"'+
+      ' aria-label="Open task '+esc(t.id)+': '+esc(t.title)+'">'+
       '<h3>'+esc(t.title)+'</h3>'+
       '<div class="meta"><span class="tag '+teamKey(t.team)+'">'+esc(teamLabel(t.team))+'</span>'+
       '<span class="tag id">'+esc(t.id)+'</span>'+
@@ -341,7 +540,9 @@
     if(!rows.length) html+='<tr><td colspan="7" class="empty">No matches</td></tr>';
     rows.forEach(function(t){
       var due=dueLabel(t.dueDate);
-      html+='<tr data-id="'+esc(t.id)+'"><td><span class="pri '+esc(t.priority)+'">'+esc(t.priority)+'</span></td>'+
+      /* Same click-only defect as the cards: the row opens the drawer, so it
+         has to be reachable and activatable from the keyboard. */
+      html+='<tr data-id="'+esc(t.id)+'" tabindex="0" aria-label="Open task '+esc(t.id)+': '+esc(t.title)+'"><td><span class="pri '+esc(t.priority)+'">'+esc(t.priority)+'</span></td>'+
         '<td style="font-family:JetBrains Mono,monospace">'+esc(t.id)+'</td><td>'+esc(t.title)+'</td>'+
         '<td><span class="tag '+teamKey(t.team)+'">'+esc(teamLabel(t.team))+'</span></td>'+
         '<td>'+esc(t.assignee||'—')+'</td><td>'+statusBadge(t.status)+'</td>'+
@@ -373,15 +574,20 @@
     document.getElementById('roster').innerHTML=html||'<div class="empty">No teammates yet</div>';
   }
 
-  function openDrawer(id){
+  /* The element focus returns to when the drawer closes. Without this, closing
+     the drawer dumped focus at the top of the document. */
+  var drawerOpener=null;
+
+  function openDrawer(id, opener){
     var t=state.tasks.find(function(x){return x.id===id}); if(!t) return;
+    if(opener) drawerOpener=opener;
     state.selected=id;
     var notes=(t.notes||[]).map(function(n){
       return '<div class="note"><div class="who">'+esc((n.date||'').slice(0,16))+' · '+esc(n.author)+'</div>'+esc(n.text)+'</div>';
     }).join('')||'<div class="empty">No notes yet</div>';
     document.getElementById('drawer').innerHTML=
       '<div style="display:flex;justify-content:space-between;gap:8px"><span class="tag id">'+esc(t.id)+'</span><button type="button" class="btn ghost" id="drawer-close">Close</button></div>'+
-      '<h2>'+esc(t.title)+'</h2>'+
+      '<h2 id="drawer-title">'+esc(t.title)+'</h2>'+
       '<div class="meta" style="margin:8px 0 12px"><span class="tag '+teamKey(t.team)+'">'+esc(teamLabel(t.team))+'</span> '+statusBadge(t.status)+'</div>'+
       '<div class="rationale">'+esc(t.details||t.rationale||'')+'</div>'+
       '<div class="field"><label>Status</label><select id="d-status">'+['todo','in-progress','blocked','done'].map(function(x){return '<option value="'+x+'"'+(t.status===x?' selected':'')+'>'+x+'</option>'}).join('')+'</select></div>'+
@@ -392,30 +598,74 @@
       '<div class="field" style="margin-top:16px"><label>Add note</label><textarea id="d-note"></textarea>'+
       '<div class="modal-actions"><input id="d-author" placeholder="Your name" style="flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px" value="'+esc(t.assignee||'')+'"><button type="button" class="btn" id="d-add-note">Append</button></div></div>'+
       '<div class="field"><label>Notes</label><div class="notes">'+notes+'</div></div>';
-    document.getElementById('drawer').classList.add('open');
+    var d=document.getElementById('drawer');
+    d.classList.add('open');
+    /* THE DEFECT (#6): aria-hidden="true" was hardcoded in the markup and
+       openDrawer never removed it, so this panel covered the page and held the
+       focused controls while being entirely absent from the accessibility
+       tree. Remove it on open, restore it on close. */
+    d.removeAttribute('aria-hidden');
     document.getElementById('drawer-bg').classList.add('open');
+    var first=document.getElementById('drawer-close');
+    if(first) first.focus();
+    else d.focus();
   }
   function closeDrawer(){
-    document.getElementById('drawer').classList.remove('open');
+    var d=document.getElementById('drawer');
+    d.classList.remove('open');
+    /* Hidden from AT again while it is off-screen, so a screen reader does not
+       tab into a panel the sighted user cannot see. */
+    d.setAttribute('aria-hidden','true');
     document.getElementById('drawer-bg').classList.remove('open');
     state.selected=null;
+    if(drawerOpener&&document.contains(drawerOpener)) drawerOpener.focus();
+    drawerOpener=null;
   }
 
-  async function patch(id, body){
-    try{
-      var res=await fetch('/api/tasks/'+encodeURIComponent(id),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(res.ok) return await res.json();
-      if(res.status===503){ applyLocal(id,body); return {local:true}; }
-      throw new Error('fail');
-    }catch(e){ applyLocal(id,body); return {local:true}; }
-  }
-  function applyLocal(id, body){
-    var t=state.tasks.find(function(x){return x.id===id}); if(!t) return;
-    Object.keys(body).forEach(function(k){ if(k!=='note'&&k!=='doneBy') t[k]=body[k]; });
-    if(body.status==='done') t.completedAt=new Date().toISOString();
-    if(body.note&&body.note.text) t.notes=[{date:new Date().toISOString(),author:body.note.author||'local',text:body.note.text}].concat(t.notes||[]);
-    try{localStorage.setItem('gb-tasks-v2',JSON.stringify(state.tasks))}catch(e){}
-    recompute();
+  /* Update one task.
+   *
+   * THE DEFECT (#4): this used to catch every failure — 401, 409, 5xx, offline
+   * — call applyLocal(), stash the edit in localStorage and return
+   * {local:true}, i.e. report success. Every caller then ran reload(), which
+   * re-read /api/tasks and overwrote state.tasks from the server, so the edit
+   * vanished within the same click with nothing on screen to explain it. The
+   * localStorage fallback was worse than useless: it made a lost write look
+   * like a saved one. It is gone. A write either reaches the server or is
+   * reported as not saved.
+   *
+   * Returns a result object; callers must check `.ok` before reloading.
+   */
+  async function patch(id, body, what){
+    var label=what||('Task '+id);
+    /* An update with no rev is rejected by the API by design (store.js:
+       checkRev with isNew=false). Say so here rather than firing a request we
+       know will 409. */
+    if(state.rev==null){
+      pushNotice({
+        kind:'error',
+        title:label+' was NOT saved',
+        body:'This page never received a board version from the server, so it cannot update safely — an update without one can silently overwrite another person’s edit. Reload to pick the version up.',
+        actions:[{label:'Reload', run:function(){ location.reload(); }}]
+      });
+      return {ok:false, kind:'no-rev'};
+    }
+    var payload=Object.assign({}, body, {rev:state.rev});
+    var res=await postJson('/api/tasks/'+encodeURIComponent(id), payload);
+    if(!res.ok){
+      res.localRev=state.rev;
+      reportFailure(res, label, async function(){
+        /* A user-pressed retry, and it RE-READS first: state.rev is refreshed
+           from the server before the same edit is re-sent. Retrying with the
+           rev the 409 handed back, without re-reading, is the clobber itself. */
+        await reload();
+        var again=await patch(id, body, label);
+        if(again.ok){
+          await reload();
+          if(state.selected===id) openDrawer(id);
+        }
+      });
+    }
+    return res;
   }
   function recompute(){
     var tasks=state.tasks, now=startDay(new Date()), in3=new Date(now); in3.setDate(in3.getDate()+3);
@@ -429,18 +679,60 @@
     };
   }
 
+  /* `updatedAt` is now nullable on purpose: the API stopped defaulting it to
+     "now", because that made a board nobody had touched for a week look freshly
+     updated on every page load. Anything rendering it must handle null and must
+     never print the string "null". */
+  function renderSyncLine(){
+    var chip=document.getElementById('live-chip');
+    var text=document.getElementById('live-text');
+    var line=document.getElementById('sync-line');
+    if(!chip||!text||!line) return;
+    chip.className='live'+(state.apiUp?'':' seed');
+    text.textContent=state.apiUp?'live':'read-only';
+    var parts=[];
+    parts.push(state.updatedAt?('last change '+GB.fmtDate(state.updatedAt)):'no change recorded yet');
+    parts.push(state.rev==null?'no board version — editing disabled':('board version '+state.rev));
+    if(state.source) parts.push('source: '+state.source);
+    line.textContent=parts.join(' · ');
+  }
+
   async function reload(){
-    var tasksData=null, teamData=null;
-    try{ var r=await fetch('/api/tasks',{cache:'no-store'}); if(r.ok) tasksData=await r.json(); }catch(e){}
-    try{ var r2=await fetch('/api/team',{cache:'no-store'}); if(r2.ok) teamData=await r2.json(); }catch(e){}
+    var tasksData=null, teamData=null, taskErr=null;
+    try{
+      var r=await fetch('/api/tasks',{cache:'no-store',credentials:'same-origin'});
+      if(r.ok) tasksData=await r.json();
+      else taskErr='GET /api/tasks returned HTTP '+r.status;
+    }catch(e){ taskErr=(e&&e.message)||String(e); }
+    try{
+      var r2=await fetch('/api/team',{cache:'no-store',credentials:'same-origin'});
+      if(r2.ok) teamData=await r2.json();
+    }catch(e){}
+
+    state.apiUp=!!tasksData;
+    /* No localStorage merge on the fallback path any more. It only ever
+       resurrected edits the server had already rejected, dressing a failed
+       write up as the current state of the board. */
     if(!tasksData){
-      tasksData=await fetch('data/tasks.json',{cache:'no-store'}).then(function(r){return r.json()});
-      try{var local=localStorage.getItem('gb-tasks-v2'); if(local){var map={}; JSON.parse(local).forEach(function(t){map[t.id]=t}); tasksData.tasks=(tasksData.tasks||[]).map(function(t){return map[t.id]?Object.assign({},t,map[t.id]):t})}}catch(e){}
+      tasksData=await GB.loadJson('data/tasks.json', {tasks:[]});
+      if(taskErr){
+        pushNotice({
+          kind:'warn',
+          title:'Showing the seed task list — the task API did not answer',
+          body:taskErr+'. These tasks are the checked-in seed file, not live board state, and nothing can be saved until the API responds.'
+        });
+      }
     }
-    if(!teamData) teamData=await fetch('data/team.json',{cache:'no-store'}).then(function(r){return r.json()});
+    if(!teamData) teamData=await GB.loadJson('data/team.json', {members:[]});
+
     state.tasks=tasksData.tasks||[];
     state.team=teamData.members||[];
+    state.rev=(tasksData&&isFinite(Number(tasksData.rev))&&tasksData.rev!=null)?Number(tasksData.rev):null;
+    state.teamRev=(teamData&&isFinite(Number(teamData.rev))&&teamData.rev!=null)?Number(teamData.rev):null;
+    state.updatedAt=(tasksData&&tasksData.updatedAt)||null;
+    state.source=(tasksData&&tasksData.source)||(state.apiUp?null:'seed file');
     if(tasksData.summary) state.summary=tasksData.summary; else recompute();
+    renderSyncLine();
     render();
   }
 
@@ -456,11 +748,29 @@
     var th=ev.target.closest('th[data-sort]');
     if(th){ var k=th.getAttribute('data-sort'); if(state.sort.key===k) state.sort.dir*=-1; else {state.sort.key=k; state.sort.dir=1;} renderList(); return; }
     if(ev.target.closest('select.st')) return;
-    var card=ev.target.closest('[data-id]'); if(card) openDrawer(card.getAttribute('data-id'));
+    var card=ev.target.closest('[data-id]'); if(card) openDrawer(card.getAttribute('data-id'), card);
   });
+
+  /* Keyboard activation for the cards and list rows. Enter and Space are what
+     a role="button" must respond to; Space is also prevented from scrolling. */
+  document.getElementById('view').addEventListener('keydown', function(ev){
+    if(ev.key!=='Enter'&&ev.key!==' '&&ev.key!=='Spacebar') return;
+    var el=ev.target.closest('[data-id]');
+    /* Only when the card/row ITSELF has focus — never swallow keys typed into
+       the status <select> nested inside it. */
+    if(!el||el!==ev.target) return;
+    ev.preventDefault();
+    openDrawer(el.getAttribute('data-id'), el);
+  });
+
   document.getElementById('view').addEventListener('change', async function(ev){
     if(!ev.target.classList.contains('st')) return;
-    await patch(ev.target.getAttribute('data-id'), {status:ev.target.value, doneBy:'dashboard'});
+    var id=ev.target.getAttribute('data-id');
+    var previous=(state.tasks.find(function(x){return x.id===id})||{}).status;
+    var res=await patch(id, {status:ev.target.value, doneBy:'dashboard'}, 'Status change on '+id);
+    /* Put the control back where it was when the save failed, so the dropdown
+       stops showing a value the server never accepted. */
+    if(!res.ok){ if(previous!=null) ev.target.value=previous; return; }
     await reload();
   });
 
@@ -496,17 +806,23 @@
       assignee:document.getElementById('n-assignee').value.trim()||null,
       owner:document.getElementById('n-team').value==='Development'?'Dev':document.getElementById('n-team').value
     };
-    try{
-      var res=await fetch('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(!res.ok && res.status!==503) throw new Error('create failed');
-      if(res.status===503){
-        body.id='T-local-'+Date.now(); body.source='custom'; body.notes=[]; body.createdAt=new Date().toISOString(); body.rationale=body.details;
-        state.tasks.unshift(body); recompute();
-        try{localStorage.setItem('gb-tasks-v2',JSON.stringify(state.tasks))}catch(e){}
-      }
-    }catch(e){
-      body.id='T-local-'+Date.now(); body.source='custom'; body.notes=[]; body.createdAt=new Date().toISOString(); body.rationale=body.details;
-      state.tasks.unshift(body); recompute();
+    /* Same silent-failure shape as patch(): a failed create used to be faked
+       into state.tasks with a "T-local-…" id, and the very next reload() wiped
+       it. A creation that did not reach the server is not a task. `rev` is
+       optional for a genuine create (store.js: isNew) but sent when we have
+       one, so a colliding id is caught as a conflict instead of a replace. */
+    var payload=Object.assign({}, body);
+    if(state.rev!=null) payload.rev=state.rev;
+    var res=await postJson('/api/tasks', payload);
+    if(!res.ok){
+      res.localRev=state.rev;
+      /* Modal stays open and the fields keep their values, so the user does
+         not lose what they typed along with the save. */
+      reportFailure(res, 'New task "'+title+'"', async function(){
+        await reload();
+        document.getElementById('n-save').click();
+      });
+      return;
     }
     closeModal('modal-new');
     ['n-title','n-details','n-assignee','n-due'].forEach(function(id){document.getElementById(id).value=''});
@@ -517,48 +833,69 @@
     var name=document.getElementById('t-name').value.trim();
     if(!name) return;
     var member={name:name, team:document.getElementById('t-team').value};
-    try{
-      var res=await fetch('/api/team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'add',member:member})});
-      if(res.ok){ var data=await res.json(); state.team=data.members; }
-      else if(res.status===503){
-        member.id='m-local-'+Date.now(); member.color='#0d9488'; state.team.push(member);
-        try{localStorage.setItem('gb-team-v1',JSON.stringify(state.team))}catch(e){}
-      }
-    }catch(e){
-      member.id='m-local-'+Date.now(); member.color='#0d9488'; state.team.push(member);
-    }
+    /* 'add' creates a record, so the API allows it without a rev; we still send
+       ours when we have one. The old code invented an 'm-local-…' member on any
+       failure — a teammate who existed only in this tab, assignable to tasks
+       the server had never heard of. */
+    var addBody={action:'add', member:member};
+    if(state.teamRev!=null) addBody.rev=state.teamRev;
+    var res=await postJson('/api/team', addBody);
+    if(!res.ok){ res.localRev=state.teamRev; reportFailure(res, 'Adding '+name); return; }
+    state.team=(res.data&&res.data.members)||state.team;
+    if(res.data&&res.data.rev!=null) state.teamRev=Number(res.data.rev);
     document.getElementById('t-name').value='';
     renderRoster(); render();
   });
   document.getElementById('roster').addEventListener('click', async function(ev){
     var btn=ev.target.closest('[data-rm]'); if(!btn) return;
     var id=btn.getAttribute('data-rm');
-    try{
-      var res=await fetch('/api/team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'remove',id:id})});
-      if(res.ok){ var data=await res.json(); state.team=data.members; }
-      else state.team=state.team.filter(function(m){return m.id!==id});
-    }catch(e){ state.team=state.team.filter(function(m){return m.id!==id}); }
+    /* 'remove' mutates an existing roster, so it must carry the rev. Failing
+       that, it used to just drop the row from the local array and leave the
+       person on the server — the roster on screen disagreed with the roster
+       tasks were assigned against. */
+    if(state.teamRev==null){
+      pushNotice({kind:'error', title:'Removing that teammate was NOT saved',
+        body:'This page never received a roster version from the server, so it cannot safely modify the roster. Reload and try again.',
+        actions:[{label:'Reload', run:function(){ location.reload(); }}]});
+      return;
+    }
+    var res=await postJson('/api/team', {action:'remove', id:id, rev:state.teamRev});
+    if(!res.ok){ res.localRev=state.teamRev; reportFailure(res, 'Removing that teammate'); return; }
+    state.team=(res.data&&res.data.members)||state.team;
+    if(res.data&&res.data.rev!=null) state.teamRev=Number(res.data.rev);
     renderRoster(); render();
   });
 
   document.getElementById('drawer-bg').addEventListener('click', closeDrawer);
+  /* Escape closes the drawer — a modal dialog that traps the pointer behind a
+     scrim has to be dismissible from the keyboard. */
+  document.addEventListener('keydown', function(ev){
+    if(ev.key!=='Escape') return;
+    if(document.getElementById('drawer').classList.contains('open')) closeDrawer();
+  });
   document.getElementById('drawer').addEventListener('click', async function(ev){
     if(ev.target.id==='drawer-close'){ closeDrawer(); return; }
     if(ev.target.id==='d-save' && state.selected){
-      await patch(state.selected,{
+      var id=state.selected;
+      var res=await patch(id,{
         status:document.getElementById('d-status').value,
         assignee:document.getElementById('d-assignee').value.trim()||null,
         dueDate:document.getElementById('d-due').value||null,
         priority:document.getElementById('d-priority').value,
         doneBy:document.getElementById('d-author').value||'dashboard'
-      });
-      await reload(); openDrawer(state.selected);
+      }, 'Your edit to '+id);
+      /* On failure the drawer is left exactly as the user typed it: reloading
+         would discard their unsaved input on top of losing the save. */
+      if(!res.ok) return;
+      await reload(); openDrawer(id);
     }
     if(ev.target.id==='d-add-note' && state.selected){
+      var noteId=state.selected;
       var text=document.getElementById('d-note').value.trim(); if(!text) return;
       var author=document.getElementById('d-author').value||'dashboard';
-      await patch(state.selected,{note:{author:author,text:text}, doneBy:author});
-      await reload(); openDrawer(state.selected);
+      var noteRes=await patch(noteId,{note:{author:author,text:text}, doneBy:author}, 'Your note on '+noteId);
+      if(!noteRes.ok) return;
+      await reload(); openDrawer(noteId);
     }
   });
 

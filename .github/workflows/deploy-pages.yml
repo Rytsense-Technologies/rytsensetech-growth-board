@@ -1,6 +1,13 @@
 # Deploy Growth Board to Cloudflare Pages when data or site files change.
-# Primary path for daily Claude refresh: Claude writes data/latest.json and
-# pushes via GitHub API → this workflow deploys (no local Windows shell needed).
+#
+# THIS WORKFLOW IS THE AUTHORITATIVE DEPLOY PATH. It deploys git HEAD, which is
+# reproducible and reviewable. `npm run deploy:cf` on a laptop deploys the local
+# WORKING TREE with --commit-dirty=true — a different source. When both ran (the
+# daily refresh prompt used to instruct exactly that), whichever finished last
+# won; on 2026-09-25 the richer local tree lost the race to a trimmed push and
+# the site served a dataset 94% smaller than intended for three days.
+# The refresh prompt now pushes to GitHub and stops. The local script is the
+# documented manual/emergency path only. See README → Deploying.
 #
 # One-time setup in GitHub repo Settings → Secrets and variables → Actions:
 #   CLOUDFLARE_API_TOKEN  — Pages edit token (same as secrets/cloudflare-api-token.txt)
@@ -20,14 +27,25 @@ on:
       - 'assets/**'
       - 'functions/**'
       - 'scripts/deploy-cloudflare.mjs'
+      - 'scripts/validate-data.mjs'
       - 'wrangler.toml'
       - 'package.json'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
+permissions:
+  # Needed only by the last step, which commits the deploy's observed outcome.
+  contents: write
+
 concurrency:
   group: deploy-pages
-  cancel-in-progress: true
+  # cancel-in-progress was true. Each refresh pushes three separate Contents API
+  # commits within ~16s (latest.json, history/<date>.json, history/index.json),
+  # so runs 1 and 2 were cancelled mid-upload every single day as a matter of
+  # routine — which made a genuine cancellation indistinguishable from normal
+  # operation in the Actions log. Queueing instead: every run completes, in order,
+  # and a cancelled run now means something actually went wrong.
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -35,10 +53,26 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # validate-data.mjs compares row counts against the previous commit.
+          fetch-depth: 2
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      # Gate: blocks the PLACEHOLDER push (4b2cf2d), the entity-encoded "fix"
+      # (d7360a9) and the -94% row truncation (2026-09-25) before wrangler runs.
+      # Non-zero exit fails the job and nothing is published.
+      - name: Validate data/
+        run: node scripts/validate-data.mjs --base HEAD~1
+
+      # The vendored agent toolkit is generated. It drifted 65 files and five
+      # commits behind upstream unnoticed, and what it lacked were the house
+      # rules that stop agents publishing numbers they never measured — on the
+      # copy that publishes to this board. Cheap to verify, so verify.
+      - name: Check vendored agent copy
+        run: node scripts/check-vendor-drift.mjs
 
       - name: Install wrangler
         run: npm install --no-save wrangler@4
@@ -46,4 +80,30 @@ jobs:
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npm run deploy:cf
+        # deploy-cloudflare.mjs directly, not `npm run deploy:cf`: the npm script
+        # re-runs the validator and the step above already gated this run.
+        # The script writes cloudflare.deployment from wrangler's exit code.
+        run: node scripts/deploy-cloudflare.mjs
+
+      # The deploy's real outcome is only useful if it survives the runner.
+      # Committed with [skip ci] so it does not re-trigger this workflow; it is
+      # published by the next deploy, and the data says so (describes:
+      # "previous deploy"). Never fails the job — bookkeeping must not change
+      # the verdict on the deploy itself.
+      - name: Commit observed deploy status
+        if: always()
+        continue-on-error: true
+        run: |
+          git config user.name "growth-board-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/latest.json
+          git diff --cached --quiet && echo "No deploy-status change to commit." && exit 0
+          git commit -m "chore: record observed Cloudflare deploy status [skip ci]"
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
+
+      - name: Report cancellation
+        if: cancelled()
+        run: |
+          echo "::warning title=Deploy cancelled::Cancellations are no longer routine (cancel-in-progress is false). Treat this as a real failure and check whether the live site matches HEAD."
+          exit 1

@@ -3,12 +3,13 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Live SEO & marketing dashboard for rytsensetech.com — data pulled from Search Console, GA4 and Clarity on a schedule via GitHub Actions, served as a static site on Vercel.",
+  "description": "Live SEO & marketing dashboard for rytsensetech.com — data refreshed daily by a Claude scheduled task via MCP, validated, then served as a static site on Cloudflare Pages.",
   "scripts": {
-    "fetch-data": "node scripts/fetch-data.mjs",
-    "deploy:cf": "node scripts/deploy-cloudflare.mjs"
-  },
-  "dependencies": {
-    "googleapis": "^140.0.0"
+    "validate:data": "node scripts/validate-data.mjs",
+    "repair:history": "node scripts/repair-history-index.mjs",
+    "sync:agents": "node scripts/sync-agents.mjs",
+    "check:agents": "node scripts/check-vendor-drift.mjs",
+    "check": "node scripts/validate-data.mjs && node scripts/check-vendor-drift.mjs",
+    "deploy:cf": "node scripts/validate-data.mjs && node scripts/check-vendor-drift.mjs && node scripts/deploy-cloudflare.mjs"
   }
 }

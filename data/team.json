@@ -1,5 +1,6 @@
 {
-  "updatedAt": "2026-09-21T13:08:02.496Z",
+  "updatedAt": "2026-09-28T00:00:00.000Z",
+  "note": "Roster reconciled 2026-09-28. Commit b63eaed (2026-09-24) unassigned 13 tasks from Arun, Priya and Ravi because they are not real team members, but left them in this file — so /api/team kept offering them in the assignee dropdown. They are removed here. Only members verifiable from the repo are listed; the remaining SEO analyst seats must be added by a human with their real names rather than invented.",
   "members": [
     {
       "id": "m-sri",
@@ -12,24 +13,6 @@
       "name": "Ananya",
       "team": "Development",
       "color": "#7c3aed"
-    },
-    {
-      "id": "m-priya",
-      "name": "Priya",
-      "team": "Content",
-      "color": "#146c43"
-    },
-    {
-      "id": "m-arun",
-      "name": "Arun",
-      "team": "SEO",
-      "color": "#c2410c"
-    },
-    {
-      "id": "m-ravi",
-      "name": "Ravi",
-      "team": "Marketing",
-      "color": "#b45309"
     }
   ]
 }

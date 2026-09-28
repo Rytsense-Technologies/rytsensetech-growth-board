@@ -1,0 +1,159 @@
+/* Growth Board — shared design tokens.
+ *
+ * WHY: index.html, platform.html and ops.html each carried a byte-identical
+ * copy of this :root palette (17 custom properties plus a dark-mode override).
+ * Three copies had already been independently reformatted, which is what drift
+ * looks like just before it becomes divergence. One definition.
+ *
+ * NOT adopted by tasks.html or report.html: both use a different, self-
+ * contained palette (--bg/--panel/--sig, and .rts-report-scoped tokens
+ * respectively). Unifying those is a visual redesign, not a dedup — left for
+ * a later pass rather than risked here.
+ *
+ * --sidebar is per-page (ops 220px, platform 232px) and stays in the page.
+ */
+
+:root {
+  --paper: #F5F6F8;
+  --paper-raised: #FFFFFF;
+  --ink: #12181F;
+  --ink-soft: #4B5563;
+  --ink-faint: #8B93A1;
+  --line: #E2E5EA;
+  --accent: #0E7A82;
+  --accent-soft: #E4F2F1;
+  --accent-ink: #075258;
+  --good: #1E8E5A;
+  --good-soft: #E4F5EC;
+  --warn: #B4740E;
+  --warn-soft: #FBF0DC;
+  --bad: #C23B3B;
+  --bad-soft: #FBE7E7;
+  --chip-bg: #EDEFF3;
+  --shadow: 0 1px 2px rgba(18, 24, 31, 0.04), 0 8px 24px -12px rgba(18, 24, 31, 0.12);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0B1013;
+    --paper-raised: #141A1F;
+    --ink: #E8ECEF;
+    --ink-soft: #A7AFB9;
+    --ink-faint: #6C7480;
+    --line: #232B31;
+    --accent: #3FBFC2;
+    --accent-soft: #132726;
+    --accent-ink: #8FE0E2;
+    --good: #49C285;
+    --good-soft: #132520;
+    --warn: #E3A83B;
+    --warn-soft: #2A2013;
+    --bad: #E4685E;
+    --bad-soft: #2A1717;
+    --chip-bg: #1B2126;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #0B1013;
+  --paper-raised: #141A1F;
+  --ink: #E8ECEF;
+  --ink-soft: #A7AFB9;
+  --ink-faint: #6C7480;
+  --line: #232B31;
+  --accent: #3FBFC2;
+  --accent-soft: #132726;
+  --accent-ink: #8FE0E2;
+  --good: #49C285;
+  --good-soft: #132520;
+  --warn: #E3A83B;
+  --warn-soft: #2A2013;
+  --bad: #E4685E;
+  --bad-soft: #2A1717;
+  --chip-bg: #1B2126;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------------------------------------------------------------------------
+ * Provenance UI — shared across index / platform / ops.
+ * These classes exist so a reader can tell a measured number from a stale one
+ * from one that was never retrieved.
+ * ------------------------------------------------------------------------- */
+
+/* Source-health dot. Ships `unknown` (grey) in static HTML: a dot must never
+   assert a connection before a fetch has verified one. index.html used to ship
+   two green "connected" dots into the markup. */
+.gb-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  flex: none;
+}
+.gb-dot.ok { background: var(--good); }
+.gb-dot.stale { background: var(--warn); }
+.gb-dot.failed { background: var(--bad); }
+.gb-dot.not-connected { background: var(--ink-faint); opacity: .55; }
+.gb-dot.unknown { background: var(--ink-faint); opacity: .55; }
+
+/* "not measured" caveat strip — renders the source note that used to be
+   read only on the failure branch and therefore never displayed. */
+.gb-note {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--chip-bg);
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+.gb-note strong { color: var(--ink); }
+.gb-note.warn {
+  background: var(--warn-soft);
+  border-color: color-mix(in srgb, var(--warn) 35%, var(--line));
+}
+.gb-note.bad {
+  background: var(--bad-soft);
+  border-color: color-mix(in srgb, var(--bad) 35%, var(--line));
+}
+
+/* Page-level failure banner. Every fetch path needs a visible error state that
+   says what failed and when the data last succeeded. */
+.gb-error {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--bad) 40%, var(--line));
+  background: var(--bad-soft);
+  color: var(--ink);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.gb-error strong { display: block; color: var(--bad); margin-bottom: 4px; }
+.gb-error .gb-error-meta { color: var(--ink-soft); font-size: 11.5px; }
+
+/* Window / as-of caption printed beside every GSC and GA4 figure. */
+.gb-period {
+  font-size: 11px;
+  color: var(--ink-faint);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Sampled-table header: "sample · 30 of 500 rows". */
+.gb-sample {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+/* Value that was never retrieved. Greyed so it cannot be misread as a figure. */
+.gb-nm { color: var(--ink-faint); font-weight: 600; }

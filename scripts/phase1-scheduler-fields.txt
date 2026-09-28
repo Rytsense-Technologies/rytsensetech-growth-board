@@ -47,3 +47,10 @@ Do **not** remove existing `gsc` / `ga4` / `clarity` / `github` / `cloudflare` k
 5. On each run, also write `data/history/YYYY-MM-DD.json` with compact totals only (Phase 2).
 
 UI modules (m-exec, m-geo, m-page, …) render “not connected” / empty-state when a key is missing — never fake zeros for absent sources.
+
+## Truncation (added 2026-09-28)
+
+A section whose rows were capped to fit a tool-call output limit is **`"status": "partial"`**, with
+`rowsReturned` and `rowsAvailable` — never `"status": "ok"` with a note admitting the cap. That
+combination shipped on 2026-09-25 (`gscByQuery` 500 → 30 rows, still `"ok"`) and three days of
+analysis ran against a silently reduced sample. `scripts/validate-data.mjs` now fails on it.

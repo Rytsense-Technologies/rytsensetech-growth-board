@@ -4,46 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rytsensetech Growth Board</title>
+<!-- Design tokens + provenance UI are shared with platform.html / ops.html.
+     They used to be a byte-identical :root block copy-pasted into all three. -->
+<link rel="stylesheet" href="assets/board-tokens.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-  :root{
-    --paper:#F5F6F8;
-    --paper-raised:#FFFFFF;
-    --ink:#12181F;
-    --ink-soft:#4B5563;
-    --ink-faint:#8B93A1;
-    --line:#E2E5EA;
-    --accent:#0E7A82;
-    --accent-soft:#E4F2F1;
-    --accent-ink:#075258;
-    --good:#1E8E5A;
-    --good-soft:#E4F5EC;
-    --warn:#B4740E;
-    --warn-soft:#FBF0DC;
-    --bad:#C23B3B;
-    --bad-soft:#FBE7E7;
-    --chip-bg:#EDEFF3;
-    --shadow: 0 1px 2px rgba(18,24,31,0.04), 0 8px 24px -12px rgba(18,24,31,0.12);
-    color-scheme: light;
-  }
-
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --paper:#0B1013; --paper-raised:#141A1F; --ink:#E8ECEF; --ink-soft:#A7AFB9; --ink-faint:#6C7480;
-      --line:#232B31; --accent:#3FBFC2; --accent-soft:#132726; --accent-ink:#8FE0E2;
-      --good:#49C285; --good-soft:#132520; --warn:#E3A83B; --warn-soft:#2A2013;
-      --bad:#E4685E; --bad-soft:#2A1717; --chip-bg:#1B2126;
-      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
-    }
-  }
-  :root[data-theme="dark"]{
-    --paper:#0B1013; --paper-raised:#141A1F; --ink:#E8ECEF; --ink-soft:#A7AFB9; --ink-faint:#6C7480;
-    --line:#232B31; --accent:#3FBFC2; --accent-soft:#132726; --accent-ink:#8FE0E2;
-    --good:#49C285; --good-soft:#132520; --warn:#E3A83B; --warn-soft:#2A2013;
-    --bad:#E4685E; --bad-soft:#2A1717; --chip-bg:#1B2126;
-    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
-  }
 
   *{box-sizing:border-box;}
   html,body{ background:var(--paper); }
@@ -81,11 +46,16 @@
   .live-dot{ width:7px; height:7px; border-radius:50%; background:var(--good); box-shadow:0 0 0 3px color-mix(in srgb, var(--good) 25%, transparent); }
   .live-dot.stale{ background:var(--warn); box-shadow:0 0 0 3px color-mix(in srgb, var(--warn) 25%, transparent); }
   .live-pill.stale{ background:var(--warn-soft); color:var(--warn); border-color:color-mix(in srgb, var(--warn) 30%, transparent); }
+  .live-dot.failed{ background:var(--bad); box-shadow:0 0 0 3px color-mix(in srgb, var(--bad) 25%, transparent); }
+  .live-pill.failed{ background:var(--bad-soft); color:var(--bad); border-color:color-mix(in srgb, var(--bad) 30%, transparent); }
+  .live-dot.unknown{ background:var(--ink-faint); box-shadow:none; }
+  .live-pill.unknown{ background:var(--chip-bg); color:var(--ink-soft); border-color:var(--line); }
+  .coverage{ font-size:11.5px; color:var(--ink-faint); }
   .sources{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+  /* Chips carry their state in text as well as colour, and ship neutral: an
+     indicator must not assert "connected" before any fetch has happened. */
   .source-chip{ font-size:11px; font-weight:600; padding:4px 9px; border-radius:6px; background:var(--chip-bg); color:var(--ink-soft); display:flex; align-items:center; gap:5px; }
-  .source-chip .dot{ width:6px; height:6px; border-radius:50%; }
-  .source-chip .dot.ok{ background:var(--good); }
-  .source-chip .dot.off{ background:var(--bad); }
+  .source-chip .state{ font-weight:500; color:var(--ink-faint); }
 
   .tiles{
     display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:1px;
@@ -242,19 +212,30 @@
       <p id="site-url">rytsensetech.com &middot; SEO &amp; Marketing &middot; shared live view</p>
     </div>
     <div class="status-cluster">
-      <div class="live-pill" id="live-pill">
-        <span class="live-dot" id="live-dot"></span>
+      <div class="live-pill unknown" id="live-pill">
+        <span class="live-dot unknown" id="live-dot"></span>
         <span id="live-text">Connecting&hellip;</span>
       </div>
+      <!-- "Synced at" is the job's clock. "GSC data through" is what the
+           numbers actually cover. They are 2-3 days apart and both matter. -->
+      <div class="coverage" id="coverage"></div>
+      <!-- Every dot ships `unknown`: hardcoded green dots used to claim GSC and
+           GA4 were connected before a single byte had been fetched, and stayed
+           green through a corrupt latest.json (commits 4b2cf2d / d7360a9). -->
       <div class="sources" id="sources">
-        <span class="source-chip" data-source="gsc"><span class="dot ok"></span>Search Console</span>
-        <span class="source-chip" data-source="ga4"><span class="dot ok"></span>GA4</span>
-        <span class="source-chip" data-source="clarity"><span class="dot off"></span>Clarity</span>
-        <span class="source-chip" data-source="github"><span class="dot off"></span>GitHub</span>
-        <span class="source-chip" data-source="cloudflare"><span class="dot off"></span>Cloudflare</span>
+        <span class="source-chip" data-source="gsc"><span class="gb-dot unknown"></span>Search Console <span class="state">checking…</span></span>
+        <span class="source-chip" data-source="ga4"><span class="gb-dot unknown"></span>GA4 <span class="state">checking…</span></span>
+        <span class="source-chip" data-source="clarity"><span class="gb-dot unknown"></span>Clarity <span class="state">checking…</span></span>
+        <span class="source-chip" data-source="github"><span class="gb-dot unknown"></span>GitHub <span class="state">checking…</span></span>
+        <span class="source-chip" data-source="cloudflare"><span class="gb-dot unknown"></span>Cloudflare <span class="state">checking…</span></span>
+        <span class="source-chip" data-source="crm"><span class="gb-dot not-connected"></span>CRM <span class="state">not connected</span></span>
       </div>
     </div>
   </div>
+
+  <main id="main">
+
+  <div id="error-slot" role="status" aria-live="polite"></div>
 
   <div class="tiles" id="tiles"></div>
 
@@ -320,54 +301,70 @@
     </div>
   </div>
 
+  </main>
+
 </div>
 
+<script src="assets/board-format.js"></script>
 <script>
 (function(){
-  var fmt = new Intl.NumberFormat('en-US');
-  function fmtNum(n){ if(n===undefined||n===null||isNaN(n)) return '–'; return fmt.format(Math.round(n)); }
-  function fmtPct(n){ if(n===undefined||n===null||isNaN(n)) return '–'; return n.toFixed(1)+'%'; }
-  function fmtDate(iso){
-    if(!iso) return '–';
-    var d = new Date(iso);
-    return d.toLocaleString('en-IN', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata'}) + ' IST';
-  }
+  /* Formatters live in assets/board-format.js — they used to be redefined here
+     and in four other pages, and had drifted apart. */
+  var esc = GB.esc, fmtNum = GB.num, fmtPct = GB.pct, fmtDate = GB.fmtDate;
+  var relativeTime = GB.relativeTime, NM = GB.NOT_MEASURED;
+
   function ymdToLabel(ymd){
     var y=ymd.slice(0,4), m=ymd.slice(4,6), d=ymd.slice(6,8);
     var dt = new Date(y+'-'+m+'-'+d+'T00:00:00Z');
     return dt.toLocaleDateString('en-US',{month:'short', day:'numeric'});
   }
-  function relativeTime(iso){
-    if(!iso) return '–';
-    var ms = Date.now() - new Date(iso).getTime();
-    if(isNaN(ms)) return '–';
-    var sec = Math.round(ms / 1000);
-    if(sec < 45) return 'just now';
-    var min = Math.round(sec / 60);
-    if(min < 60) return min + 'm ago';
-    var hr = Math.round(min / 60);
-    if(hr < 48) return hr + 'h ago';
-    var day = Math.round(hr / 24);
-    if(day < 30) return day + 'd ago';
-    var mo = Math.round(day / 30);
-    if(mo < 12) return mo + 'mo ago';
-    return Math.round(mo / 12) + 'y ago';
-  }
-  function esc(s){
-    return String(s == null ? '' : s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;');
-  }
-  function setSourceDot(name, ok){
-    var chip = document.querySelector('#sources .source-chip[data-source="'+name+'"] .dot');
-    if(chip) chip.className = 'dot ' + (ok ? 'ok' : 'off');
-  }
-  function unavailableHtml(note){
-    return '<div class="empty-state"><span class="badge">Not reporting</span><p>'+
-      esc(note || 'Waiting for first sync…')+'</p></div>';
+
+  /* A source indicator reports one of four real states and says which in text,
+     alongside the time the data it represents was last synced. It is no longer
+     driven by "does this key exist in the JSON". */
+  function setSourceDot(name, state, syncedAt){
+    var chip = document.querySelector('#sources .source-chip[data-source="'+name+'"]');
+    if(!chip) return;
+    var dot = chip.querySelector('.gb-dot');
+    var label = chip.querySelector('.state');
+    if(dot) dot.className = 'gb-dot ' + state;
+    if(label){
+      var text = GB.STATE_LABEL[state] || state;
+      if(state === GB.STATE.OK && syncedAt) text = 'synced ' + relativeTime(syncedAt);
+      else if(state === GB.STATE.STALE && syncedAt) text = 'stale · last synced ' + relativeTime(syncedAt);
+      label.textContent = text;
+      chip.title = name + ': ' + (GB.STATE_LABEL[state] || state) +
+        (syncedAt ? ' · last synced ' + fmtDate(syncedAt) : ' · never synced');
+    }
   }
 
+  function unavailableHtml(note, heading){
+    return '<div class="empty-state"><span class="badge">'+esc(heading || 'Not measured')+'</span><p>'+
+      esc(note || 'This source has not reported. No value was retrieved — this is not a measured zero.')+'</p></div>';
+  }
+
+  /* Renders a source's own note. cloudflare.note used to be read only on the
+     failure branch, so the one string explaining that the zeros were not
+     measurements never reached the page. */
+  function noteHtml(note, tone){
+    if(!note) return '';
+    return '<p class="gb-note'+(tone?' '+tone:'')+'">'+esc(note)+'</p>';
+  }
+
+  /* Caption printed under every GSC/GA4 figure: the window it covers and,
+     when the window's tail is inside the Search Console lag, that it is
+     provisional. gsc.period was in the data and rendered on zero pages. */
+  function periodCaption(period, updatedAt){
+    var label = GB.periodLabel(period);
+    if(!label) return '<div class="gb-period">window not stated in feed</div>';
+    var prov = GB.isProvisional(period, updatedAt);
+    return '<div class="gb-period">'+esc(label)+(prov?' · provisional':'')+'</div>';
+  }
+
+  /* null percent means "the denominator was zero, or we never measured it" —
+     it is not 0.0% flat. A site going 0 -> 500 clicks used to render "→ 0.0%". */
   function deltaEl(pct, invert){
+    if(pct === undefined || pct === null || isNaN(pct)) return '<span class="delta flat">'+NM+' not measured</span>';
     var up = invert ? pct < 0 : pct > 0;
     var flat = Math.abs(pct) < 0.1;
     var cls = flat ? 'flat' : (up ? 'up' : 'down');
@@ -375,33 +372,71 @@
     return '<span class="delta '+cls+'">'+arrow+' '+Math.abs(pct).toFixed(1)+'%</span>';
   }
 
-  function renderTiles(gsc, ga4, taskSummary){
+  function renderTiles(gsc, ga4, taskSummary, updatedAt){
     var tiles = [];
-    if(gsc){
-      tiles.push({label:'Clicks (28d)', value: fmtNum(gsc.current.clicks), delta: deltaEl(gsc.change.clicksPercent, false)});
-      tiles.push({label:'Impressions', value: fmtNum(gsc.current.impressions), delta: deltaEl(gsc.change.impressionsPercent, false)});
-      tiles.push({label:'Avg CTR', value: gsc.current.ctr.toFixed(2)+'%', delta: gsc.prior.ctr ? deltaEl((gsc.change.ctr/gsc.prior.ctr)*100, false) : ''});
-      tiles.push({label:'Avg Position', value: gsc.current.position.toFixed(1), delta: gsc.prior.position ? deltaEl((gsc.change.position/gsc.prior.position)*100, true) : ''});
+    /* Presence of a key is not validity. A gsc object carrying
+       {status:'unavailable'} used to throw a TypeError here, which the bare
+       .catch() below swallowed, leaving the page on "Connecting…" forever. */
+    var g = (gsc && gsc.status !== undefined && gsc.status !== 'ok') ? null : gsc;
+    var gc = g && g.current, gp = (g && g.prior) || {}, gch = (g && g.change) || {};
+    var gPeriod = g && g.period;
+    var gDays = GB.periodDays(gPeriod);
+    var gLabel = gDays ? ' ('+gDays+'d)' : '';
+    var gCap = periodCaption(gPeriod, updatedAt);
+
+    if(gc){
+      tiles.push({label:'Clicks'+gLabel, value: fmtNum(gc.clicks), delta: deltaEl(gch.clicksPercent, false), caption:gCap, period:gPeriod});
+      tiles.push({label:'Impressions'+gLabel, value: fmtNum(gc.impressions), delta: deltaEl(gch.impressionsPercent, false), caption:gCap, period:gPeriod});
+      tiles.push({label:'Avg CTR'+gLabel, value: fmtPct(gc.ctr, 2), delta: deltaEl(gp.ctr ? (gch.ctr/gp.ctr)*100 : null, false), caption:gCap, period:gPeriod});
+      /* Average position is an average over a shifting query mix — a percent
+         change on it is not meaningful, so show the points moved instead. */
+      tiles.push({label:'Avg Position'+gLabel, value: GB.pos(gc.position),
+        delta: (gch.position==null||isNaN(gch.position)) ? deltaEl(null)
+          : '<span class="delta '+(gch.position<0?'up':(gch.position>0?'down':'flat'))+'">'+
+            (gch.position<0?'▲':(gch.position>0?'▼':'→'))+' '+Math.abs(gch.position).toFixed(1)+' pts</span>',
+        caption:gCap, period:gPeriod});
+    } else {
+      tiles.push({label:'Search Console', value: NM, delta:'<span class="delta flat">not retrieved</span>', caption:'<div class="gb-period">no GSC figures in this sync</div>'});
     }
-    if(ga4){
-      tiles.push({label:'Sessions (29d)', value: fmtNum(ga4.totals.sessions)});
-      tiles.push({label:'Active Users', value: fmtNum(ga4.totals.activeUsers)});
-      tiles.push({label:'Engagement Rate', value: fmtPct(ga4.totals.engagementRate*100)});
+
+    var gaT = ga4 && ga4.totals;
+    var gaPeriod = ga4 && ga4.period;
+    var gaDays = GB.periodDays(gaPeriod) || ((ga4 && ga4.daily && ga4.daily.length) || null);
+    var gaCap = gaPeriod ? periodCaption(gaPeriod, updatedAt)
+      : '<div class="gb-period">'+(gaDays?esc(gaDays+' days to today; the last day is partial'):'window not stated in feed')+'</div>';
+    if(gaT){
+      tiles.push({label:'Sessions'+(gaDays?' ('+gaDays+'d)':''), value: fmtNum(gaT.sessions), caption:gaCap});
+      tiles.push({label:'Active Users', value: fmtNum(gaT.activeUsers), caption:gaCap});
+      tiles.push({label:'Engagement Rate', value: fmtPct(gaT.engagementRate==null?null:gaT.engagementRate*100), caption:gaCap});
+    } else {
+      tiles.push({label:'GA4', value: NM, delta:'<span class="delta flat">not retrieved</span>', caption:'<div class="gb-period">no GA4 figures in this sync</div>'});
     }
+
     if(taskSummary){
-      var crit = taskSummary.openCritical||0;
-      var overdue = taskSummary.overdue||0;
+      var crit = taskSummary.openCritical;
+      var overdue = taskSummary.overdue;
       tiles.push({
         label:'Open critical tasks',
         value: fmtNum(crit),
         delta: overdue ? ('<span class="delta down">'+fmtNum(overdue)+' overdue</span>') : '<a href="tasks.html" style="font-size:12px;font-weight:600">Team Tasks →</a>',
-        warn: crit>0
+        warn: crit > 0
       });
+    } else {
+      /* The tasks API did not answer. Do not print 0 open / 0 overdue. */
+      tiles.push({label:'Open critical tasks', value: NM, delta:'<span class="delta flat">tasks API did not respond</span>'});
     }
+
     document.getElementById('tiles').innerHTML = tiles.map(function(t){
       var sub = t.delta || '';
-      if(t.delta && t.delta.indexOf('href=')<0 && t.delta.indexOf('overdue')<0) sub = t.delta + ' vs prior period';
-      return '<div class="tile"'+(t.warn?' style="outline:1px solid color-mix(in srgb, var(--bad) 35%, transparent)"':'')+'><div class="label">'+t.label+'</div><div class="value mono"'+(t.warn?' style="color:var(--bad)"':'')+'>'+t.value+'</div>'+(sub?('<div>'+sub+'</div>'):'')+'</div>';
+      if(t.delta && t.delta.indexOf('href=')<0 && t.delta.indexOf('overdue')<0 && t.period){
+        /* Name the window instead of the vague "prior period". */
+        var days = GB.periodDays(t.period);
+        sub = t.delta + ' vs prior ' + (days ? days+'d' : 'period');
+      }
+      var isNm = t.value === NM;
+      return '<div class="tile"'+(t.warn?' style="outline:1px solid color-mix(in srgb, var(--bad) 35%, transparent)"':'')+
+        '><div class="label">'+esc(t.label)+'</div><div class="value mono'+(isNm?' gb-nm':'')+'"'+(t.warn?' style="color:var(--bad)"':'')+'>'+t.value+'</div>'+
+        (sub?('<div>'+sub+'</div>'):'')+(t.caption||'')+'</div>';
     }).join('');
   }
 
@@ -410,11 +445,11 @@
     if(!rows || !rows.length){ body.innerHTML = '<tr><td colspan="6" style="color:var(--ink-faint);">No near-miss queries in range.</td></tr>'; return; }
     body.innerHTML = rows.slice(0,8).map(function(r){
       return '<tr>'+
-        '<td class="q">'+r.query+'</td>'+
+        '<td class="q">'+esc(r.query)+'</td>'+
         '<td class="num-cell mono">'+fmtNum(r.impressions)+'</td>'+
         '<td class="num-cell mono">'+fmtNum(r.clicks)+'</td>'+
-        '<td class="num-cell mono">'+r.ctr.toFixed(2)+'%</td>'+
-        '<td class="num-cell mono">'+r.position.toFixed(1)+'</td>'+
+        '<td class="num-cell mono">'+fmtPct(r.ctr, 2)+'</td>'+
+        '<td class="num-cell mono">'+GB.pos(r.position)+'</td>'+
         '<td class="num-cell"><span class="opp-badge">'+fmtNum(r.opportunity)+'</span></td>'+
       '</tr>';
     }).join('');
@@ -476,14 +511,14 @@
     }).join('');
   }
 
-  function renderClarity(clarity){
+  function renderClarity(clarity, updatedAt){
     var body = document.getElementById('clarity-body');
     if(!clarity || clarity.status !== 'ok'){
       body.innerHTML = unavailableHtml(clarity && clarity.note);
-      setSourceDot('clarity', false);
+      setSourceDot('clarity', GB.sectionState(clarity, false, updatedAt), updatedAt);
       return;
     }
-    setSourceDot('clarity', true);
+    setSourceDot('clarity', GB.sectionState(clarity, !!clarity.data, updatedAt), updatedAt);
     var raw = clarity.data;
     if(!raw || typeof raw !== 'object' || Array.isArray(raw) || !Object.keys(raw).length){
       body.innerHTML = unavailableHtml('Clarity connected, but no metric payload was included in this sync.');
@@ -659,14 +694,14 @@
     return 1;
   }
 
-  function renderGithub(github){
+  function renderGithub(github, updatedAt){
     var pane = document.getElementById('github-pane');
     if(!github || github.status !== 'ok'){
       pane.innerHTML = unavailableHtml(github && github.note);
-      setSourceDot('github', false);
+      setSourceDot('github', GB.sectionState(github, false, updatedAt), updatedAt);
       return;
     }
-    setSourceDot('github', true);
+    setSourceDot('github', GB.sectionState(github, true, updatedAt), updatedAt);
     var commits = (github.recentCommits || []).slice(0, 5);
     var list = commits.length
       ? commits.map(function(c){
@@ -689,100 +724,211 @@
       '<div class="commit-list">'+list+'</div>';
   }
 
-  function renderCloudflare(cf){
+  /* Was the Cloudflare Analytics block actually retrieved?
+   *
+   * THE INCIDENT: on 2026-09-27 the Analytics API was never called. The refresh
+   * wrote requests/uniqueVisitors/threats/cacheHitRatio all as 0 and left
+   * cloudflare.status "ok" (it reflects the *deploy*, not analytics). The board
+   * rendered "Requests 0 · Unique visitors 0 · Threats 0 · Cache 0.0%" under a
+   * green chip, and the note saying analytics were unavailable never rendered.
+   *
+   * Precedence:
+   *   1. cf.analyticsStatus, once the data side splits deploy from analytics.
+   *   2. No analytics object at all -> not measured.
+   *   3. Every field zero or absent while a note exists -> not measured. A live
+   *      site does not serve literally zero requests; that shape is the failure
+   *      shape, and the note is the operator explaining it.
+   */
+  function cloudflareAnalytics(cf){
+    var a = cf && cf.analytics;
+    if(cf && cf.analyticsStatus != null) {
+      return { measured: cf.analyticsStatus === 'ok', data: a || {} };
+    }
+    if(!a || typeof a !== 'object') return { measured:false, data:{} };
+    var fields = ['requests','uniqueVisitors','threats','bytes','cacheHitRatio'];
+    var anyNonZero = fields.some(function(k){ return typeof a[k] === 'number' && a[k] !== 0; });
+    if(!anyNonZero && cf.note) return { measured:false, data:a };
+    return { measured:true, data:a };
+  }
+
+  function renderCloudflare(cf, updatedAt){
     var pane = document.getElementById('cloudflare-pane');
     if(!cf || cf.status !== 'ok'){
       pane.innerHTML = unavailableHtml(cf && cf.note);
-      setSourceDot('cloudflare', false);
+      setSourceDot('cloudflare', GB.sectionState(cf, false, updatedAt), updatedAt);
       return;
     }
-    setSourceDot('cloudflare', true);
+    var an = cloudflareAnalytics(cf);
+    /* The chip reflects the worst of deploy and analytics, not just deploy. */
+    setSourceDot('cloudflare', an.measured ? GB.sectionState(cf, true, updatedAt) : GB.STATE.FAILED, updatedAt);
+
     var dep = cf.deployment || {};
     var status = dep.status === 'success' || dep.status === 'failed' ? dep.status : 'unknown';
-    var statusLabel = status === 'success' ? 'Deploy success' : (status === 'failed' ? 'Deploy failed' : 'Deploy unknown');
+    var statusLabel = status === 'success' ? 'Deploy success'
+      : (status === 'failed' ? 'Deploy failed'
+      : (dep.status ? 'Deploy ' + dep.status + ' (not verified)' : 'Deploy status not retrieved'));
     var url = dep.url || '';
-    var analytics = cf.analytics || {};
-    var cachePct = analytics.cacheHitRatio;
-    if(cachePct != null && !isNaN(cachePct)){
-      cachePct = cachePct <= 1 ? cachePct * 100 : cachePct;
+
+    /* Pass null, never 0, for a figure that was not retrieved. */
+    var a = an.data;
+    var cachePct = an.measured ? a.cacheHitRatio : null;
+    if(cachePct != null && !isNaN(cachePct)) cachePct = cachePct <= 1 ? cachePct * 100 : cachePct;
+
+    function mini(label, value){
+      var nm = value === NM;
+      return '<div class="mini-tile"><div class="label">'+esc(label)+'</div>'+
+        '<div class="value mono'+(nm?' gb-nm':'')+'">'+value+'</div></div>';
     }
+
     pane.innerHTML =
       '<div class="site-pane-label">Cloudflare</div>'+
       '<div class="deploy-row">'+
-        '<span class="deploy-pill '+status+'"><span class="status-dot"></span>'+statusLabel+'</span>'+
+        '<span class="deploy-pill '+status+'"><span class="status-dot"></span>'+esc(statusLabel)+'</span>'+
         (url ? '<a class="deploy-url" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(url.replace(/^https?:\/\//,''))+'</a>' : '')+
-        (dep.deployedAt ? '<span class="deploy-when">'+relativeTime(dep.deployedAt)+'</span>' : '')+
+        (dep.deployedAt ? '<span class="deploy-when">'+esc(relativeTime(dep.deployedAt))+'</span>' : '')+
       '</div>'+
-      '<div class="mini-tiles">'+
-        '<div class="mini-tile"><div class="label">Requests</div><div class="value mono">'+fmtNum(analytics.requests)+'</div></div>'+
-        '<div class="mini-tile"><div class="label">Unique visitors</div><div class="value mono">'+fmtNum(analytics.uniqueVisitors)+'</div></div>'+
-        '<div class="mini-tile"><div class="label">Threats blocked</div><div class="value mono">'+fmtNum(analytics.threats)+'</div></div>'+
-        '<div class="mini-tile"><div class="label">Cache hit</div><div class="value mono">'+(cachePct==null||isNaN(cachePct)?'–':cachePct.toFixed(1)+'%')+'</div></div>'+
-      '</div>';
+      (an.measured
+        ? '<div class="mini-tiles">'+
+            mini('Requests', fmtNum(GB.measured(a.requests, true)))+
+            mini('Unique visitors', fmtNum(a.uniqueVisitors))+
+            mini('Threats blocked', fmtNum(a.threats))+
+            mini('Cache hit', fmtPct(cachePct))+
+          '</div>'
+        : '<div class="mini-tiles">'+
+            mini('Requests', NM)+ mini('Unique visitors', NM)+
+            mini('Threats blocked', NM)+ mini('Cache hit', NM)+
+          '</div>'+
+          '<p class="gb-note warn"><strong>Analytics not measured.</strong> No value was '+
+          'retrieved from the Cloudflare Analytics API this run, so these read '+
+          '&ldquo;'+esc(NM)+'&rdquo; rather than 0.</p>')+
+      noteHtml(cf.note, an.measured ? '' : 'warn');
   }
 
-  function renderLive(updatedAt){
+  /* Two clocks, not one. `updatedAt` is when the refresh job ran; the GSC
+     window's end date is what the numbers actually cover. They are routinely
+     2-3 days apart, and the pill used to report only the first. */
+  function renderLive(updatedAt, gscPeriod){
     var pill = document.getElementById('live-pill');
     var dot = document.getElementById('live-dot');
     var text = document.getElementById('live-text');
     var updatedText = document.getElementById('updated-text');
+    var coverage = document.getElementById('coverage');
+    pill.className = 'live-pill';
+    dot.className = 'live-dot';
     if(!updatedAt){
-      text.textContent = 'Connecting…';
-      updatedText.textContent = 'Waiting for first sync…';
+      pill.classList.add('unknown'); dot.classList.add('unknown');
+      text.textContent = 'Sync time not stated';
+      updatedText.textContent = 'latest.json carries no updatedAt';
+      coverage.textContent = '';
       return;
     }
-    var ageHours = (Date.now() - new Date(updatedAt).getTime()) / 36e5;
-    var stale = ageHours > 30;
-    pill.classList.toggle('stale', stale);
-    dot.classList.toggle('stale', stale);
+    var stale = GB.isStale(updatedAt);
+    if(stale){ pill.classList.add('stale'); dot.classList.add('stale'); }
     text.textContent = stale ? 'Data stale' : 'Live';
     updatedText.textContent = 'Last synced ' + fmtDate(updatedAt);
+    var through = GB.asOf(gscPeriod);
+    coverage.textContent = 'Synced ' + fmtDate(updatedAt) +
+      ' · GSC data ' + (through || 'coverage not stated in feed') +
+      (GB.isProvisional(gscPeriod, updatedAt) ? ' (last ' + GB.GSC_LAG_DAYS + ' days provisional)' : '');
   }
+
+  function setErrorState(message, detail){
+    var pill = document.getElementById('live-pill');
+    var dot = document.getElementById('live-dot');
+    pill.className = 'live-pill failed';
+    dot.className = 'live-dot failed';
+    document.getElementById('live-text').textContent = 'Data unavailable';
+    document.getElementById('error-slot').innerHTML =
+      '<div class="gb-error"><strong>'+esc(message)+'</strong>'+
+      '<div>'+esc(detail)+'</div>'+
+      '<div class="gb-error-meta">'+
+        (lastGoodAt
+          ? 'Last successful load: ' + esc(fmtDate(lastGoodAt)) + ' — the figures below are from that load and are not current.'
+          : 'The board has never loaded data in this browser session. Nothing below is a measurement.')+
+      '</div></div>';
+    ['gsc','ga4','clarity','github','cloudflare'].forEach(function(n){
+      setSourceDot(n, GB.STATE.FAILED, lastGoodAt);
+    });
+  }
+
+  function clearErrorState(){ document.getElementById('error-slot').innerHTML = ''; }
 
   function render(data, taskSummary){
     if(!data) return;
-    renderLive(data.updatedAt);
-    renderTiles(data.gsc, data.ga4, taskSummary);
-    setSourceDot('gsc', !!(data.gsc && data.gsc.current));
-    setSourceDot('ga4', !!(data.ga4 && data.ga4.totals));
-    if(data.gsc) renderQuickWins(data.gsc.quickWins);
-    if(data.ga4){
-      renderChart(data.ga4.daily);
-      renderChannels(data.ga4.channels);
-      document.getElementById('ga4-total-sub').textContent = fmtNum(data.ga4.totals.sessions)+' sessions total';
+    var updatedAt = data.updatedAt;
+    var gsc = data.gsc, ga4 = data.ga4;
+    renderLive(updatedAt, gsc && gsc.period);
+    renderTiles(gsc, ga4, taskSummary, updatedAt);
+    setSourceDot('gsc', GB.sectionState(gsc, !!(gsc && gsc.current), updatedAt), updatedAt);
+    setSourceDot('ga4', GB.sectionState(ga4, !!(ga4 && ga4.totals), updatedAt), updatedAt);
+    if(gsc && gsc.current) renderQuickWins(gsc.quickWins);
+    if(ga4 && ga4.totals){
+      renderChart(ga4.daily);
+      renderChannels(ga4.channels);
+      document.getElementById('ga4-total-sub').textContent =
+        fmtNum(ga4.totals.sessions)+' sessions total' +
+        (ga4.daily && ga4.daily.length ? ' · last day partial' : '');
+    } else {
+      document.getElementById('chart-wrap').innerHTML =
+        '<p style="color:var(--ink-faint);font-size:12.5px;">GA4 trend not retrieved in this sync.</p>';
+      document.getElementById('ga4-total-sub').textContent = 'not measured';
     }
-    renderClarity(data.clarity);
-    renderGithub(data.github);
-    renderCloudflare(data.cloudflare);
+    renderClarity(data.clarity, updatedAt);
+    renderGithub(data.github, updatedAt);
+    renderCloudflare(data.cloudflare, updatedAt);
   }
 
   var lastUpdatedAt = null;
   var lastTaskKey = null;
+  var lastGoodAt = null;      // updatedAt of the last successfully rendered load
+  var hasRendered = false;
+
+  /* Compare dates as dates. `new Date('2026-09-28') < new Date()` makes a task
+     due *today* overdue from 00:00 UTC, which disagreed with the API path
+     (functions/api/tasks.js), so the same tile showed different numbers
+     depending on whether KV happened to be bound. */
+  function startOfDay(d){ var x = new Date(d); x.setHours(0,0,0,0); return x; }
+  function isOverdue(dueDate, now){ return !!dueDate && startOfDay(dueDate) < startOfDay(now); }
+
   function load(){
     Promise.all([
-      fetch('data/latest.json', { cache: 'no-store' }).then(function(r){ return r.json(); }),
-      fetch('/api/tasks', { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+      GB.fetchJson('data/latest.json'),
+      GB.fetchJson('/api/tasks').catch(function(){ return null; })
         .then(function(api){
           if(api && api.summary) return api.summary;
-          return fetch('data/tasks.json', { cache: 'no-store' }).then(function(r){ return r.json(); }).then(function(seed){
+          return GB.fetchJson('data/tasks.json').then(function(seed){
             var tasks = seed.tasks || [];
+            var now = new Date();
             var open = tasks.filter(function(t){ return t.status !== 'done'; });
             return {
               openCritical: open.filter(function(t){ return t.priority === 'critical'; }).length,
-              overdue: open.filter(function(t){ return t.dueDate && new Date(t.dueDate) < new Date(); }).length
+              overdue: open.filter(function(t){ return isOverdue(t.dueDate, now); }).length
             };
           }).catch(function(){ return null; });
         })
     ]).then(function(pair){
       var data = pair[0];
       var taskSummary = pair[1];
+      clearErrorState();
       var taskKey = taskSummary ? (taskSummary.openCritical + ':' + taskSummary.overdue) : '';
-      if(data.updatedAt !== lastUpdatedAt || taskKey !== lastTaskKey){
+      if(data.updatedAt !== lastUpdatedAt || taskKey !== lastTaskKey || !hasRendered){
         lastUpdatedAt = data.updatedAt;
         lastTaskKey = taskKey;
         render(data, taskSummary);
+        hasRendered = true;
+        lastGoodAt = data.updatedAt || new Date().toISOString();
       }
-    }).catch(function(){ /* keep showing last good render */ });
+    }).catch(function(err){
+      /* The old bare .catch() was right for the 5-minute poll and wrong for the
+         first load: when data/latest.json was pushed as the 11-byte literal
+         "PLACEHOLDER" (commit 4b2cf2d) the board sat on "Connecting…" with three
+         green source chips and no error at all. Failure is now always visible;
+         a poll failure additionally says when the shown data was fetched. */
+      setErrorState(
+        hasRendered ? 'Refresh failed — showing the last data that loaded'
+                    : 'The board could not load its data',
+        String((err && err.message) || err));
+    });
   }
 
   load();

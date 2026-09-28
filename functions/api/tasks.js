@@ -1,21 +1,27 @@
 /**
- * GET  /api/tasks — seed ∪ KV overrides ∪ KV created customs
- * POST /api/tasks — create custom task { title, details?, team?, priority?, status?, dueDate?, assignee?, owner? }
- * KV key "tasks": { overrides:{}, created:[], updatedAt }
+ * GET  /api/tasks — seed ∪ KV overrides ∪ KV created customs (public, no token)
+ * POST /api/tasks — create custom task { title, details?, team?, priority?, status?, dueDate?, assignee?, owner?, rev? }
+ *                   requires header X-Board-Token (see functions/_lib/auth.js)
+ * KV key "tasks": { overrides:{}, created:[], history:[], rev, updatedAt }
  */
+import { responder, preflight, requireAuth, callerOf } from '../_lib/auth.js';
+import { checkRev, conflictBody, nextRev, appendActivity } from '../_lib/store.js';
+import {
+  readJson,
+  trimmed,
+  str,
+  pick,
+  dateish,
+  LIMITS,
+  STATUSES,
+  PRIORITIES,
+  TEAMS,
+  OWNERS,
+} from '../_lib/validate.js';
+
 const KEY = 'tasks';
 const ACTIVITY_KEY = 'activity';
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'no-store',
-    },
-  });
-}
+const METHODS = 'GET, POST, OPTIONS';
 
 async function loadSeed(request) {
   try {
@@ -37,6 +43,8 @@ async function loadStore(env) {
     return {
       overrides: parsed.overrides || {},
       created: parsed.created || [],
+      history: parsed.history || [],
+      rev: parsed.rev,
       updatedAt: parsed.updatedAt,
     };
   } catch {
@@ -101,6 +109,7 @@ function normalizeTeam(ownerOrTeam) {
 
 export async function onRequestGet(context) {
   const { env, request } = context;
+  const json = responder(request, METHODS);
   const seed = await loadSeed(request);
   const store = await loadStore(env);
   const seeded = (seed.tasks || []).map((t) =>
@@ -124,89 +133,117 @@ export async function onRequestGet(context) {
     tasks,
     summary: summary(tasks),
     source: env.FIXES ? 'kv' : 'seed',
-    updatedAt: store.updatedAt || seed.updatedAt || new Date().toISOString(),
+    // Writers must echo this back — see functions/_lib/store.js for why.
+    rev: Number.isFinite(Number(store.rev)) ? Number(store.rev) : 0,
+    // WHY not `|| new Date().toISOString()`: the old fallback made updatedAt mean
+    // "when you asked", not "when this last changed" — a board nobody had touched
+    // for a week still looked freshly updated on every page load. Null is honest.
+    updatedAt: store.updatedAt || seed.updatedAt || null,
   });
 }
 
 export async function onRequestPost(context) {
   const { env, request } = context;
+  const json = responder(request, METHODS);
+
+  const denied = await requireAuth(request, env, json);
+  if (denied) return denied;
+
   if (!env.FIXES) return json({ error: 'FIXES_KV_UNBOUND' }, 503);
-  let body = {};
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: 'invalid json' }, 400);
+
+  const parsed = await readJson(request, json);
+  if (parsed.response) return parsed.response;
+  const body = parsed.body;
+
+  const title = trimmed(body.title, LIMITS.title);
+  if (!title) return json({ error: 'title required' }, 400);
+
+  const status = body.status == null ? 'todo' : pick(body.status, STATUSES);
+  if (status === undefined) {
+    return json({ error: 'invalid status', allowed: STATUSES }, 400);
   }
-  if (!body.title || !String(body.title).trim()) {
-    return json({ error: 'title required' }, 400);
+  const priority = body.priority == null ? 'medium' : pick(body.priority, PRIORITIES);
+  if (priority === undefined) {
+    return json({ error: 'invalid priority', allowed: PRIORITIES }, 400);
   }
+  const owner = body.owner == null ? 'SEO' : pick(body.owner, OWNERS);
+  if (owner === undefined) {
+    return json({ error: 'invalid owner', allowed: OWNERS }, 400);
+  }
+  const team = body.team == null ? null : pick(body.team, TEAMS);
+  if (team === undefined) {
+    return json({ error: 'invalid team', allowed: TEAMS }, 400);
+  }
+  const dueDate = dateish(body.dueDate);
+  if (dueDate === undefined) return json({ error: 'invalid dueDate' }, 400);
+
   const now = new Date().toISOString();
+  const requestedId = trimmed(body.id, LIMITS.id);
   const id =
-    body.id ||
+    requestedId ||
     `T-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+
+  const store = await loadStore(env);
+
+  // A caller-supplied id that already exists is an UPDATE wearing a create's
+  // clothes — the old code silently replaced the existing entry, so a spoofed id
+  // could erase a real custom task. Updates must carry a rev; only genuinely new
+  // records may be written without one.
+  let collides = (store.created || []).some((t) => t.id === id);
+  if (!collides && requestedId) {
+    const seedForId = await loadSeed(request);
+    collides = (seedForId.tasks || []).some((t) => t.id === id);
+  }
+  const conflict = checkRev(body, store, !collides);
+  if (conflict) {
+    return json(conflictBody(conflict, { id, exists: collides }), 409);
+  }
+
+  const details =
+    str(body.details != null ? body.details : body.rationale, LIMITS.details) || '';
   const task = {
     id,
     source: 'custom',
-    title: String(body.title).slice(0, 200),
-    location: body.location || null,
-    rationale: body.details || body.rationale || '',
-    details: body.details || body.rationale || '',
-    effort: body.effort || '1h',
-    owner: body.owner || 'SEO',
-    team: normalizeTeam(body.team || body.owner || 'SEO'),
-    assignee: body.assignee || null,
-    status: body.status || 'todo',
-    priority: body.priority || 'medium',
-    dueDate: body.dueDate || null,
+    title,
+    location: str(body.location, LIMITS.url),
+    rationale: details,
+    details,
+    effort: str(body.effort, LIMITS.shortEnum) || '1h',
+    owner,
+    team: normalizeTeam(team || body.owner || 'SEO'),
+    assignee: trimmed(body.assignee, LIMITS.person),
+    status,
+    priority,
+    dueDate,
     createdAt: now,
-    completedAt: body.status === 'done' ? now : null,
+    completedAt: status === 'done' ? now : null,
     notes: [],
   };
-  const store = await loadStore(env);
+
   store.created = [task, ...(store.created || []).filter((t) => t.id !== id)].slice(
     0,
     200
   );
+  store.rev = nextRev(store);
   store.updatedAt = now;
   await env.FIXES.put(KEY, JSON.stringify(store));
 
-  try {
-    const raw = await env.FIXES.get(ACTIVITY_KEY);
-    let act = { entries: [] };
-    if (raw) {
-      try {
-        act = JSON.parse(raw);
-      } catch {
-        /* ignore */
-      }
-    }
-    act.entries = [
-      {
-        id: `act-task-new-${id}`,
-        date: now,
-        who: body.doneBy || body.assignee || 'dashboard',
-        activityType: 'task',
-        note: `Created task ${id}: ${task.title}`,
-        taskId: id,
-      },
-      ...(act.entries || []),
-    ].slice(0, 500);
-    act.updatedAt = now;
-    await env.FIXES.put(ACTIVITY_KEY, JSON.stringify(act));
-  } catch {
-    /* ignore */
-  }
+  // The audit write is no longer swallowed by `catch { /* ignore */ }` — a failed
+  // audit write used to leave a log that looked complete but was missing events.
+  const logged = await appendActivity(env, ACTIVITY_KEY, {
+    id: `act-task-new-${id}`,
+    date: now,
+    who: trimmed(body.doneBy, LIMITS.person) || task.assignee || callerOf(request),
+    activityType: 'task',
+    note: `Created task ${id}: ${task.title}`,
+    taskId: id,
+  });
 
-  return json({ ok: true, task });
+  const out = { ok: true, task, rev: store.rev };
+  if (!logged.ok) out.activityWarning = `activity log not written: ${logged.error}`;
+  return json(out);
 }
 
-export async function onRequestOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
+export async function onRequestOptions(context) {
+  return preflight(context.request, METHODS);
 }

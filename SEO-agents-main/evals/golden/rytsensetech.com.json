@@ -1,0 +1,848 @@
+{
+  "domain": "rytsensetech.com",
+  "origin": "https://rytsensetech.com",
+  "description": "Golden-set accuracy eval. Ground truth is what the 52-agent team independently re-verified for this site: output/US-AUDIT-REPORT.md, memory/rytsensetech.com/*.json and the board. Each assertion carries a LIVE probe, and the live probe — not the stored number — is the grading authority. See README.md in this directory before editing.",
+  "baselinedAt": "2026-09-18",
+  "reportGlobs": [
+    "output/**/*.md"
+  ],
+  "serpBatch": "output/data/serp/serp-batch.json",
+  "assertions": [
+    {
+      "id": "us-tree-sitemap-count",
+      "claim": "The /us/ tree holds 240 sitemap entries across 8 sub-sitemaps. The widely cited 198 omitted sitemap-products.xml and sitemap-speciality.xml.",
+      "expect": {
+        "value": 240,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "sitemap-count",
+        "index": "https://rytsensetech.com/us/sitemap.xml",
+        "field": "total"
+      },
+      "reportPattern": "\\*\\*(\\d{2,4})\\s*sitemap entries",
+      "gradesAgent": [
+        "technical-seo-engineer",
+        "site-architecture-specialist",
+        "seo-recon"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-12-18",
+      "memoryKey": "us_tree_urls",
+      "source": "memory:us_tree_size, board:bd_m6rn0eo1 + bd_vlpfq23q, output/US-AUDIT-REPORT.md:36"
+    },
+    {
+      "id": "us-tree-sub-sitemaps",
+      "claim": "The /us/ sitemap index has exactly 8 children.",
+      "expect": {
+        "value": 8,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "sitemap-count",
+        "index": "https://rytsensetech.com/us/sitemap.xml",
+        "field": "children"
+      },
+      "reportPattern": "[Tt]he other (seven|\\d+) sub-sitemaps",
+      "gradesAgent": [
+        "technical-seo-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-12-18",
+      "memoryKey": "us_sub_sitemaps",
+      "source": "memory:us_sitemap_url_count",
+      "claimMap": {
+        "seven": 8
+      }
+    },
+    {
+      "id": "url-inventory-total",
+      "claim": "The whole site is 779 URLs: global 539 + US 240. The 683 figure is retired — it missed US products+speciality and global hire+authors.",
+      "expect": {
+        "value": 779,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "sitemap-inventory",
+        "indexes": {
+          "global": "https://rytsensetech.com/sitemap.xml",
+          "us": "https://rytsensetech.com/us/sitemap.xml"
+        }
+      },
+      "reportPattern": "\\b(\\d{3})\\s*(?:real )?URLs? (?:total|site-wide|across both trees)",
+      "gradesAgent": [
+        "seo-recon",
+        "technical-seo-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-12-18",
+      "memoryKey": "sitemap_urls",
+      "source": "memory:url_inventory_CORRECTED (supersedes baseline sitemap_urls=683)",
+      "note": "No deliverable in output/ states the corrected 779 figure — it exists only in memory:url_inventory_CORRECTED while baselines.json still carries sitemap_urls=683. That is why this assertion reports UNMEASURED rather than PASS: the correction never reached a report a human reads."
+    },
+    {
+      "id": "us-200-rate",
+      "claim": "238 of 240 /us/ sitemap URLs return HTTP 200. Two dead blog URLs are the exceptions.",
+      "expect": {
+        "value": 238,
+        "tolerance": 2
+      },
+      "verify": {
+        "kind": "sitemap-status-census",
+        "index": "https://rytsensetech.com/us/sitemap.xml",
+        "expectStatus": 200
+      },
+      "reportPattern": "\\b(\\d{3}) of \\d{3} sitemap URLs returning HTTP 200",
+      "gradesAgent": [
+        "technical-seo-engineer",
+        "index-coverage-analyst"
+      ],
+      "volatility": "structural",
+      "cost": "deep",
+      "staleAfter": "2026-12-18",
+      "memoryKey": "us_sitemap_urls_returning_200",
+      "source": "baselines:us-sitemap-urls-returning-200, output/US-AUDIT-REPORT.md:56"
+    },
+    {
+      "id": "us-noindex-zero",
+      "claim": "Zero noindex directives exist anywhere in the 240-URL /us/ tree.",
+      "expect": {
+        "value": 0,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "regex-census",
+        "mode": "urlsWithMatch",
+        "pattern": "<meta[^>]+name=[\"']robots[\"'][^>]*content=[\"'][^\"']*noindex",
+        "urls": [
+          "https://rytsensetech.com/us/",
+          "https://rytsensetech.com/us/ai-development-services/",
+          "https://rytsensetech.com/us/generative-ai-development-services/",
+          "https://rytsensetech.com/us/ai-chatbot-development-services/",
+          "https://rytsensetech.com/us/machine-learning-development-services/",
+          "https://rytsensetech.com/us/ai-integration-services/",
+          "https://rytsensetech.com/us/ai-agent-development-services/",
+          "https://rytsensetech.com/us/computer-vision-development-services/",
+          "https://rytsensetech.com/us/rpa-development-services/",
+          "https://rytsensetech.com/us/rag-development-services/",
+          "https://rytsensetech.com/us/generative-ai-consulting-services/",
+          "https://rytsensetech.com/us/contact-us/"
+        ]
+      },
+      "reportPattern": "[Zz]ero `?noindex`?",
+      "gradesAgent": [
+        "index-coverage-analyst",
+        "technical-seo-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-12-18",
+      "memoryKey": "us_noindex_count",
+      "source": "memory:us-indexability",
+      "claimMap": {
+        "*": 0
+      }
+    },
+    {
+      "id": "dead-host-canonical",
+      "claim": "/us/freight-broker-roi-calculator/ canonicalises to www.rytsense.com — a host that does not resolve. The only cross-domain canonical in the tree.",
+      "expect": {
+        "value": "www.rytsense.com",
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "canonical-host",
+        "url": "https://rytsensetech.com/us/freight-broker-roi-calculator/"
+      },
+      "reportPattern": "canonical\\\"\\s+href=\\\"https://(www\\.rytsense\\.com)",
+      "gradesAgent": [
+        "technical-seo-engineer",
+        "site-migration-specialist"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-12-18",
+      "memoryKey": "us_freight_broker_canonical_host",
+      "source": "output/US-AUDIT-REPORT.md:496 (C-7)"
+    },
+    {
+      "id": "soft-404-rcm",
+      "claim": "/us/rcm-roi-calculator/ returns HTTP 200 with zero body words and no title, while the genuine 404 path 404s correctly.",
+      "expect": {
+        "value": true,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "soft-404",
+        "url": "https://rytsensetech.com/us/rcm-roi-calculator/",
+        "control": "https://rytsensetech.com/us/thispagedoesnotexist-xyz/"
+      },
+      "reportPattern": "`/us/rcm-roi-calculator/`\\s*→\\s*\\*\\*HTTP (200)\\*\\*",
+      "gradesAgent": [
+        "index-coverage-analyst",
+        "technical-seo-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-12-18",
+      "memoryKey": "us_rcm_roi_calculator_soft_404",
+      "source": "output/US-AUDIT-REPORT.md:510 (C-8)",
+      "claimMap": {
+        "200": true
+      }
+    },
+    {
+      "id": "slug-collision-casestudy",
+      "claim": "/us/case-studies/ai-ecommerce-shopping-assistant/ serves the ai-customer-support-chatbot page verbatim — identical <title>.",
+      "expect": {
+        "value": true,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "title-collision",
+        "urls": [
+          "https://rytsensetech.com/us/case-studies/ai-ecommerce-shopping-assistant/",
+          "https://rytsensetech.com/us/case-studies/ai-customer-support-chatbot/"
+        ]
+      },
+      "reportPattern": "[Ss]lug collision[^\\n]{0,80}",
+      "gradesAgent": [
+        "technical-seo-engineer",
+        "content-pruning-specialist"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-12-18",
+      "memoryKey": "us_slug_collision_case_study",
+      "source": "output/US-AUDIT-REPORT.md:519 (H-11)",
+      "claimMap": {
+        "*": true
+      }
+    },
+    {
+      "id": "us-orphans-12",
+      "claim": "12 /us/ URLs have zero in-body inbound links from anywhere in the tree; five of them are the lead-capture assets.",
+      "expect": {
+        "value": 12,
+        "tolerance": 2
+      },
+      "verify": {
+        "kind": "link-graph",
+        "index": "https://rytsensetech.com/us/sitemap.xml",
+        "host": "rytsensetech.com",
+        "treePrefix": "/us/",
+        "metric": "orphanCount"
+      },
+      "reportPattern": "the (\\d{1,3}) orphans",
+      "gradesAgent": [
+        "site-architecture-specialist",
+        "internal-linking-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "deep",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_orphan_urls",
+      "source": "baselines:us_orphan_urls=12, output/US-AUDIT-REPORT.md:634 (H-14)"
+    },
+    {
+      "id": "crosstree-leak-pct",
+      "claim": "39.4% of /us/ in-body internal links point at the global tree.",
+      "expect": {
+        "value": 39.4,
+        "tolerance": 4.0
+      },
+      "verify": {
+        "kind": "link-graph",
+        "index": "https://rytsensetech.com/us/sitemap.xml",
+        "host": "rytsensetech.com",
+        "treePrefix": "/us/",
+        "metric": "leakPct"
+      },
+      "reportPattern": "\\*\\*(\\d{1,2}\\.\\d)% of in-body links\\*\\*",
+      "gradesAgent": [
+        "internal-linking-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "deep",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_crosstree_leak_pct_inbody",
+      "source": "baselines:us_crosstree_leak_pct_inbody=39.4, output/US-AUDIT-REPORT.md:618"
+    },
+    {
+      "id": "link-graph-inbody-total",
+      "claim": "1,941 in-body internal links across 236 crawled /us/ pages (median 8/page), against 28,200 nav+footer chrome links.",
+      "expect": {
+        "value": 1941,
+        "tolerance": 400
+      },
+      "verify": {
+        "kind": "link-graph",
+        "index": "https://rytsensetech.com/us/sitemap.xml",
+        "host": "rytsensetech.com",
+        "treePrefix": "/us/",
+        "metric": "inBodyLinks"
+      },
+      "reportPattern": "\\b(1,?9\\d{2})\\s*in-body internal links",
+      "gradesAgent": [
+        "internal-linking-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "deep",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_inbody_internal_links",
+      "source": "memory:us_internal_link_graph"
+    },
+    {
+      "id": "blog-service-inbody-zero",
+      "claim": "Zero editorial blog→US-service links exist inside <article>. The withdrawn 55-of-115 figure counted nav and footer chrome.",
+      "expect": {
+        "value": 0,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "in-body-link-census",
+        "region": "article",
+        "mode": "urlsWithLink",
+        "hrefPattern": "/us/[a-z-]+-services/",
+        "urls": [
+          "https://rytsensetech.com/us/blog/ai-transforming-underwriting-us-insurance/",
+          "https://rytsensetech.com/us/blog/generative-ai-application-development-for-ai-powered-app/",
+          "https://rytsensetech.com/us/blog/top-ai-product-development-companies-usa/"
+        ]
+      },
+      "reportPattern": "\\*\\*(\\d+) of 12 have zero service links",
+      "gradesAgent": [
+        "internal-linking-engineer",
+        "site-architecture-specialist"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_blog_to_service_inbody_links",
+      "source": "baselines:us_blog_to_service_inbody_links=0; board bd_7t75z3nr withdrew the 55-of-115 figure",
+      "claimMap": {
+        "12": 0
+      }
+    },
+    {
+      "id": "blog-lead-routing-global",
+      "claim": "97 of 115 /us/ blog posts route leads to the GLOBAL /contact-us/ in-body; only 7 link /us/contact-us/. The tripwire below is the sampled subset: both sampled posts route globally.",
+      "expect": {
+        "value": 2,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "in-body-link-census",
+        "region": "main",
+        "mode": "urlsWithLink",
+        "hrefPattern": "(?<!/us)/contact-us/",
+        "urls": [
+          "https://rytsensetech.com/us/blog/ai-transforming-underwriting-us-insurance/",
+          "https://rytsensetech.com/us/blog/generative-ai-application-development-for-ai-powered-app/"
+        ]
+      },
+      "reportPattern": "\\*\\*(\\d{1,3}) link global, \\d+ link",
+      "gradesAgent": [
+        "internal-linking-engineer",
+        "conversion-analyst"
+      ],
+      "volatility": "structural",
+      "cost": "deep",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_blog_lead_routing_global",
+      "source": "memory:us_blog_lead_routing, output/US-AUDIT-REPORT.md:611",
+      "note": "The stored value is the SAMPLE (2 of 2 posts route globally), not the population (97 of 115). claimMap translates the report's population figure into sample units. Widen `urls` to the full blog sub-sitemap and drop claimMap when rebaselining under --deep.",
+      "claimMap": {
+        "97": 2
+      }
+    },
+    {
+      "id": "us-commercial-top10-absence",
+      "claim": "0 of 30 US commercial queries return rytsensetech.com in the top 10 (0 of 299 retrieved organic slots). This establishes absence from the top 10, NOT from the top 100.",
+      "expect": {
+        "value": 0,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "serp-batch",
+        "metric": "targetInTop10",
+        "target": "rytsensetech.com",
+        "file": "output/data/serp/serp-batch.json"
+      },
+      "reportPattern": "\\*\\*(\\d) of 30 (?:US commercial )?queries",
+      "gradesAgent": [
+        "serp-landscape-analyst",
+        "keyword-strategist"
+      ],
+      "volatility": "transient",
+      "cost": "serp",
+      "staleAfter": "2026-10-18",
+      "memoryKey": "us_commercial_serps_top10",
+      "source": "baselines:us_commercial_serps_top10=0, output/data/serp/serp-batch.json"
+    },
+    {
+      "id": "us-commercial-organic-slots",
+      "claim": "rytsensetech.com appears in 0 of the 299 organic slots actually retrieved across the 30-query US commercial batch.",
+      "expect": {
+        "value": 0,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "serp-batch",
+        "metric": "targetInAnySlot",
+        "target": "rytsensetech.com",
+        "file": "output/data/serp/serp-batch.json"
+      },
+      "reportPattern": "(\\d) of 299 organic slots",
+      "gradesAgent": [
+        "serp-landscape-analyst",
+        "keyword-strategist"
+      ],
+      "volatility": "transient",
+      "cost": "serp",
+      "staleAfter": "2026-10-18",
+      "memoryKey": "us_commercial_organic_slot_hits",
+      "source": "output/US-AUDIT-REPORT.md:753",
+      "note": "Deliberately separate from us-commercial-top10-absence. One query returned 9 results, so a TOP-10 claim is not supported by the data (audit §3.4 — 'top 20' was printed from 10-result rows). Absence from the slots that WERE retrieved is supported, and that is what this assertion grades."
+    },
+    {
+      "id": "serp-batch-denominator",
+      "claim": "All 30 queries in the batch carry a result row. A short file means the denominator shrank silently.",
+      "expect": {
+        "value": 30,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "serp-batch",
+        "metric": "rowsMeasured",
+        "file": "output/data/serp/serp-batch.json"
+      },
+      "reportPattern": "\\b(\\d{2}) (?:US commercial )?queries, United States",
+      "gradesAgent": [
+        "serp-landscape-analyst"
+      ],
+      "volatility": "transient",
+      "cost": "serp",
+      "staleAfter": "2026-10-18",
+      "memoryKey": "us_serp_batch_rows_measured",
+      "source": "audit §3.1 — a failed query is deleted from serp-batch.json, so 0-of-27 reads as 0-of-30"
+    },
+    {
+      "id": "serp-vendor-dominated",
+      "claim": "US AI-services commercial SERPs average ~8.3 vendor sites in the top 10 — vendor-dominated, not listicle-dominated.",
+      "expect": {
+        "value": 8.3,
+        "tolerance": 1.0
+      },
+      "verify": {
+        "kind": "serp-batch",
+        "metric": "vendorMean",
+        "file": "output/data/serp/serp-batch.json",
+        "directories": [
+          "clutch.co",
+          "goodfirms.co",
+          "designrush.com",
+          "g2.com",
+          "capterra.com",
+          "trustpilot.com",
+          "upwork.com",
+          "topdevelopers.co",
+          "itfirms.co",
+          "sortlist.com"
+        ],
+        "media": [
+          "forbes.com",
+          "techcrunch.com",
+          "medium.com",
+          "linkedin.com",
+          "youtube.com",
+          "reddit.com",
+          "quora.com",
+          "wikipedia.org",
+          "gartner.com"
+        ]
+      },
+      "reportPattern": "[Aa]verage per query ≈ (\\d\\.\\d)",
+      "gradesAgent": [
+        "serp-landscape-analyst",
+        "content-architect"
+      ],
+      "volatility": "transient",
+      "cost": "serp",
+      "staleAfter": "2026-10-18",
+      "memoryKey": "us_serp_vendor_mean",
+      "source": "memory:serp_composition_us_vendor_dominated"
+    },
+    {
+      "id": "brand-serp-position",
+      "claim": "Query 'rytsensetech' on US Google: linkedin.com #1, rytsensetech.com #2, with no knowledgeGraph and no localPack — and serper DOES detect both, so this is a measured absence.",
+      "expect": {
+        "value": 2,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "serp-batch",
+        "metric": "targetInTop10",
+        "target": "rytsensetech.com",
+        "file": "output/data/serp/brand-serp.json"
+      },
+      "reportPattern": "linkedin\\.com #1, rytsensetech\\.com #(\\d)",
+      "gradesAgent": [
+        "brand-serp-specialist",
+        "entity-grounding-specialist",
+        "local-seo-specialist"
+      ],
+      "volatility": "transient",
+      "cost": "serp-live",
+      "staleAfter": "2026-10-18",
+      "memoryKey": "brand_serp_position",
+      "source": "memory:brand-serp-position",
+      "note": "SERP positions are never frozen as pass/fail ground truth. This runs only under --live; by default it reports SKIPPED."
+    },
+    {
+      "id": "aio-not-checked-under-serper",
+      "claim": "Every serper row carries aiOverview: null and names aiOverview in notChecked. No report may claim the SERPs are AI-Overview-free.",
+      "expect": {
+        "value": true,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "serp-batch",
+        "metric": "aiOverviewAllUnchecked",
+        "file": "output/data/serp/serp-batch.json"
+      },
+      "reportPattern": "AI Overview[^\\n]{0,40}(NOT CHECKED|not checked)",
+      "gradesAgent": [
+        "serp-landscape-analyst",
+        "aeo-strategist",
+        "ai-brand-monitor"
+      ],
+      "volatility": "durable",
+      "cost": "cheap",
+      "staleAfter": "2027-09-18",
+      "memoryKey": "us_serp_ai_overview_unchecked",
+      "source": "memory:us-serp-features, audit §3.2",
+      "claimMap": {
+        "*": true
+      }
+    },
+    {
+      "id": "placeholder-zeros-url-count",
+      "claim": "4 of the 12 US service URLs render placeholder-zero counters in server HTML: /us/, /us/rpa-development-services/, /us/computer-vision-development-services/, /us/generative-ai-development-services/.",
+      "expect": {
+        "value": 4,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "regex-census",
+        "mode": "urlsWithMatch",
+        "pattern": ">0(?:\\.0)?<!--\\s*-->\\s*[+%xKk]",
+        "urls": [
+          "https://rytsensetech.com/us/",
+          "https://rytsensetech.com/us/ai-development-services/",
+          "https://rytsensetech.com/us/generative-ai-development-services/",
+          "https://rytsensetech.com/us/ai-chatbot-development-services/",
+          "https://rytsensetech.com/us/machine-learning-development-services/",
+          "https://rytsensetech.com/us/ai-integration-services/",
+          "https://rytsensetech.com/us/ai-agent-development-services/",
+          "https://rytsensetech.com/us/computer-vision-development-services/",
+          "https://rytsensetech.com/us/rpa-development-services/",
+          "https://rytsensetech.com/us/rag-development-services/",
+          "https://rytsensetech.com/us/generative-ai-consulting-services/",
+          "https://rytsensetech.com/us/company/service/"
+        ]
+      },
+      "reportPattern": "placeholder-zero counters on `/us/` and the (3|three) service pages",
+      "gradesAgent": [
+        "onpage-optimizer",
+        "answer-extractability-engineer",
+        "conversion-copywriter"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_placeholder_zero_urls",
+      "source": "memory:placeholder_zeros_scope + us-placeholder-zeros-scope (4 aliased keys, one fact)",
+      "claimMap": {
+        "3": 4,
+        "three": 4
+      }
+    },
+    {
+      "id": "headcount-contradiction-count",
+      "claim": "Five mutually inconsistent live headcount values coexist across the site and its profiles.",
+      "expect": {
+        "value": 3,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "contradiction-census",
+        "sources": [
+          {
+            "url": "https://rytsensetech.com/company/who-we-are/",
+            "pattern": "(\\d{2,3})\\+(?:<[^>]*>|[^<>0-9]){0,160}?(?:Engineers|engineers|AI Experts|AI experts)"
+          },
+          {
+            "url": "https://rytsensetech.com/us/",
+            "pattern": "(\\d{2,3})\\+(?:<[^>]*>|[^<>0-9]){0,160}?(?:Engineers|engineers|AI Experts|AI experts)"
+          },
+          {
+            "url": "https://rytsensetech.com/us/ai-agent-development-services/",
+            "pattern": "(\\d{2,3})\\+(?:<[^>]*>|[^<>0-9]){0,160}?(?:Engineers|engineers|AI Experts|AI experts)"
+          }
+        ]
+      },
+      "reportPattern": "(Five|\\d+) headcounts and \\w+ project counts",
+      "gradesAgent": [
+        "entity-grounding-specialist",
+        "eeat-specialist",
+        "content-editor"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_headcount_distinct_onsite_values",
+      "source": "memory:headcount_contradiction_v2",
+      "note": "The report's headline count is 5; two of those five (LinkedIn, Clutch) are off-site and not verifiable from the origin, so the probe and the claimMap both work in the on-site subset of 3. Grading a 5 against a 3-source probe would have manufactured a FAIL out of a units mismatch.",
+      "claimMap": {
+        "Five": 3,
+        "five": 3,
+        "5": 3
+      }
+    },
+    {
+      "id": "aggregate-rating-contradictions",
+      "claim": "Four mutually contradictory aggregateRating nodes ship across the tree, against visible badges of 4.7 and 4.5. All should be deleted.",
+      "expect": {
+        "value": 4,
+        "tolerance": 1
+      },
+      "verify": {
+        "kind": "aggregate-rating-census",
+        "urls": [
+          "https://rytsensetech.com/us/",
+          "https://rytsensetech.com/",
+          "https://rytsensetech.com/us/case-studies/ai-customer-support-chatbot/",
+          "https://rytsensetech.com/us/ai-development-services/"
+        ]
+      },
+      "reportPattern": "(Four|\\d+) contradictory rating assertions",
+      "gradesAgent": [
+        "schema-engineer",
+        "eeat-specialist"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_aggregate_rating_distinct",
+      "source": "memory:CRITICAL_fabricated_ratings",
+      "claimMap": {
+        "Four": 4,
+        "four": 4
+      }
+    },
+    {
+      "id": "faq-no-heading-elements",
+      "claim": "US service pages render FAQ questions as <summary> inside <details> with no heading element — zero interrogative h2/h3 exist.",
+      "expect": {
+        "value": 0,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "regex-census",
+        "mode": "totalMatches",
+        "pattern": "<h[23][^>]*>\\s*(?:What|How|Why|Can|Could|Do|Does|Is|Are|Which|When|Where|Who)\b[^<]*\\?\\s*</h[23]>",
+        "urls": [
+          "https://rytsensetech.com/us/generative-ai-development-services/",
+          "https://rytsensetech.com/us/ai-development-services/",
+          "https://rytsensetech.com/us/ai-chatbot-development-services/"
+        ]
+      },
+      "reportPattern": "\\*\\*(\\d+) interrogative",
+      "gradesAgent": [
+        "answer-extractability-engineer",
+        "schema-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_interrogative_headings",
+      "source": "memory:faq_markup_defect",
+      "note": "The probe counts only headings that OPEN with an interrogative. A CTA heading that happens to end in '?' is not an FAQ question, and counting it would have manufactured a drift."
+    },
+    {
+      "id": "llms-txt-us-coverage",
+      "claim": "Root /llms.txt lists only 6 US URLs and omits 6 of the 12 US service pages. The separate /us/llms.txt is correct.",
+      "expect": {
+        "value": 6,
+        "tolerance": 1
+      },
+      "verify": {
+        "kind": "llms-txt-coverage",
+        "url": "https://rytsensetech.com/llms.txt",
+        "urlPattern": "https://rytsensetech\\.com/us/[a-z0-9/-]*"
+      },
+      "reportPattern": "listing (six|\\d+) URLs",
+      "gradesAgent": [
+        "aeo-strategist",
+        "crawler-access-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "llms_txt_us_urls_listed",
+      "source": "memory:llms_txt_us_coverage_gap, output/US-AUDIT-REPORT.md:431 (H-10)",
+      "claimMap": {
+        "six": 6
+      }
+    },
+    {
+      "id": "hreflang-missing-on-genai",
+      "claim": "/us/generative-ai-development-services/ emits zero hreflang alternates while its global twin one-way-points to it.",
+      "expect": {
+        "value": 0,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "hreflang-count",
+        "url": "https://rytsensetech.com/us/generative-ai-development-services/"
+      },
+      "reportPattern": "`/us/generative-ai-development-services/` emits (no) hreflang",
+      "gradesAgent": [
+        "international-seo-specialist",
+        "technical-seo-engineer"
+      ],
+      "volatility": "structural",
+      "cost": "cheap",
+      "staleAfter": "2026-11-18",
+      "memoryKey": "us_genai_hreflang_count",
+      "source": "output/US-AUDIT-REPORT.md:819 (C-13)",
+      "claimMap": {
+        "no": 0
+      }
+    },
+    {
+      "id": "us-vs-global-not-duplicate",
+      "claim": "US and global service twins are NOT duplicate content: 6-gram Jaccard is 0.7–4.1% across 8 measured pairs. The cannibalization is two different pages competing, not thin duplication.",
+      "expect": {
+        "value": 4.1,
+        "tolerance": 6.0
+      },
+      "verify": {
+        "kind": "jaccard-pairs",
+        "nGram": 6,
+        "urls": [
+          [
+            "https://rytsensetech.com/us/generative-ai-development-services/",
+            "https://rytsensetech.com/generative-ai-development-services/"
+          ],
+          [
+            "https://rytsensetech.com/us/ai-chatbot-development-services/",
+            "https://rytsensetech.com/ai-chatbot-development-services/"
+          ],
+          [
+            "https://rytsensetech.com/us/computer-vision-development-services/",
+            "https://rytsensetech.com/computer-vision-development-services/"
+          ]
+        ]
+      },
+      "reportPattern": "6-gram Jaccard[^\\n]{0,40}?(\\d\\.\\d)%",
+      "gradesAgent": [
+        "international-seo-specialist",
+        "content-pruning-specialist",
+        "site-migration-specialist"
+      ],
+      "volatility": "structural",
+      "cost": "deep",
+      "staleAfter": "2026-12-18",
+      "memoryKey": "us_vs_global_jaccard_max_pct",
+      "source": "memory:us_vs_global_duplication_low"
+    },
+    {
+      "id": "us-address-canonical",
+      "claim": "The US NAP is 334 Pioneer Way, Mountain View, CA 94041 / +1-650-681-0090, identical across footer text and Organization JSON-LD.",
+      "expect": {
+        "value": 1,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "regex-census",
+        "mode": "urlsWithMatch",
+        "pattern": "334\\s+Pioneer\\s+Way",
+        "urls": [
+          "https://rytsensetech.com/us/"
+        ]
+      },
+      "reportPattern": "\\*\\*(334 Pioneer Way, Mountain View, CA 94041)",
+      "gradesAgent": [
+        "entity-grounding-specialist",
+        "local-seo-specialist"
+      ],
+      "volatility": "durable",
+      "cost": "cheap",
+      "staleAfter": "2027-09-18",
+      "memoryKey": "us_address_present",
+      "source": "memory:us_address_canonical",
+      "claimMap": {
+        "*": 1
+      }
+    },
+    {
+      "id": "founded-2016-no-2018",
+      "claim": "The founding year is 2016. No '2018' appears in any live title or body on the who-we-are page. The 'Since 2018' report was withdrawn.",
+      "expect": {
+        "value": 0,
+        "tolerance": 0
+      },
+      "verify": {
+        "kind": "regex-census",
+        "mode": "totalMatches",
+        "pattern": "<title[^>]*>[^<]*2018[^<]*</title>",
+        "urls": [
+          "https://rytsensetech.com/company/who-we-are/",
+          "https://rytsensetech.com/us/"
+        ]
+      },
+      "reportPattern": "[Ff]ounding year is `?(2016)`?",
+      "gradesAgent": [
+        "eeat-specialist",
+        "entity-grounding-specialist",
+        "ai-brand-monitor"
+      ],
+      "volatility": "durable",
+      "cost": "cheap",
+      "staleAfter": "2027-09-18",
+      "memoryKey": "who_we_are_title_2018_hits",
+      "source": "memory:founding_year_settled",
+      "claimMap": {
+        "2016": 0
+      }
+    }
+  ],
+  "mustNotClaim": [
+    {
+      "id": "retired-55-of-115",
+      "pattern": "55\\s*(?:of|/)\\s*115",
+      "why": "Withdrawn by seo-orchestrator on the board (bd_7t75z3nr): the figure counted nav and footer links as editorial. The verified value is 0 in-body blog-to-service links."
+    },
+    {
+      "id": "retired-198-us-count",
+      "pattern": "\\b198\\b[^\\n]{0,40}(?:URLs|/us/|sitemap|tree)",
+      "why": "Retired. The /us/ tree was re-enumerated three times; 198 omitted sitemap-products.xml (30) and sitemap-speciality.xml (12)."
+    },
+    {
+      "id": "retired-683-site-total",
+      "pattern": "\\b683\\b[^\\n]{0,40}(?:URLs|sitemap|total)",
+      "why": "Retired by memory:url_inventory_CORRECTED. 683 missed US products+speciality and global hire+authors. Note baselines.json still carries sitemap_urls=683 live — audit §1.2."
+    },
+    {
+      "id": "unchecked-ai-overview-as-absent",
+      "pattern": "(?:no|zero|0) AI Overviews?\\b",
+      "allowNear": "\\b(not checked|notChecked|blind|cannot detect|unchecked|withdrawn|retired)\\b",
+      "why": "serper cannot see AI Overviews. Reporting their absence as measured is the not-ranking/not-measured conflation the whole data layer exists to prevent (audit §3.2)."
+    }
+  ]
+}

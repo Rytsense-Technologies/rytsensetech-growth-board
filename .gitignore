@@ -1,7 +1,5 @@
 node_modules/
-.vercel
 .cf-pages/
-.cf-pages-old-*/
 .cursor/
 *.log
 secrets/
@@ -11,3 +9,10 @@ SEO-agents-main/.env
 SEO-agents-main/.env.*
 !SEO-agents-main/.env.example
 
+# Removed 2026-09-28:
+#   .vercel          — the project moved to Cloudflare Pages; nothing writes it.
+#   .cf-pages-old-*/ — left over from an abandoned rollback scheme. Nothing in
+#                      scripts/ or either workflow has created or read those
+#                      directories for some time, and keeping the entry implied
+#                      a rollback mechanism that did not exist. The real rollback
+#                      procedure is documented in README → Rollback.

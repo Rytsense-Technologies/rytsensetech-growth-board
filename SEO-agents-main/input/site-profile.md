@@ -57,9 +57,16 @@ SERP competitors observed on 2026-09-17 (different per market):
 - **"custom ai development company usa"**: leewayhertz.com at #3
 
 ## 4. Current state **[verified]**
-- **Indexed pages (sitemap count): ~683**
-  - Global: 485 — 244 blog, 91 services, 87 main, 36 case studies, 27 industry
-  - US: 198 — 118 blog, 31 case studies, 17 resources, 13 main, 12 services, 7 industry
+- **Sitemap URLs: 803 total** `[measured 2026-09-25, full walk of every sub-sitemap]`
+  - Global: 553 · US: **250** (8 child sitemaps, unique locs, verified twice on 2026-09-25)
+  - History, because both retired figures are still quoted in older documents:
+    683 was the first count and **missed four sub-sitemaps entirely**; 779 was the
+    corrected walk on 2026-09-18; the tree has grown since. Likewise the US tree
+    was recorded as **198**, then verified at 240, and is 250 today. If you find
+    198 or 683 anywhere, it is a retired number — do not repeat it, and correct
+    the document you found it in. A content-architect run on 2026-09-25 capped
+    its inventory at "45 of ~198 US URLs" because this file still said 198.
+- **Sitemap URLs returning 200: 248 of 250 in the US tree** `[measured 2026-09-25]`
 - **Ranking for core commercial terms: 0 of 4 in top 20** (checked from US,
   2026-09-17: ai development company india / ai agent development services /
   custom ai development company usa / generative ai development services)

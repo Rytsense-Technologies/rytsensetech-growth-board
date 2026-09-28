@@ -187,6 +187,11 @@ These are mechanical — `tools/guard.mjs` runs as a Claude Code hook, wired in
   piping a remote script into a shell, `DROP TABLE`
 - Live mutations: deploying, publishing to a CMS, pushing commits. The team
   drafts; humans ship.
+- Outbound writes: `curl`/`wget` sending a request body, a form or an upload.
+  `curl` is allow-listed so unattended runs can fetch pages without stopping for
+  approval — an un-allow-listed `curl` once held a scheduled run at a permission
+  prompt for 1h53m — so the permission the allowlist gives away is taken back
+  here. The team reads the web; it does not write to it.
 - Secrets in commands or file writes (OpenAI, Anthropic, GitHub, AWS, Google
   keys, private keys)
 - Writes to `.env`, git internals, or credential files
@@ -204,6 +209,34 @@ genuine GSC data would be worse than a false warning. Run it manually any time:
 node tools/guard.mjs lint output/*.md
 node tools/guard.mjs selftest
 ```
+
+## What keeps a finding true
+
+Guardrails stop an agent doing damage. They do not stop it being wrong, and an
+audit of all 52 agents on 2026-09-25 found being wrong was the likelier failure:
+36 files were high-severity on at least one accuracy rule. 27 agents reasoned
+about Search Console or GA4 data that nobody had connected; 2 of 52 stated a
+sampling rule; 10 different severity vocabularies were in use; and no agent
+treated a fetched page as data rather than as instructions.
+
+Three mechanisms now sit under every agent.
+
+**House rules**, generated into all 52 files by `tools/apply-protocol.mjs` — so a
+change lands everywhere at once and cannot be edited locally:
+
+- every finding carries `EVIDENCE: <command or URL> | <what you observed> | <date>`
+- every claim carries exactly one of `[measured]`, `[sampled n=N of M, chosen by …]`,
+  `[estimated — inferred from …]`, `[not checked — why]`
+- absence is not a finding unless you looked — a provider that cannot see a thing
+  reports `[not checked]`, never "none". This is the rule that stops "no AI
+  Overview" from being recorded for a SERP nobody checked.
+- one severity scale, one finding schema, numeric caps, and named handoffs
+
+**`input/data-access.md`** states, per source, whether it is connected, what it
+would give you, and the fallback when it is not. An agent that leans on a source
+marked `no` must take its stated no-access branch and say so in its first line.
+
+**Evals** grade the result rather than the wording — see below.
 
 ## Memory
 
@@ -274,7 +307,6 @@ each miss. Scoring rubric in [`evals/rubric.md`](evals/rubric.md).
 
 Or skip the commands entirely and ask `seo-orchestrator` in plain words.
 | `/seo-eval` | Static validation + fixture run + scoring | After editing agents |
-| `/seo-publish` | Push engagement JSON → Growth Board `#agents` + Activity | End of every programme wave |
 
 Any agent also runs alone: *"use the rendering-specialist agent on example.com"*.
 

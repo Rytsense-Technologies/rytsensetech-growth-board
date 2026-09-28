@@ -4,25 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rytsense SEO Ops — Live Modules</title>
+<!-- Shared tokens + provenance UI (was a duplicate :root block here). -->
+<link rel="stylesheet" href="assets/board-tokens.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
-  :root{
-    --paper:#F5F6F8; --paper-raised:#FFFFFF; --ink:#12181F; --ink-soft:#4B5563; --ink-faint:#8B93A1;
-    --line:#E2E5EA; --accent:#0E7A82; --accent-soft:#E4F2F1; --accent-ink:#075258;
-    --good:#1E8E5A; --good-soft:#E4F5EC; --warn:#B4740E; --warn-soft:#FBF0DC;
-    --bad:#C23B3B; --bad-soft:#FBE7E7; --chip-bg:#EDEFF3;
-    --shadow: 0 1px 2px rgba(18,24,31,0.04), 0 8px 24px -12px rgba(18,24,31,0.12);
-    --sidebar:220px; color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --paper:#0B1013; --paper-raised:#141A1F; --ink:#E8ECEF; --ink-soft:#A7AFB9; --ink-faint:#6C7480;
-      --line:#232B31; --accent:#3FBFC2; --accent-soft:#132726; --accent-ink:#8FE0E2;
-      --good:#49C285; --good-soft:#132520; --warn:#E3A83B; --warn-soft:#2A2013;
-      --bad:#E4685E; --bad-soft:#2A1717; --chip-bg:#1B2126;
-      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
-    }
-  }
+  :root{ --sidebar:220px; }
   *{box-sizing:border-box;}
   html,body{margin:0;background:var(--paper);color:var(--ink);font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.5;}
   h1,h2,h3{font-family:'Manrope',system-ui,sans-serif;margin:0;}
@@ -116,14 +102,17 @@
       <a href="#sources">Data Sources</a>
     </nav>
   </aside>
-  <div class="main">
+  <main class="main" id="main">
     <div class="topbar">
       <div>
         <h1>Live SEO / AEO modules</h1>
         <p id="sync">Connecting…</p>
+        <p id="coverage" class="sub" style="margin:2px 0 0;font-size:11.5px;color:var(--ink-faint)"></p>
       </div>
       <div id="sync-pill"></div>
     </div>
+
+    <div id="error-slot" role="status" aria-live="polite"></div>
 
     <section id="exec"><div class="card" id="m-exec"></div></section>
     <section id="geo"><div class="card" id="m-geo"></div></section>
@@ -133,16 +122,18 @@
     <section id="cann"><div class="card" id="m-cann"></div></section>
     <section id="content"><div class="card" id="m-content"></div></section>
     <section id="sources"><div class="card" id="m-sources"></div></section>
-  </div>
+  </main>
 </div>
+<script src="assets/board-format.js"></script>
 <script>
 (function(){
-  var fmt = new Intl.NumberFormat('en-US');
-  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-  function num(n){if(n==null||isNaN(n))return '–'; return fmt.format(Math.round(n));}
-  function pct(n){if(n==null||isNaN(n))return '–'; return Number(n).toFixed(1)+'%';}
+  /* Formatters are shared (assets/board-format.js). They used to be redefined
+     here and on four other pages, and pct() had already drifted. */
+  var esc = GB.esc, num = GB.num, pct = GB.pct, NM = GB.NOT_MEASURED;
+  var live = null, audit = null;   // set once data loads
+
   function delta(pctVal){
-    if(pctVal==null||isNaN(pctVal)) return '';
+    if(pctVal===undefined||pctVal===null||isNaN(pctVal)) return '<div class="delta flat">'+NM+' not measured</div>';
     var flat = Math.abs(pctVal)<0.1;
     var cls = flat?'flat':(pctVal>0?'up':'down');
     var arrow = flat?'→':(pctVal>0?'↑':'↓');
@@ -154,8 +145,31 @@
   function pending(msg){
     return '<div class="empty"><span class="badge pending">pending next refresh</span><p style="margin:8px 0 0;">'+esc(msg)+'</p></div>';
   }
+  function notMeasured(msg){
+    return '<div class="empty"><span class="badge pending">not measured</span><p style="margin:8px 0 0;">'+esc(msg)+'</p></div>';
+  }
   function blocked(msg){
     return '<div class="empty"><span class="badge blocked">not connected</span><p style="margin:8px 0 0;">'+esc(msg)+'</p></div>';
+  }
+  function noteHtml(note, tone){
+    return note ? '<p class="gb-note'+(tone?' '+tone:'')+'">'+esc(note)+'</p>' : '';
+  }
+  /* The window every GSC figure on this page covers, plus the lag caveat.
+     gsc.period is in the feed and was rendered on zero pages. */
+  function periodCaption(period){
+    var label = GB.periodLabel(period);
+    var updatedAt = live && live.updatedAt;
+    if(!label) return '<p class="gb-period" style="margin:6px 0 0">window not stated in feed</p>';
+    return '<p class="gb-period" style="margin:6px 0 0">'+esc(label)+
+      (GB.isProvisional(period, updatedAt) ? ' · last '+GB.GSC_LAG_DAYS+' days provisional (Search Console lag)' : '')+'</p>';
+  }
+  /* Truncated row sets ship status:"ok" with a note no page rendered. Label the
+     table as a sample with n of M and surface the note. Never total over it. */
+  function sampleBanner(section){
+    var info = GB.sampleInfo(section);
+    if(!info.sampled) return '';
+    return '<p style="margin:8px 0 0"><span class="gb-sample">'+esc(GB.sampleLabel(info))+'</span></p>'+
+      noteHtml(info.note, 'warn');
   }
   function pageType(path){
     var p = String(path||'');
@@ -179,16 +193,26 @@
   function renderExec(live){
     var el = document.getElementById('m-exec');
     var g = live.gsc, a = live.ga4;
-    if(!g||!g.current){ el.innerHTML = head('Executive KPIs','')+pending('Waiting for GSC totals in latest.json'); return; }
+    /* Key presence is not validity: a gsc block marked unavailable used to
+       throw here on gsc.current.clicks and take the whole page down. */
+    if(g && g.status !== undefined && g.status !== 'ok') g = null;
+    if(!g||!g.current){
+      el.innerHTML = head('Executive KPIs','')+
+        notMeasured('No GSC totals in this sync. These are not zeros — no value was retrieved.')+
+        noteHtml(live.gsc && live.gsc.note, 'warn');
+      return;
+    }
     var ch = (a&&a.channels)||[];
     var find = function(name){ var x=ch.find(function(c){return c.channel===name;}); return x?x.sessions:null; };
-    el.innerHTML = head('Executive KPIs','Organic + traffic mix','<span class="badge live">live</span>')+
+    var gDays = GB.periodDays(g.period);
+    el.innerHTML = head('Executive KPIs','Organic'+(gDays?' '+gDays+'d':'')+' + traffic mix','<span class="badge live">live</span>')+
+      periodCaption(g.period)+
       '<div class="tiles">'+
         '<div class="tile"><div class="label">Organic clicks</div><div class="value mono">'+num(g.current.clicks)+'</div>'+delta(g.change&&g.change.clicksPercent)+'</div>'+
         '<div class="tile"><div class="label">Impressions</div><div class="value mono">'+num(g.current.impressions)+'</div>'+delta(g.change&&g.change.impressionsPercent)+'</div>'+
         '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.current.ctr)+'</div></div>'+
-        '<div class="tile"><div class="label">Avg position</div><div class="value mono">'+(g.current.position!=null?Number(g.current.position).toFixed(1):'–')+'</div></div>'+
-        '<div class="tile"><div class="label">Sessions</div><div class="value mono">'+num(a&&a.totals&&a.totals.sessions)+'</div></div>'+
+        '<div class="tile"><div class="label">Avg position</div><div class="value mono">'+GB.pos(g.current.position)+'</div></div>'+
+        '<div class="tile"><div class="label">Sessions</div><div class="value mono">'+num(a&&a.totals&&a.totals.sessions)+'</div><div class="delta flat" style="font-weight:500">'+(a&&a.daily&&a.daily.length?esc(a.daily.length+'d to today · last day partial'):'GA4 window not stated')+'</div></div>'+
         '<div class="tile"><div class="label">Organic search</div><div class="value mono">'+num(find('Organic Search'))+'</div></div>'+
         '<div class="tile"><div class="label">Direct</div><div class="value mono">'+num(find('Direct'))+'</div></div>'+
         '<div class="tile"><div class="label">Organic social</div><div class="value mono">'+num(find('Organic Social'))+'</div></div>'+
@@ -235,8 +259,17 @@
       el.innerHTML = head('Page Performance','')+pending('Needs gscByPage (+ optional ga4ByPage) from next scheduler run.');
       return;
     }
+    /* A "top 40 pages" table drawn from a 30-row sample shows 30 and looks
+       full. Say what the table is drawn from, before the table. */
+    var info = GB.sampleInfo(live.gscByPage);
     var rows = pages.slice().sort(function(a,b){return (b.impressions||0)-(a.impressions||0);}).slice(0,40);
-    el.innerHTML = head('Page Performance','Top by impressions','<span class="badge live">live</span>')+
+    el.innerHTML = head('Page Performance',
+        info.sampled ? 'Top by impressions within the sample' : 'Top by impressions',
+        info.sampled ? '<span class="badge pending">sampled</span>' : '<span class="badge live">live</span>')+
+      periodCaption(live.gsc && live.gsc.period)+
+      sampleBanner(live.gscByPage)+
+      '<p class="sub" style="margin:8px 0 12px">Showing '+num(rows.length)+' of '+num(pages.length)+' rows in this feed'+
+      (info.sampled && info.total!=null ? ' — '+num(info.total)+' exist. These are not site totals.' : '.')+'</p>'+
       '<div style="overflow-x:auto;"><table><thead><tr><th>URL</th><th>Type</th><th class="num">Impr.</th><th class="num">Clicks</th><th class="num">CTR</th><th class="num">Pos.</th><th class="num">Sessions</th></tr></thead><tbody>'+
       rows.map(function(r){
         var g = ga[r.page]||{};
@@ -256,9 +289,21 @@
       buckets = {'1':0,'2-3':0,'4-5':0,'6-10':0,'11-20':0,'21-50':0,'51-100':0};
       rows.forEach(function(r){ var b=bucketPos(r.position||99); buckets[b]=(buckets[b]||0)+1; });
     }
-    var badge = full ? '<span class="badge live">live</span>' : '<span class="badge pending">partial · quickWins only</span>';
+    var info = GB.sampleInfo(live.gscByQuery);
+    /* The position buckets ship with the feed and are computed over the full
+       query set; the table below is a 30-row sample of it. The summary and the
+       drill-down describe different datasets — say so instead of implying one. */
+    var bucketsFromFeed = !!(full && live.gscByQuery.buckets);
+    var badge = !full ? '<span class="badge pending">partial · quickWins only</span>'
+      : (info.sampled ? '<span class="badge pending">sampled</span>' : '<span class="badge live">live</span>');
     var order = ['1','2-3','4-5','6-10','11-20','21-50','51-100'];
-    el.innerHTML = head('Keyword Performance', full?'Full query report':'Near-miss slice until gscByQuery lands', badge)+
+    el.innerHTML = head('Keyword Performance', full?'Query report':'Near-miss slice until gscByQuery lands', badge)+
+      periodCaption(live.gsc && live.gsc.period)+
+      sampleBanner(live.gscByQuery)+
+      '<p class="sub" style="margin:8px 0 10px">Buckets counted over '+
+        (bucketsFromFeed ? 'the full query set as reported by the feed' : 'the '+num(rows.length)+' rows present on this page')+
+        '. The table below shows '+num(Math.min(25, rows.length))+' rows'+
+        (info.sampled && info.total!=null ? ' from a '+num(info.n)+'-row sample of '+num(info.total)+'.' : '.')+'</p>'+
       '<div class="tiles">'+order.map(function(k){
         return '<div class="tile"><div class="label">Pos '+k+'</div><div class="value mono" style="font-size:18px;">'+num(buckets[k])+'</div></div>';
       }).join('')+'</div>'+
@@ -292,7 +337,9 @@
     if(!rows){
       html += pending('Full cannibalization table needs GSC dimensions [query,page] → gscCannibalization in the next refresh.');
     } else {
-      html += '<div style="overflow-x:auto;"><table><thead><tr><th>Query</th><th>Pages</th><th class="num">Impr.</th><th class="num">Pos σ</th></tr></thead><tbody>'+
+      html += sampleBanner(live.gscCannibalization)+
+        '<p class="sub" style="margin:8px 0 12px">Showing '+num(Math.min(30, rows.length))+' of '+num(rows.length)+' overlapping queries in this feed.</p>'+
+        '<div style="overflow-x:auto;"><table><thead><tr><th>Query</th><th>Pages</th><th class="num">Impr.</th><th class="num">Pos σ</th></tr></thead><tbody>'+
         rows.slice(0,30).map(function(r){
           return '<tr><td>'+esc(r.query)+'</td><td class="mono" style="font-size:11.5px;">'+esc((r.pages||[]).join(', '))+'</td><td class="num mono">'+num(r.impressionSum)+'</td><td class="num mono">'+(r.positionVariance!=null?Number(r.positionVariance).toFixed(2):'–')+'</td></tr>';
         }).join('')+'</tbody></table></div>';
@@ -313,12 +360,22 @@
         pending('Join gscByPage filtered to /blog/, /case-studies/, /resources/ once page report lands.');
       return;
     }
+    var info = GB.sampleInfo(live.gscByPage);
     var content = pages.filter(function(r){ return /\/(blog|case-stud|resource)/i.test(r.page||''); });
     var withImpr = content.filter(function(r){return (r.impressions||0)>0;}).length;
-    el.innerHTML = head('Content Performance','Path-filtered pages','<span class="badge live">live</span>')+
-      '<div class="tiles"><div class="tile"><div class="label">Content URLs in GSC</div><div class="value mono">'+num(content.length)+'</div></div>'+
-      '<div class="tile"><div class="label">With impressions</div><div class="value mono">'+num(withImpr)+'</div></div>'+
-      '<div class="tile"><div class="label">Audit blog corpus</div><div class="value mono">'+num(blogCount)+'</div></div>'+
+    /* A count over a truncated sample is not a corpus total. When the feed is
+       sampled these counts are scoped to the sample in their own label, and the
+       corpus figure is shown as not measured rather than invented. */
+    var scope = info.sampled ? ' in sample' : '';
+    el.innerHTML = head('Content Performance','Path-filtered pages',
+        info.sampled ? '<span class="badge pending">sampled</span>' : '<span class="badge live">live</span>')+
+      periodCaption(live.gsc && live.gsc.period)+
+      sampleBanner(live.gscByPage)+
+      '<div class="tiles" style="margin-top:12px"><div class="tile"><div class="label">Content URLs'+scope+'</div><div class="value mono">'+num(content.length)+'</div>'+
+      (info.sampled?'<div class="delta flat" style="font-weight:500">site-wide total not measured</div>':'')+'</div>'+
+      '<div class="tile"><div class="label">With impressions'+scope+'</div><div class="value mono">'+num(withImpr)+'</div>'+
+      (info.sampled?'<div class="delta flat" style="font-weight:500">site-wide total not measured</div>':'')+'</div>'+
+      '<div class="tile"><div class="label">Audit blog corpus</div><div class="value mono">'+num(blogCount)+'</div><div class="delta flat" style="font-weight:500">'+esc((audit&&audit.auditedAt)?'audited '+GB.shortDay(audit.auditedAt):'audit date not stated')+'</div></div>'+
       '<div class="tile"><div class="label">Unlinked posts</div><div class="value mono">'+num(unlinked)+'</div></div></div>'+
       '<div style="overflow-x:auto;margin-top:12px;"><table><thead><tr><th>URL</th><th class="num">Impr.</th><th class="num">Clicks</th><th class="num">Pos.</th></tr></thead><tbody>'+
       content.slice().sort(function(a,b){return (b.impressions||0)-(a.impressions||0);}).slice(0,25).map(function(r){
@@ -337,23 +394,68 @@
       }).join('')+'</tbody></table></div>';
   }
 
+  function showError(title, detail){
+    document.getElementById('error-slot').innerHTML =
+      '<div class="gb-error"><strong>'+esc(title)+'</strong><div>'+esc(detail)+'</div>'+
+      '<div class="gb-error-meta">Nothing on this page is a current measurement until this is fixed. '+
+      'Check data/latest.json and the last refresh run.</div></div>';
+    document.getElementById('sync').textContent = 'Failed to load';
+    document.getElementById('sync-pill').innerHTML = '<span class="badge blocked">data unavailable</span>';
+  }
+
+  /* fetchJson checks r.ok — a 404 HTML error page used to go straight into
+     r.json() here, and neither fetch had an .ok check at all. */
   Promise.all([
-    fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.json();}),
-    fetch('data/audit.json',{cache:'no-store'}).then(function(r){return r.json();})
+    GB.fetchJson('data/latest.json'),
+    GB.fetchJson('data/audit.json').catch(function(e){ return {__error: e.message}; })
   ]).then(function(pair){
-    var live = pair[0], audit = pair[1];
-    document.getElementById('sync').textContent = 'Last synced '+(live.updatedAt?new Date(live.updatedAt).toLocaleString():'—')+' · Audit '+((audit&&audit.auditedRange)||'');
-    document.getElementById('sync-pill').innerHTML = '<span class="badge live">GSC/GA4 connected</span>';
-    renderExec(live);
-    renderGeo(live);
-    renderPage(live, audit);
-    renderKw(live);
-    renderOpp(live);
-    renderCann(live, audit);
-    renderContent(live, audit);
-    renderSources(audit);
+    live = pair[0];
+    audit = (pair[1] && pair[1].__error) ? null : pair[1];
+
+    var gscState = GB.sectionState(live.gsc, !!(live.gsc && live.gsc.current), live.updatedAt);
+    var ga4State = GB.sectionState(live.ga4, !!(live.ga4 && live.ga4.totals), live.updatedAt);
+    /* Was a hardcoded "GSC/GA4 connected" badge that never varied. */
+    function pill(name, st){
+      var cls = st==='ok' ? 'live' : (st==='stale' ? 'pending' : 'blocked');
+      return '<span class="badge '+cls+'" style="margin-left:6px">'+esc(name+' '+(GB.STATE_LABEL[st]||st))+'</span>';
+    }
+    document.getElementById('sync-pill').innerHTML = pill('GSC', gscState)+pill('GA4', ga4State);
+
+    document.getElementById('sync').textContent =
+      'Last synced '+(live.updatedAt?GB.fmtDate(live.updatedAt):'not stated')+
+      ' · Audit '+((audit&&audit.auditedRange)||'not loaded');
+    /* The sync clock is the job's; this is what the data covers. */
+    document.getElementById('coverage').textContent =
+      'GSC data '+(GB.asOf(live.gsc && live.gsc.period) || 'coverage not stated in feed')+
+      (GB.isProvisional(live.gsc && live.gsc.period, live.updatedAt)
+        ? ' · last '+GB.GSC_LAG_DAYS+' days provisional' : '');
+
+    if(pair[1] && pair[1].__error){
+      document.getElementById('error-slot').innerHTML =
+        '<div class="gb-error"><strong>Audit data did not load</strong><div>'+esc(pair[1].__error)+'</div>'+
+        '<div class="gb-error-meta">Audit-derived tiles below read &ldquo;'+esc(NM)+'&rdquo; rather than 0.</div></div>';
+    }
+
+    /* One render throwing must not silently leave the page half-drawn. */
+    [['Executive KPIs',function(){renderExec(live)}],
+     ['Global vs US',function(){renderGeo(live)}],
+     ['Page Performance',function(){renderPage(live, audit)}],
+     ['Keyword Performance',function(){renderKw(live)}],
+     ['SEO Opportunities',function(){renderOpp(live)}],
+     ['Cannibalization',function(){renderCann(live, audit)}],
+     ['Content Performance',function(){renderContent(live, audit)}],
+     ['Data Sources',function(){renderSources(audit)}]
+    ].forEach(function(mod){
+      try{ mod[1](); }
+      catch(e){
+        document.getElementById('error-slot').insertAdjacentHTML('beforeend',
+          '<div class="gb-error"><strong>'+esc(mod[0])+' failed to render</strong><div>'+
+          esc(String(e && e.message || e))+'</div>'+
+          '<div class="gb-error-meta">This module is missing from the page below — it is not empty because there is nothing to show.</div></div>');
+      }
+    });
   }).catch(function(err){
-    document.getElementById('sync').textContent = 'Failed to load: '+err.message;
+    showError('SEO Ops could not load its data', String((err && err.message) || err));
   });
 })();
 </script>

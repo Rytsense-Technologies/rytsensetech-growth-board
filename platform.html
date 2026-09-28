@@ -4,25 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rytsense Internal SEO Platform</title>
+<!-- Shared tokens + provenance UI (was a duplicate :root block here). -->
+<link rel="stylesheet" href="assets/board-tokens.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
-  :root{
-    --paper:#F5F6F8;--paper-raised:#FFFFFF;--ink:#12181F;--ink-soft:#4B5563;--ink-faint:#8B93A1;
-    --line:#E2E5EA;--accent:#0E7A82;--accent-soft:#E4F2F1;--accent-ink:#075258;
-    --good:#1E8E5A;--good-soft:#E4F5EC;--warn:#B4740E;--warn-soft:#FBF0DC;
-    --bad:#C23B3B;--bad-soft:#FBE7E7;--chip-bg:#EDEFF3;
-    --shadow:0 1px 2px rgba(18,24,31,.04),0 8px 24px -12px rgba(18,24,31,.12);
-    --sidebar:232px;color-scheme:light;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --paper:#0B1013;--paper-raised:#141A1F;--ink:#E8ECEF;--ink-soft:#A7AFB9;--ink-faint:#6C7480;
-      --line:#232B31;--accent:#3FBFC2;--accent-soft:#132726;--accent-ink:#8FE0E2;
-      --good:#49C285;--good-soft:#132520;--warn:#E3A83B;--warn-soft:#2A2013;
-      --bad:#E4685E;--bad-soft:#2A1717;--chip-bg:#1B2126;
-      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5);
-    }
-  }
+  :root{ --sidebar:232px; }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--paper);color:var(--ink);font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.5}
   h1,h2,h3{font-family:'Manrope',system-ui,sans-serif;margin:0}
@@ -129,14 +115,17 @@
     </nav>
   </aside>
 
-  <div class="main">
+  <main class="main" id="main">
     <div class="topbar">
       <div>
         <h1>Rytsense internal SEO platform</h1>
         <p id="sync">Loading…</p>
+        <p id="coverage" class="sub" style="margin:2px 0 0"></p>
       </div>
       <div id="pills"></div>
     </div>
+
+    <div id="error-slot" role="status" aria-live="polite"></div>
 
     <section id="exec"><div class="card" data-mod="exec"></div></section>
     <section id="geo"><div class="card" data-mod="geo"></div></section>
@@ -155,19 +144,39 @@
     <section id="audit"><div class="card" data-mod="audit"></div></section>
     <section id="sources"><div class="card" data-mod="sources"></div></section>
     <section id="blocked"><div class="card" data-mod="blocked"></div></section>
-  </div>
+  </main>
 </div>
+<script src="assets/board-format.js"></script>
 <script>
 (function(){
-  var fmt=new Intl.NumberFormat('en-US');
-  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-  function num(n){if(n==null||n===''||isNaN(n))return '–';return fmt.format(Math.round(+n))}
-  function pct(n){if(n==null||isNaN(n))return '–';return (+n).toFixed(1)+'%'}
+  /* Formatters are shared (assets/board-format.js) — they were redefined here
+     and on four other pages, and had already drifted apart. */
+  var esc = GB.esc, num = GB.num, pct = GB.pct, NM = GB.NOT_MEASURED;
+
   function head(t,s,b){return '<div class="card-head"><h2>'+t+'</h2><span class="sub">'+(b||'')+' '+(s||'')+'</span></div>'}
   function badge(k,label){return '<span class="badge '+k+'">'+(label||k)+'</span>'}
   function pending(m){return '<div class="empty">'+badge('pending','pending')+'<p style="margin:8px 0 0">'+esc(m)+'</p></div>'}
+  function notMeasured(m){return '<div class="empty">'+badge('pending','not measured')+'<p style="margin:8px 0 0">'+esc(m)+'</p></div>'}
   function blocked(m){return '<div class="empty">'+badge('blocked','not connected')+'<p style="margin:8px 0 0">'+esc(m)+'</p></div>'}
-  function delta(p){if(p==null||isNaN(p))return '';var f=Math.abs(p)<.1;return '<div class="hint delta '+(f?'flat':p>0?'up':'down')+'">'+(f?'→':p>0?'↑':'↓')+' '+Math.abs(p).toFixed(1)+'%</div>'}
+  function noteHtml(note,tone){return note?'<p class="gb-note'+(tone?' '+tone:'')+'">'+esc(note)+'</p>':''}
+  function delta(p){
+    if(p===undefined||p===null||isNaN(p))return '<div class="hint delta flat">'+NM+' not measured</div>';
+    var f=Math.abs(p)<.1;return '<div class="hint delta '+(f?'flat':p>0?'up':'down')+'">'+(f?'→':p>0?'↑':'↓')+' '+Math.abs(p).toFixed(1)+'%</div>'
+  }
+  /* gsc.period is in the feed and was rendered on zero pages. Every GSC figure
+     states its window, and says when the window's tail is still provisional. */
+  function periodCaption(period){
+    var label=GB.periodLabel(period), updatedAt=state.live&&state.live.updatedAt;
+    if(!label) return '<p class="gb-period" style="margin:6px 0 0">window not stated in feed</p>';
+    return '<p class="gb-period" style="margin:6px 0 0">'+esc(label)+
+      (GB.isProvisional(period,updatedAt)?' · last '+GB.GSC_LAG_DAYS+' days provisional (Search Console lag)':'')+'</p>';
+  }
+  /* Row-level sections ship 30 rows of 500+ with a note no page rendered. */
+  function sampleBanner(section){
+    var info=GB.sampleInfo(section);
+    if(!info.sampled) return '';
+    return '<p style="margin:8px 0 0"><span class="gb-sample">'+esc(GB.sampleLabel(info))+'</span></p>'+noteHtml(info.note,'warn');
+  }
   function pageType(path){var p=String(path||'');if(/^\/us\//i.test(p))return 'US';if(/\/blog\//i.test(p))return 'Blog';if(/case-stud/i.test(p))return 'Case';if(/resource/i.test(p))return 'Resource';return 'Other'}
   function bucketPos(pos){if(pos<=1)return '1';if(pos<=3)return '2-3';if(pos<=5)return '4-5';if(pos<=10)return '6-10';if(pos<=20)return '11-20';if(pos<=50)return '21-50';return '51-100'}
   function getPath(obj, path){return path.split('.').reduce(function(o,k){return o==null?null:o[k]},obj)}
@@ -176,16 +185,26 @@
 
   function renderExec(){
     var el=document.querySelector('[data-mod=exec]'); var g=state.live.gsc,a=state.live.ga4;
-    if(!g||!g.current){el.innerHTML=head('Executive KPIs')+pending('No GSC totals yet');return}
+    /* Key presence is not validity: a gsc block marked unavailable used to throw
+       on g.current.clicks and take the remaining renders down with it. */
+    if(g&&g.status!==undefined&&g.status!=='ok') g=null;
+    if(!g||!g.current){
+      el.innerHTML=head('Executive KPIs')+
+        notMeasured('No GSC totals in this sync. These are not zeros — no value was retrieved.')+
+        noteHtml(state.live.gsc&&state.live.gsc.note,'warn');
+      return;
+    }
+    var gDays=GB.periodDays(g.period);
     var ch=(a&&a.channels)||[];
     function find(n){var x=ch.find(function(c){return c.channel===n});return x?x.sessions:null}
     el.innerHTML=head('Executive KPIs','Organic + channel mix',badge('live'))+
-      '<div class="tiles">'+
-      '<div class="tile"><div class="label">Clicks 28d</div><div class="value mono">'+num(g.current.clicks)+'</div>'+delta(g.change&&g.change.clicksPercent)+'</div>'+
+      periodCaption(g.period)+
+      '<div class="tiles" style="margin-top:10px">'+
+      '<div class="tile"><div class="label">Clicks'+(gDays?' '+gDays+'d':'')+'</div><div class="value mono">'+num(g.current.clicks)+'</div>'+delta(g.change&&g.change.clicksPercent)+'</div>'+
       '<div class="tile"><div class="label">Impressions</div><div class="value mono">'+num(g.current.impressions)+'</div>'+delta(g.change&&g.change.impressionsPercent)+'</div>'+
-      '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.current.ctr)+'</div></div>'+
-      '<div class="tile"><div class="label">Avg position</div><div class="value mono">'+(g.current.position!=null?Number(g.current.position).toFixed(1):'–')+'</div></div>'+
-      '<div class="tile"><div class="label">Sessions</div><div class="value mono">'+num(a&&a.totals&&a.totals.sessions)+'</div></div>'+
+      '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.current.ctr,2)+'</div></div>'+
+      '<div class="tile"><div class="label">Avg position</div><div class="value mono">'+GB.pos(g.current.position)+'</div></div>'+
+      '<div class="tile"><div class="label">Sessions</div><div class="value mono">'+num(a&&a.totals&&a.totals.sessions)+'</div><div class="hint">'+esc(a&&a.daily&&a.daily.length?a.daily.length+'d to today · last day partial':'GA4 window not stated')+'</div></div>'+
       '<div class="tile"><div class="label">Organic</div><div class="value mono">'+num(find('Organic Search'))+'</div></div>'+
       '<div class="tile"><div class="label">Direct</div><div class="value mono">'+num(find('Direct'))+'</div></div>'+
       '<div class="tile"><div class="label">Social</div><div class="value mono">'+num(find('Organic Social'))+'</div></div>'+
@@ -210,7 +229,14 @@
     if(!pages){el.innerHTML=head('Page Performance')+pending('Needs gscByPage from scheduler');return}
     var ga={}; if(state.live.ga4ByPage&&state.live.ga4ByPage.status==='ok') (state.live.ga4ByPage.rows||[]).forEach(function(r){ga[r.pagePath]=r});
     var rows=pages.slice().sort(function(a,b){return (b.impressions||0)-(a.impressions||0)}).slice(0,40);
-    el.innerHTML=head('Page Performance','Top by impressions',badge('live'))+'<div style="overflow:auto"><table><thead><tr><th>URL</th><th>Type</th><th class="num">Impr</th><th class="num">Clicks</th><th class="num">CTR</th><th class="num">Pos</th><th class="num">Sessions</th></tr></thead><tbody>'+
+    var info=GB.sampleInfo(state.live.gscByPage);
+    el.innerHTML=head('Page Performance',info.sampled?'Top by impressions within the sample':'Top by impressions',
+        info.sampled?badge('pending','sampled'):badge('live'))+
+      periodCaption(state.live.gsc&&state.live.gsc.period)+
+      sampleBanner(state.live.gscByPage)+
+      '<p class="sub" style="margin:8px 0 12px">Showing '+num(rows.length)+' of '+num(pages.length)+' rows in this feed'+
+      (info.sampled&&info.total!=null?' — '+num(info.total)+' exist. These are not site totals.':'.')+'</p>'+
+      '<div style="overflow:auto"><table><thead><tr><th>URL</th><th>Type</th><th class="num">Impr</th><th class="num">Clicks</th><th class="num">CTR</th><th class="num">Pos</th><th class="num">Sessions</th></tr></thead><tbody>'+
       rows.map(function(r){var g=ga[r.page]||{};return '<tr><td class="mono">'+esc(r.page)+'</td><td>'+esc(pageType(r.page))+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td><td class="num mono">'+num(g.sessions)+'</td></tr>'}).join('')+'</tbody></table></div>';
   }
 
@@ -221,7 +247,18 @@
     var buckets=full&&state.live.gscByQuery.buckets?state.live.gscByQuery.buckets:null;
     if(!buckets){buckets={'1':0,'2-3':0,'4-5':0,'6-10':0,'11-20':0,'21-50':0,'51-100':0};rows.forEach(function(r){var b=bucketPos(r.position||99);buckets[b]=(buckets[b]||0)+1})}
     var order=['1','2-3','4-5','6-10','11-20','21-50','51-100'];
-    el.innerHTML=head('Keyword Performance',full?'Full query set':'Partial · quickWins',full?badge('live'):badge('pending','partial'))+
+    var info=GB.sampleInfo(state.live.gscByQuery);
+    /* Buckets ship with the feed and cover the full query set; the table below
+       is a 30-row sample of it. Two datasets, one card — say which is which. */
+    var bucketsFromFeed=!!(full&&state.live.gscByQuery.buckets);
+    el.innerHTML=head('Keyword Performance',full?'Query set':'Partial · quickWins',
+        !full?badge('pending','partial'):(info.sampled?badge('pending','sampled'):badge('live')))+
+      periodCaption(state.live.gsc&&state.live.gsc.period)+
+      sampleBanner(state.live.gscByQuery)+
+      '<p class="sub" style="margin:8px 0 10px">Buckets counted over '+
+        (bucketsFromFeed?'the full query set as reported by the feed':'the '+num(rows.length)+' rows present on this page')+
+        '. The table shows '+num(Math.min(30,rows.length))+' rows'+
+        (info.sampled&&info.total!=null?' from a '+num(info.n)+'-row sample of '+num(info.total)+'.':'.')+'</p>'+
       '<div class="tiles">'+order.map(function(k){return '<div class="tile"><div class="label">Pos '+k+'</div><div class="value mono" style="font-size:17px">'+num(buckets[k])+'</div></div>'}).join('')+'</div>'+
       '<div style="overflow:auto;margin-top:12px"><table><thead><tr><th>Query</th><th class="num">Impr</th><th class="num">Clicks</th><th class="num">CTR</th><th class="num">Pos</th></tr></thead><tbody>'+
       rows.slice(0,30).map(function(r){return '<tr><td>'+esc(r.query||'')+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>'}).join('')+'</tbody></table></div>';
@@ -250,9 +287,20 @@
     var el=document.querySelector('[data-mod=content]'); var inv=state.audit&&state.audit.pageInventory;
     var pages=state.live.gscByPage&&state.live.gscByPage.status==='ok'?state.live.gscByPage.rows:null;
     if(!pages){el.innerHTML=head('Content Performance')+(inv?'<div class="tiles"><div class="tile"><div class="label">Blog corpus</div><div class="value mono">'+num(inv.blogPostCount)+'</div></div><div class="tile"><div class="label">Unlinked to money</div><div class="value mono">'+num(inv.unlinkedBlogToMoney)+'</div></div></div>':'')+pending('Awaiting gscByPage for content URL table');return}
+    var info=GB.sampleInfo(state.live.gscByPage);
     var content=pages.filter(function(r){return /\/(blog|case-stud|resource)/i.test(r.page||'')});
     var withI=content.filter(function(r){return (r.impressions||0)>0}).length;
-    el.innerHTML=head('Content Performance','',badge('live'))+'<div class="tiles"><div class="tile"><div class="label">Content URLs</div><div class="value mono">'+num(content.length)+'</div></div><div class="tile"><div class="label">With impressions</div><div class="value mono">'+num(withI)+'</div></div><div class="tile"><div class="label">Audit blogs</div><div class="value mono">'+num(inv&&inv.blogPostCount)+'</div></div><div class="tile"><div class="label">Unlinked</div><div class="value mono">'+num(inv&&inv.unlinkedBlogToMoney)+'</div></div></div>';
+    /* A count over a truncated sample is not a corpus total. Label the scope
+       and refuse to imply a site-wide figure we do not have. */
+    var scope=info.sampled?' in sample':'';
+    var hint=info.sampled?'<div class="hint">site-wide total not measured</div>':'';
+    el.innerHTML=head('Content Performance','',info.sampled?badge('pending','sampled'):badge('live'))+
+      periodCaption(state.live.gsc&&state.live.gsc.period)+
+      sampleBanner(state.live.gscByPage)+
+      '<div class="tiles" style="margin-top:12px"><div class="tile"><div class="label">Content URLs'+scope+'</div><div class="value mono">'+num(content.length)+'</div>'+hint+'</div>'+
+      '<div class="tile"><div class="label">With impressions'+scope+'</div><div class="value mono">'+num(withI)+'</div>'+hint+'</div>'+
+      '<div class="tile"><div class="label">Audit blogs</div><div class="value mono">'+num(inv&&inv.blogPostCount)+'</div><div class="hint">'+esc(state.audit&&state.audit.auditedAt?'audited '+GB.shortDay(state.audit.auditedAt):'audit date not stated')+'</div></div>'+
+      '<div class="tile"><div class="label">Unlinked</div><div class="value mono">'+num(inv&&inv.unlinkedBlogToMoney)+'</div></div></div>';
   }
 
   function renderAi(){
@@ -273,40 +321,131 @@
     el.innerHTML=html;
   }
 
-  function renderDecay(){
-    var el=document.querySelector('[data-mod=decay]');
-    var hist=state.history.slice().sort(function(a,b){return String(a.date).localeCompare(String(b.date))});
-    if(hist.length<2){el.innerHTML=head('Content Decay','Needs ≥2 daily snapshots',badge('pending'))+pending('History has '+hist.length+' snapshot(s). After a few daily refreshes, traffic/click declines vs older snapshots will appear here (3‑month / year windows preferred).');return}
-    var newest=hist[hist.length-1], oldest=hist[0];
-    var nc=newest.gsc&&newest.gsc.current, oc=oldest.gsc&&oldest.gsc.current;
-    var ns=newest.ga4&&newest.ga4.totals, os=oldest.ga4&&oldest.ga4.totals;
-    function chg(a,b){if(a==null||b==null||!b)return null;return ((a-b)/b)*100}
-    el.innerHTML=head('Content Decay','Comparing '+oldest.date+' → '+newest.date,badge('live'))+
-      '<div class="tiles">'+
-      '<div class="tile"><div class="label">Clicks Δ</div><div class="value mono">'+pct(chg(nc&&nc.clicks,oc&&oc.clicks))+'</div><div class="hint">'+num(oc&&oc.clicks)+' → '+num(nc&&nc.clicks)+'</div></div>'+
-      '<div class="tile"><div class="label">Impr Δ</div><div class="value mono">'+pct(chg(nc&&nc.impressions,oc&&oc.impressions))+'</div></div>'+
-      '<div class="tile"><div class="label">Sessions Δ</div><div class="value mono">'+pct(chg(ns&&ns.sessions,os&&os.sessions))+'</div></div>'+
-      '</div><p class="sub" style="margin-top:10px">Page-level decay flags need gscByPage history (Phase 2 continued). Short windows can look like seasonality.</p>';
+  /* The prior window is, by the fetch's own definition, the equal-length period
+     immediately preceding `period`. Derived, not measured — labelled as such. */
+  function derivePriorPeriod(period){
+    var days=GB.periodDays(period);
+    if(!days||!period||!period.startDate) return null;
+    var startMs=Date.parse(period.startDate+'T00:00:00Z');
+    if(isNaN(startMs)) return null;
+    var endMs=startMs-86400000;
+    function ymd(ms){return new Date(ms).toISOString().slice(0,10)}
+    return {startDate:ymd(endMs-(days-1)*86400000), endDate:ymd(endMs), derived:true};
   }
 
+  /* CONTENT DECAY — rewritten.
+   *
+   * WHAT IT USED TO DO: took hist[0] and hist[last] out of data/history/ and
+   * divided their gsc.current.clicks. Every snapshot's gsc.current is a 28-day
+   * ROLLING total, and the retained history spans nine days — so it compared
+   * two 28-day windows nine days apart, sharing 19 of 28 days. That is ~68% the
+   * same data divided by itself. A real 30% collapse in the non-overlapping
+   * part showed as roughly 10% "decay", and the sensitivity drifted with the
+   * history gap. It was badged `live`.
+   *
+   * WHAT IT DOES NOW: compares gsc.current against gsc.prior inside a single
+   * snapshot. Those two windows are disjoint and equal-length by construction.
+   * Overlap is asserted before rendering, not assumed.
+   *
+   * THE REMAINING CAVEAT IS SHOWN, NOT HIDDEN: Search Console finalises data
+   * 2-3 days late, so when the current window ends within the lag its tail is
+   * incomplete while the prior window is fully settled. That asymmetry is where
+   * the alarming -18.97% came from. The card refuses the `live` badge in that
+   * case and states the reason. Excluding the tail outright needs the fetch
+   * layer to move the window to daysAgo(31)->daysAgo(3) — it cannot be done
+   * from the published totals here.
+   */
+  function renderDecay(){
+    var el=document.querySelector('[data-mod=decay]');
+    var g=state.live.gsc;
+    if(g&&g.status!==undefined&&g.status!=='ok') g=null;
+    var cur=g&&g.current, prior=g&&g.prior;
+    var curPeriod=g&&g.period;
+    var priorPeriod=derivePriorPeriod(curPeriod);
+    var updatedAt=state.live.updatedAt;
+
+    if(!cur||!prior){
+      el.innerHTML=head('Content Decay','Needs gsc.current + gsc.prior in one snapshot',badge('pending'))+
+        notMeasured('This sync does not carry both a current and a prior window, so there is no disjoint pair to compare. No decay figure is shown rather than one computed from overlapping windows.');
+      return;
+    }
+
+    var overlap=GB.windowsOverlapDays(curPeriod,priorPeriod);
+    if(overlap!=null&&overlap>0){
+      el.innerHTML=head('Content Decay','Windows overlap',badge('blocked','not comparable'))+
+        notMeasured('The current and prior windows share '+overlap+' day(s). A period-over-period change computed from overlapping windows understates the real move, so none is shown.');
+      return;
+    }
+
+    var provisional=GB.isProvisional(curPeriod,updatedAt);
+    var days=GB.periodDays(curPeriod);
+    function chg(a,b){if(a==null||b==null||!b)return null;return ((a-b)/b)*100}
+
+    var windowLine=(GB.periodLabel(priorPeriod)||'prior window')+'  →  '+(GB.periodLabel(curPeriod)||'current window');
+
+    el.innerHTML=head('Content Decay',
+        (days?days+'d vs prior '+days+'d · disjoint':'current vs prior window'),
+        provisional?badge('pending','provisional'):badge('live'))+
+      '<p class="gb-period" style="margin:6px 0 0">'+esc(windowLine)+
+        (priorPeriod&&priorPeriod.derived?' · prior window derived as the equal-length period immediately before':'')+'</p>'+
+      (provisional
+        ? '<p class="gb-note warn"><strong>Not a settled comparison.</strong> '+esc(GB.provisionalNote(curPeriod,updatedAt))+
+          ' Treat the decline below as an upper bound, not a measurement.</p>'
+        : '')+
+      '<div class="tiles" style="margin-top:12px">'+
+      '<div class="tile"><div class="label">Clicks Δ</div><div class="value mono">'+pct(chg(cur.clicks,prior.clicks))+'</div><div class="hint">'+num(prior.clicks)+' → '+num(cur.clicks)+'</div></div>'+
+      '<div class="tile"><div class="label">Impressions Δ</div><div class="value mono">'+pct(chg(cur.impressions,prior.impressions))+'</div><div class="hint">'+num(prior.impressions)+' → '+num(cur.impressions)+'</div></div>'+
+      '<div class="tile"><div class="label">CTR Δ</div><div class="value mono">'+pct(chg(cur.ctr,prior.ctr))+'</div><div class="hint">'+pct(prior.ctr,2)+' → '+pct(cur.ctr,2)+'</div></div>'+
+      '<div class="tile"><div class="label">Position Δ</div><div class="value mono">'+
+        ((cur.position==null||prior.position==null)?NM:((cur.position-prior.position>0?'+':'')+(cur.position-prior.position).toFixed(1)+' pts'))+
+        '</div><div class="hint">'+GB.pos(prior.position)+' → '+GB.pos(cur.position)+'</div></div>'+
+      '</div>'+
+      /* GA4 is deliberately absent: ga4.totals carries no period, so there is
+         no way to assert its window is disjoint from anything. */
+      '<p class="sub" style="margin-top:10px">GA4 sessions are not shown here — the feed states no window for them, so no disjoint comparison can be asserted. '+
+      'Page-level decay needs per-page history; daily snapshots store rolling totals only, so '+
+      (state.history.length?num(state.history.length)+' day(s) of history cannot produce one'+
+        (days?' (it would take '+num(days*2)+' days)':'')+'.':'no history is loaded.')+'</p>';
+  }
+
+  /* Returns {value, asOf, kind} so the table can say where each "Current"
+     actually came from. 'audit.baselines' returns the goal's OWN stored
+     baseline — a static number from the audit that will never change — and it
+     used to sit in a column headed Current under a `live` badge. */
   function currentValueForGoal(t){
-    if(t.source==='fixes.done'){var items=(state.fixes&&state.fixes.items)||[];return items.filter(function(i){return i.done}).length}
-    if(t.source==='audit.baselines') return t.baseline;
-    if(t.source==='audit.baselines.aiCitationRateNonBranded') return state.audit&&state.audit.baselines&&state.audit.baselines.aiCitationRateNonBranded;
-    return getPath(state.live, t.source);
+    if(t.source==='fixes.done'){
+      var items=(state.fixes&&state.fixes.items)||[];
+      return {value:items.filter(function(i){return i.done}).length, kind:'live', asOf:'checklist, now'};
+    }
+    if(t.source==='audit.baselines'){
+      return {value:t.baseline, kind:'baseline',
+        asOf:'goal baseline, not re-measured'};
+    }
+    if(t.source==='audit.baselines.aiCitationRateNonBranded'){
+      return {value:state.audit&&state.audit.baselines&&state.audit.baselines.aiCitationRateNonBranded, kind:'audit',
+        asOf:state.audit&&state.audit.auditedAt?'audit '+GB.shortDay(state.audit.auditedAt):'audit date not stated'};
+    }
+    return {value:getPath(state.live, t.source), kind:'live',
+      asOf:GB.asOf(state.live.gsc&&state.live.gsc.period)||(state.live.updatedAt?'sync '+GB.shortDay(state.live.updatedAt):'window not stated')};
   }
 
   function renderGoals(){
     var el=document.querySelector('[data-mod=goals]');
     var targets=(state.goals&&state.goals.targets)||[];
     el.innerHTML=head('Goals & Targets','Editable targets · stored in KV when API live',badge('live'))+
-      '<div style="overflow:auto"><table><thead><tr><th>KPI</th><th>Cadence</th><th class="num">Current</th><th class="num">Target</th><th></th></tr></thead><tbody>'+
+      '<p class="sub" style="margin:0 0 10px">&ldquo;Current&rdquo; is not uniformly live — each row states its own source and as-of date.</p>'+
+      '<div style="overflow:auto"><table><thead><tr><th>KPI</th><th>Cadence</th><th class="num">Current</th><th>As of</th><th class="num">Target</th><th></th></tr></thead><tbody>'+
       targets.map(function(t){
-        var cur=currentValueForGoal(t);
+        var src=currentValueForGoal(t);
+        var cur=src.value;
         var curDisp=t.unit==='pct'?pct(cur):(t.unit==='pct_fraction'?pct((cur||0)*100):(t.unit==='text'?esc(cur):num(cur)));
         var tgt=t.target;
         var tgtDisp=tgt==null?'—':(t.unit==='pct_fraction'?pct((+tgt)*100):(t.unit==='pct'?pct(tgt):(t.unit==='text'?esc(tgt):num(tgt))));
-        return '<tr data-gid="'+esc(t.id)+'"><td>'+esc(t.label)+'</td><td>'+esc(t.cadence)+'</td><td class="num mono">'+curDisp+'</td><td class="num"><input data-goal="'+esc(t.id)+'" value="'+(tgt==null?'':esc(tgt))+'" style="width:110px;text-align:right"></td><td><button class="secondary" data-save-goal="'+esc(t.id)+'">Save</button></td></tr>';
+        var kindBadge=src.kind==='live'?'':' '+badge(src.kind==='baseline'?'off':'pending',src.kind);
+        return '<tr data-gid="'+esc(t.id)+'"><td>'+esc(t.label)+'</td><td>'+esc(t.cadence)+'</td>'+
+          '<td class="num mono">'+curDisp+'</td>'+
+          '<td class="sub">'+esc(src.asOf||'not stated')+kindBadge+'</td>'+
+          '<td class="num"><input data-goal="'+esc(t.id)+'" value="'+(tgt==null?'':esc(tgt))+'" style="width:110px;text-align:right"></td><td><button class="secondary" data-save-goal="'+esc(t.id)+'">Save</button></td></tr>';
       }).join('')+'</tbody></table></div>';
   }
 
@@ -314,14 +453,68 @@
     var el=document.querySelector('[data-mod=alerts]');
     var alerts=[];
     var g=state.live.gsc;
-    if(g&&g.change&&g.change.clicksPercent!=null&&g.change.clicksPercent<=-15) alerts.push({sev:'bad',title:'Organic clicks down '+g.change.clicksPercent.toFixed(1)+'% vs prior 28d'});
-    if(g&&g.change&&g.change.impressionsPercent!=null&&g.change.impressionsPercent<=-15) alerts.push({sev:'warn',title:'Impressions down '+g.change.impressionsPercent.toFixed(1)+'% vs prior'});
-    var hist=state.history; if(hist.length>=2){var n=hist[hist.length-1],o=hist[hist.length-2]; var nc=n.gsc&&n.gsc.current&&n.gsc.current.clicks, oc=o.gsc&&o.gsc.current&&o.gsc.current.clicks; if(nc!=null&&oc){var d=((nc-oc)/oc)*100; if(d<=-10) alerts.push({sev:'bad',title:'Day-over-day clicks drop '+d.toFixed(1)+'% ('+o.date+'→'+n.date+')'})}}
-    if(state.audit&&state.audit.criticalIssues) alerts.push({sev:'bad',title:state.audit.criticalIssues.length+' critical audit issues still open — see Fixes Tracker'});
-    if(state.live.clarity&&state.live.clarity.status!=='ok') alerts.push({sev:'warn',title:'Clarity not reporting'});
-    if(!alerts.length) alerts.push({sev:'good',title:'No threshold alerts fired on current data'});
-    el.innerHTML=head('Automated Alerts','Rules on latest + history',badge('live'))+
-      alerts.map(function(a){return '<div class="empty" style="border-bottom:1px solid var(--line);padding:8px 0">'+badge(a.sev==='bad'?'blocked':a.sev==='warn'?'pending':'live',a.sev)+' <strong style="margin-left:6px">'+esc(a.title)+'</strong></div>'}).join('');
+    if(g&&g.status!==undefined&&g.status!=='ok') g=null;
+    var updatedAt=state.live.updatedAt;
+    var curPeriod=g&&g.period;
+    var provisional=GB.isProvisional(curPeriod,updatedAt);
+    var days=GB.periodDays(curPeriod);
+    var win=days?days+'d':'period';
+
+    /* The traffic alerts fire on gsc.change, which compares the current window
+       against the disjoint prior one. When the current window's tail is inside
+       the Search Console lag the drop is partly an artefact of the window, not
+       a real decline — so the alert says so rather than raising a red flag on
+       the board's own arithmetic. */
+    if(g&&g.change&&g.change.clicksPercent!=null&&g.change.clicksPercent<=-15){
+      alerts.push({sev:provisional?'warn':'bad',
+        title:'Organic clicks '+g.change.clicksPercent.toFixed(1)+'% vs prior '+win,
+        detail:provisional
+          ? 'Provisional — the current window ends inside the Search Console reporting lag, so part of this drop is missing tail data rather than lost traffic. Re-check once the window has settled.'
+          : 'Both windows are settled and disjoint.'});
+    }
+    if(g&&g.change&&g.change.impressionsPercent!=null&&g.change.impressionsPercent<=-15){
+      alerts.push({sev:'warn',title:'Impressions '+g.change.impressionsPercent.toFixed(1)+'% vs prior '+win,
+        detail:provisional?'Provisional — same reporting-lag caveat as above.':''});
+    }
+
+    /* REMOVED: the "day-over-day clicks drop" alert.
+       It compared hist[n] against hist[n-1], both of which store a 28-day
+       ROLLING total — consecutive snapshots share 27 of 28 days. Crossing its
+       -10% threshold would have required a single day worth ~10% of a 28-day
+       total to vanish, i.e. a 3x-average day going to zero. It never fired, and
+       its silence fed the reassuring "No threshold alerts fired" line below.
+       It also called itself day-over-day while 2026-09-20 is missing from
+       data/history/index.json, so it could silently span two days.
+       A genuine period-over-period alert needs either per-day clicks in history
+       or two snapshots a full window apart; neither exists. Rather than keep a
+       threshold nothing can cross, state what history can and cannot support. */
+    var hist=state.history||[];
+    var needed=days?days*2:56;
+    if(hist.length<needed){
+      alerts.push({sev:'info',
+        title:'Period-over-period decay alerting is not active',
+        detail:'Daily snapshots store a rolling '+win+' total, so two snapshots must be at least '+
+          win+' apart to be disjoint. History holds '+num(hist.length)+' day(s); '+num(needed)+
+          ' are needed. No threshold is being evaluated against overlapping windows.'});
+    }
+
+    if(state.audit&&state.audit.criticalIssues) alerts.push({sev:'bad',title:state.audit.criticalIssues.length+' critical audit issues still open — see Fixes Tracker',
+      detail:state.audit.auditedAt?'From the '+GB.shortDay(state.audit.auditedAt)+' audit.':''});
+    if(!state.live.clarity||state.live.clarity.status!=='ok') alerts.push({sev:'warn',title:'Clarity not reporting',
+      detail:(state.live.clarity&&state.live.clarity.note)||'No Clarity payload in this sync.'});
+
+    /* "No alerts fired" is only reassuring if the rules could have fired. */
+    var fired=alerts.filter(function(a){return a.sev==='bad'||a.sev==='warn'});
+    if(!fired.length) alerts.unshift({sev:'good',title:'No threshold alert fired on the rules that are currently active',
+      detail:'This is not a statement that nothing is wrong — see which rules are active below.'});
+
+    el.innerHTML=head('Automated Alerts','Rules on the current disjoint window',badge('live'))+
+      alerts.map(function(a){
+        var kind=a.sev==='bad'?'blocked':(a.sev==='warn'?'pending':(a.sev==='info'?'off':'live'));
+        return '<div class="empty" style="border-bottom:1px solid var(--line);padding:8px 0">'+
+          badge(kind,a.sev)+' <strong style="margin-left:6px">'+esc(a.title)+'</strong>'+
+          (a.detail?'<p class="sub" style="margin:4px 0 0">'+esc(a.detail)+'</p>':'')+'</div>';
+      }).join('');
   }
 
   function renderActivity(){
@@ -421,16 +614,36 @@
       '<p class="sub" style="margin-top:12px">Tell Cursor which CRM and SEO toolkit you use and we can wire live pulls without building empty vendor UIs.</p>';
   }
 
-  function renderAll(){
-    renderExec();renderGeo();renderPage();renderKw();renderOpp();renderCann();renderContent();
-    renderAi();renderDecay();renderGoals();renderAlerts();renderActivity();renderFixes();
-    renderAudit();renderSources();renderBlocked();renderAgents();
+  function pushError(title, detail, meta){
+    document.getElementById('error-slot').insertAdjacentHTML('beforeend',
+      '<div class="gb-error"><strong>'+esc(title)+'</strong><div>'+esc(detail)+'</div>'+
+      (meta?'<div class="gb-error-meta">'+esc(meta)+'</div>':'')+'</div>');
   }
 
-  async function loadJson(url, fallback){
-    try{var r=await fetch(url,{cache:'no-store'}); if(r.ok) return r.json(); }catch(e){}
-    return fallback;
+  /* Nineteen synchronous renders used to run behind zero error boundaries, with
+     no .catch() on the Promise.all. One throw left the page half-drawn, silently
+     — a module that failed looked exactly like a module with nothing to show.
+     Each render is now isolated and a failure is named on the page. */
+  function renderAll(){
+    [['Executive KPIs',renderExec],['Global vs US',renderGeo],['Page Performance',renderPage],
+     ['Keywords',renderKw],['Opportunities',renderOpp],['Cannibalization',renderCann],
+     ['Content',renderContent],['AI / GEO Traffic',renderAi],['Content Decay',renderDecay],
+     ['Goals & Targets',renderGoals],['Alerts',renderAlerts],['Activity Tracker',renderActivity],
+     ['Fixes Tracker',renderFixes],['Audit Snapshot',renderAudit],['Data Sources',renderSources],
+     ['Integrations',renderBlocked],['Agent Engagements',renderAgents]
+    ].forEach(function(mod){
+      try{ mod[1](); }
+      catch(e){
+        pushError(mod[0]+' failed to render', String((e&&e.message)||e),
+          'This module is missing from the page below — it is not empty because there was nothing to show.');
+      }
+    });
   }
+
+  /* Shared (assets/board-format.js). loadJson never throws, so a missing
+     optional source degrades to the fallback — which every renderer must show
+     as "not measured", never as zeros. */
+  var loadJson = GB.loadJson;
 
   async function loadHistory(){
     var dates=[];

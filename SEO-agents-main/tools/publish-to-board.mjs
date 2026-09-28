@@ -13,7 +13,9 @@
  *
  * Env:
  *   BOARD_URL              default https://rytsensetech-growth-board.pages.dev
- *   BOARD_PUBLISH_TOKEN    optional; sent as X-Board-Token
+ *   BOARD_PUBLISH_TOKEN    REQUIRED for --post; sent as X-Board-Token.
+ *                          The board's write endpoints fail closed as of
+ *                          2026-09-28 — without this, every POST returns 401.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
@@ -98,9 +100,19 @@ function mergeLocal(engagement) {
 
 async function postRemote(engagement, baseUrl) {
   const url = `${baseUrl.replace(/\/$/, '')}/api/engagements`;
-  const headers = { 'Content-Type': 'application/json' };
   const token = process.env.BOARD_PUBLISH_TOKEN;
-  if (token) headers['X-Board-Token'] = token;
+  // Fail here with an explanation rather than letting the board return a bare
+  // 401 that reads like a bug. The board's write endpoints stopped accepting
+  // unauthenticated posts on 2026-09-28.
+  if (!token) {
+    throw new Error(
+      'BOARD_PUBLISH_TOKEN is not set, so this post would be rejected with 401.\n' +
+      'Set it in this environment to the same value as the Pages secret:\n' +
+      '  wrangler pages secret put BOARD_PUBLISH_TOKEN   (once, on the board)\n' +
+      '  export BOARD_PUBLISH_TOKEN=…                    (here, before posting)'
+    );
+  }
+  const headers = { 'Content-Type': 'application/json', 'X-Board-Token': token };
   const res = await fetch(url, {
     method: 'POST',
     headers,
