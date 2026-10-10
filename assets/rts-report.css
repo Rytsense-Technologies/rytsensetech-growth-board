@@ -40,35 +40,7 @@
   -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .rts-report,
-  html:not([data-theme="light"]) .rts-report {
-    --ground: #0e1416;
-    --panel: #161e21;
-    --panel-2: #1c2528;
-    --sunk: #111a1c;
-    --ink: #e8eeee;
-    --ink-2: #a3b1b3;
-    --ink-3: #71807f;
-    --rule: #263134;
-    --rule-2: #354346;
-    --sig: #f97b4a;
-    --sig-soft: #331608;
-    --crit: #f0797f;
-    --crit-soft: #3a1315;
-    --warn: #e0b341;
-    --warn-soft: #332709;
-    --good: #5fc48d;
-    --good-soft: #0d2b1c;
-    --info: #5bb8d4;
-    --info-soft: #0a2932;
-    --pend: #d6c473;
-    --pend-soft: #2b2610;
-    --pend-rule: #4a4120;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 14px rgba(0, 0, 0, 0.3);
-  }
-}
-
+/* Dark only when explicitly selected — default is light */
 :root[data-theme="dark"] .rts-report,
 html[data-theme="dark"] .rts-report {
   --ground: #0e1416;

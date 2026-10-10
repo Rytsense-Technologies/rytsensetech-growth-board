@@ -1,3 +1,6 @@
+LOCAL SCHEDULE: leave this disabled after POST /api/jobs/sync has produced a matching day in Supabase.
+The file stays as the spec for that cloud job. See PRODUCT-RULEBOOK.md.
+
 SCHEDULED TASK — Rytsensetech Growth Board daily data refresh
 
 You are running unattended on a daily schedule. Complete the full refresh + deploy without asking for confirmation. If a step fails, retry once, then report the failure briefly and continue with the rest (do not fabricate numbers for a failed source — mark that source "unavailable" and continue).
@@ -114,23 +117,43 @@ SCHEMA (exact keys — keep gsc/ga4; extend with clarity/github/cloudflare):
   }
 }
 
-PHASE 1 ADDITIVE FETCH (required — powers ops.html modules; do not invent numbers):
+PHASE 1 ADDITIVE FETCH (required — powers ops.html / platform modules; do not invent numbers):
 A) GSC dimensions:['country'] for current 28d window → roll into gscByCountry.us vs gscByCountry.global (everything not United States). ctr as %, position 1 decimal.
-B) GSC dimensions:['page'] rowLimit 1000+ → gscByPage.rows sorted by impressions desc (keep top 200).
-C) GSC dimensions:['query'] rowLimit 5000 WITHOUT the position 4–15 filter → gscByQuery.rows (top 500 by impressions) + buckets by position bands 1, 2-3, 4-5, 6-10, 11-20, 21-50, 51-100 (count of queries). KEEP existing gsc.quickWins as today (pos 4–15, impr>=100, top 8 opportunity).
-D) GSC dimensions:['query','page'] → group by query; if >1 page with impressions>=20, add to gscCannibalization.rows with pages[], impressionSum, positionVariance. Always set the standing warning string about global vs /us/ trees.
+B) GSC dimensions:['page'] with the highest row_limit the GSC MCP allows → gscByPage.rows sorted by impressions desc.
+   Keep **all returned page rows up to 1000** (prefer 1000).
+   FORBIDDEN: truncating to "top 30" (or any small N) for GitHub push size. The file written to
+   E:\growth-board\data\latest.json and the GitHub Contents API payload MUST contain the SAME
+   full gscByPage.rows array. If the GitHub API rejects a large file, split: push latest.json in
+   one commit with FULL rows; do not silently shrink rows. Add gscByPage.note only to explain
+   MCP/API limits — never to justify cutting rows for convenience.
+C) GSC dimensions:['query'] WITHOUT the position 4–15 filter → gscByQuery.rows + buckets.
+   KNOWN CEILING: the GSC MCP often caps row_limit at **500**. That is the real maximum until
+   the connector is raised — do NOT claim top 2000 if you only received 500.
+   - Request the max allowed (500+ if the tool permits more).
+   - Store every returned query row (up to 500, or more if MCP allows).
+   - Compute buckets from the FULL returned set.
+   - Set gscByQuery.note to exactly:
+     "GSC MCP row_limit ceiling: N rows returned (tool max). Not the full keyword universe."
+     where N is the actual count.
+   - KEEP existing gsc.quickWins (pos 4–15, impr>=100, top 8 opportunity).
+D) GSC dimensions:['query','page'] → group by query; if >1 page with impressions>=20, add to gscCannibalization.rows with pages[], impressionSum, positionVariance. Always set the standing warning string about global vs /us/ trees. Prefer clean page URLs (strip #fragments when aggregating if easy). Keep full cannibalization rows in the published JSON (no top-8-only shrink for GitHub).
 E) GA4 country dimension → ga4ByCountry.us vs rest sessions/activeUsers.
-F) GA4 pagePath → ga4ByPage.rows top 200 by sessions (include engagementRate if available).
+F) GA4 pagePath → ga4ByPage.rows up to **1000** by sessions (include engagementRate, pageViews if available). Same rule as pages: FULL array in local file AND GitHub push — no top-30 shrink.
 H) PHASE 3 — AI/GEO traffic: GA4 report filtered/segmented by sessionSource or pageReferrer containing
    chatgpt.com, perplexity.ai, gemini.google.com, claude.ai, copilot.microsoft.com (and similar).
    Write:
    "ga4AiTraffic": { "status": "ok", "rows": [{ "referrer": "chatgpt.com", "sessions": 0, "activeUsers": 0 }] }
    If GA4 cannot segment yet: { "status": "unavailable", "note": "..." }.
+I) GA4 channel group — ensure ga4.channels includes Organic Search, Direct, Organic Social, Referral, Paid Search / Paid Social / Display if present, Email, AI Assistant / ChatGPT etc. Do not invent channels.
+J) Best-effort additive objects (ok to set unavailable):
+   "opportunities": { "status":"ok", "rows":[{ "type":"high_impr_low_ctr|pos_4_10|pos_11_20|zero_click|declining", "query":"", "page":"", "impressions":0, "clicks":0, "ctr":0, "position":0, "note":"" }] }
+   Derive from gscByQuery / gscByPage when possible (top 50 opportunity rows).
 G) HISTORY (Phase 2): after writing latest.json, also write data/history/YYYY-MM-DD.json (UTC date) with ONLY compact totals:
    { "date", "updatedAt", "gsc": current+change, "ga4": totals, "clarityStatus", "githubStatus" }
    Do not dump full keyword lists into history. Create data/history/ if missing.
    Also update data/history/index.json: { "updatedAt", "dates": [ ...existing sorted unique YYYY-MM-DD..., today ] } keep last 90 days max.
 If any additive fetch fails: set that section { "status": "unavailable", "note": "..." } and continue — never delete core gsc/ga4.
+
 
 COMPUTATION RULES:
 1) GSC current = last 28 full days ending yesterday (UTC). Prior = the 28 days before that.
@@ -140,36 +163,38 @@ COMPUTATION RULES:
 5) GA4 = last 28 days through today. engagementRate = sessions-weighted average, 4 decimals. daily[].date = YYYYMMDD. channels = sessionDefaultChannelGroup, sessions desc.
 6) github.recentCommits: up to 5; message = first line only.
 7) If analytics env/files missing or API blocked: cloudflare.status may still be "ok" after a successful Pages deploy with analytics zeros OR status "unavailable" with note — prefer: after successful npm run deploy:cf set cloudflare.status="ok", deployment.status="success", deployment.url from wrangler output, deployment.deployedAt=now, and leave analytics at 0 with a note only if you must explain missing analytics (put that in cloudflare.note). If deploy also fails, set deployment.status="failed" and note the error.
-8) Write pretty-printed JSON (2-space indent) + trailing newline. updatedAt = now UTC.
+8) Write data/latest.json as **compact/minified JSON** (JSON.stringify with no extra spaces) + trailing newline.
+   Reason: pretty ~325KB often fails Claude→GitHub Contents relay; minified full rows usually succeed.
+   Do NOT drop rows to shrink. updatedAt = now UTC.
 9) Failed GitHub/Clarity: { "status": "unavailable", "note": "<short reason>" }.
 
-DEPLOY (required after writing latest.json) — shell-bridge resilient:
+DEPLOY (required after writing latest.json) — automatic paths:
 
-PRIMARY PATH (always do this — works even when device_bash / Plan9 is broken):
-1) Write E:\growth-board\data\latest.json via the file bridge (device_stage/commit or equivalent).
-2) Also write history for today (see G above) the same way.
-3) Push BOTH files to GitHub via the GitHub API / github integration (Contents API create-or-update):
-     - data/latest.json
-     - data/history/YYYY-MM-DD.json
-     - data/history/index.json
-   Commit message: "chore: refresh dashboard data via Claude MCP"
-   Branch: main (or the repo default).
-4) GitHub Actions workflow `.github/workflows/deploy-pages.yml` deploys Cloudflare Pages on push to data/**.
-   Set cloudflare.deployment to:
-     { "status": "queued", "url": "https://rytsensetech-growth-board.pages.dev", "deployedAt": "<ISO now>" }
-   and cloudflare.status = "ok" with note "deploy queued via GitHub Actions after API push"
-   when the GitHub push succeeds.
+PATH A — GitHub push → Actions deploy (preferred when Contents API works):
+1) Write E:\growth-board\data\latest.json (FULL arrays, minified) via file bridge.
+2) Write history compact files the same way.
+3) Push via GitHub Contents API (create-or-update) the FULL minified latest.json + history files.
+   Commit: "chore: refresh dashboard data via Claude MCP"
+   NEVER shrink gscByPage / gscByQuery / ga4ByPage for the push.
+4) On success: cloudflare.deployment = { status:"queued", url:"https://rytsensetech-growth-board.pages.dev", deployedAt:now }
+   Actions workflow deploy-pages.yml publishes within ~1–2 minutes.
 
-LOCAL SHELL PATH (best-effort only — do NOT fail the run if this breaks):
-If device_bash / PowerShell works on E:\growth-board:
-  npm run deploy:cf
-Auth: secrets/cloudflare-api-token.txt or CLOUDFLARE_API_TOKEN — never print the token.
-After a successful local deploy, patch cloudflare.deployment { status:"success", url, deployedAt } once — do NOT redeploy after that patch.
-If device_bash fails with "no Plan9 drive shares" / shell bridge outage: SKIP local npm/git entirely.
-  Do NOT treat that as a failed refresh — the GitHub API push + Actions deploy is the recovery path.
-  Still finish the JSON write + GitHub push.
+PATH B — Local Windows auto-deploy (always on — does not need device_bash):
+   A Task Scheduler job runs scripts/watch-and-deploy.ps1 every 10 minutes and runs
+   `npm run deploy:cf` whenever data/latest.json is newer than .cf-last-deploy-stamp.
+   So even if GitHub push fails, the public board updates automatically from disk.
+   You do NOT need Cursor for PATH B once the task is installed.
 
-Known issue (Sept 2025+ Windows): Claude device_bash often fails with Plan9/virtiofs mount errors while file read/write still works. Prefer PRIMARY PATH every day; treat local shell as optional speed-up.
+PATH C — device_bash available: also run `npm run deploy:cf` immediately (faster).
+
+If GitHub push fails AND you cannot run npm:
+  - Keep full local file
+  - cloudflare.deployment.status = "pending_local_watcher"
+  - cloudflare.note = "GitHub push failed; Windows Task Scheduler watch-and-deploy will publish from E:\\growth-board within ~10m"
+  - Slack: "Growth Board daily refresh ✅ local written — deploy via auto-watcher (~10m) or Actions if push OK"
+  - Do NOT ask a human to intervene unless watcher is missing
+
+FORBIDDEN: truncating rows "so GitHub accepts it".
 
 TASKS (do NOT modify):
 Never rewrite or overwrite data/tasks.json. Task status/assignee/notes are human-owned via /api/tasks (KV). The Growth Board already shows open-critical task counts from that API.
@@ -180,12 +205,36 @@ OPTIONAL LOCAL GIT (do not block; skip when shell is broken):
   git push origin main
 Prefer GitHub Contents API when local git is unavailable (already covered in PRIMARY PATH).
 
+SLACK (required after the run — use your connected Slack integration):
+1) GET https://rytsensetech-growth-board.pages.dev/api/tasks (fresh snapshot; do not modify tasks).
+2) From summary + tasks[], compute short counts:
+   - open / done / todo / in-progress / blocked / overdue / dueSoon / openCritical
+   - per team (Development, Content, SEO, Marketing, Unassigned): open count + done count
+3) Post ONE short Slack message to the connected Rytsense / growth-board channel
+   (use the channel already configured for this Slack connection; if multiple, prefer
+   the SEO/growth ops channel). No @channel unless something failed hard.
+
+Message template (keep under ~12 lines, plain text):
+
+Growth Board · daily refresh ✅
+updatedAt: <ISO>
+Metrics: GSC clicks <n> · GA4 sessions <n> · Clarity <ok|n/a>
+Deploy: <queued Actions | local success | failed>
+Tools: <comma list you actually used, e.g. GSC MCP, GA4 MCP, Clarity worker, GitHub API, Slack>
+Tasks: open <n> · done <n> · critical open <n> · overdue <n>
+By team: Dev <open>/<done> · Content <o>/<d> · SEO <o>/<d> · Mkt <o>/<d> · Unassigned <o>
+Link: https://rytsensetech-growth-board.pages.dev/tasks
+
+If Slack post fails, note it in the final reply — do not fail the whole refresh.
+
 FINAL REPLY (one short block):
 - updatedAt
 - GSC clicks (current) + GA4 sessions (totals)
 - Clarity: ok/unavailable (+ metricName keys if ok) — confirm you used the worker URL, not MCP
 - GitHub: repo + latest short sha (or Contents API push result), or unavailable
 - Cloudflare: local deploy URL/status OR "queued via GitHub Actions" + analytics ok/unavailable
-- Phase 1 additive: which of gscByCountry/gscByPage/gscByQuery/gscCannibalization/ga4ByCountry/ga4ByPage are ok vs unavailable
+- Phase 1 additive: gscByPage row count, gscByQuery row count (+ note if MCP 500 ceiling), ga4ByPage row count; which sections ok vs unavailable
+- Confirm: GitHub latest.json was NOT shrunk (gscByPage rows match local count)
 - history file path written under data/history/
+- Slack: ok/fail
 - any errors (shell-bridge Plan9 failures are expected — note them but do not call the whole refresh "broken" if GitHub push succeeded)

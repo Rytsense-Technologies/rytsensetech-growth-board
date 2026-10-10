@@ -11,12 +11,7 @@
 <link rel="stylesheet" href="assets/site-nav.css">
 <style>html,body{margin:0;background:#f4f6f5}html[data-theme="dark"],html[data-theme="dark"] body{background:#0e1416}</style>
 <script>
-(function(){
-  try{
-    var t=localStorage.getItem('rts-theme');
-    if(t==='light'||t==='dark') document.documentElement.dataset.theme=t;
-  }catch(e){}
-})();
+(function(){try{var t=localStorage.getItem('gb-theme');if(t!=='dark'&&t!=='light'){t='light';localStorage.setItem('gb-theme',t);try{localStorage.setItem('tt-theme',t);localStorage.setItem('rts-theme',t)}catch(x){}}document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
 </script>
 </head>
 <body>
@@ -31,6 +26,7 @@
       <a href="report.html" data-nav="report">Intelligence Report</a>
       <a href="tasks.html" data-nav="tasks">Team Tasks</a>
       <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="seo-work.html" data-nav="seo-work">SEO Work</a>
       <a href="ops.html" data-nav="ops">SEO Ops</a>
     </div>
     <div class="site-nav-meta">
@@ -88,7 +84,6 @@
           <div class="meta" id="page-meta">Loading…</div>
         </div>
         <div class="spacer"></div>
-        <button type="button" class="iconbtn" id="theme-btn" title="Cycle theme">◐ Theme</button>
       </header>
 
       <div class="wrap" id="wrap">
@@ -185,14 +180,6 @@
   document.getElementById('scrim').addEventListener('click', closeSide);
   document.querySelectorAll('.navbtn').forEach(function(b){
     b.addEventListener('click', function(){ show(b.getAttribute('data-tab')); });
-  });
-
-  document.getElementById('theme-btn').addEventListener('click', function(){
-    var cur=document.documentElement.dataset.theme||'';
-    var next=cur===''?'light':(cur==='light'?'dark':'');
-    if(next) document.documentElement.dataset.theme=next;
-    else delete document.documentElement.dataset.theme;
-    try{localStorage.setItem('rts-theme', next||'system')}catch(e){}
   });
 
   /* —— Audit sections —— */

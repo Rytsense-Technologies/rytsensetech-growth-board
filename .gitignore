@@ -5,6 +5,8 @@ node_modules/
 .cursor/
 *.log
 secrets/
+.env
+server/.env
 .wrangler/
 *.xlsx
 SEO-agents-main/.env

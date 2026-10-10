@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEO Work — Rytsense</title>
+<script>
+(function(){try{var t=localStorage.getItem('gb-theme');if(t!=='dark'&&t!=='light'){t='light';localStorage.setItem('gb-theme',t);}document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{
+    --paper:#F5F6F8;--paper-raised:#FFFFFF;--ink:#12181F;--ink-soft:#4B5563;--ink-faint:#8B93A1;
+    --line:#E2E5EA;--accent:#0E7A82;--accent-soft:#E4F2F1;--accent-ink:#075258;
+    --good:#1E8E5A;--good-soft:#E4F5EC;--warn:#B4740E;--warn-soft:#FBF0DC;
+    --bad:#C23B3B;--bad-soft:#FBE7E7;--chip-bg:#EDEFF3;
+    --shadow:0 1px 2px rgba(18,24,31,.04),0 8px 24px -12px rgba(18,24,31,.12);
+    --sidebar:248px;--site-nav-h:56px;color-scheme:light;
+    --v-issues:#B45309;--v-issues-soft:#FBF0DC;
+    --v-links:#0E7A82;--v-links-soft:#E4F2F1;
+    --v-ideas:#5B4B8A;--v-ideas-soft:#F0ECF8;
+    --v-trends:#1E6B4A;--v-trends-soft:#E4F5EC;
+  }
+  :root[data-theme="dark"], html[data-theme="dark"]{
+    --paper:#0B1013;--paper-raised:#141A1F;--ink:#E8ECEF;--ink-soft:#A7AFB9;--ink-faint:#6C7480;
+    --line:#232B31;--accent:#3FBFC2;--accent-soft:#132726;--accent-ink:#8FE0E2;
+    --good:#49C285;--good-soft:#132520;--warn:#E3A83B;--warn-soft:#2A2013;
+    --bad:#E4685E;--bad-soft:#2A1717;--chip-bg:#1B2126;
+    --v-issues:#E3A83B;--v-issues-soft:#2A2013;
+    --v-links:#3FBFC2;--v-links-soft:#132726;
+    --v-ideas:#C4B5E8;--v-ideas-soft:#221C2E;
+    --v-trends:#49C285;--v-trends-soft:#132520;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.5;overflow-x:hidden}
+  h1,h2,h3{font-family:'Manrope',system-ui,sans-serif;margin:0}
+  .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+  a{color:var(--accent-ink)}
+  .shell{display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);min-height:calc(100vh - var(--site-nav-h));width:100%;max-width:100%}
+  .sidebar{background:var(--paper-raised);border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:var(--site-nav-h);align-self:start;max-height:calc(100vh - var(--site-nav-h));overflow:auto;min-width:0}
+  .brand{display:flex;gap:10px;align-items:center;padding:0 6px 12px;min-width:0}
+  .brand > div{min-width:0}
+  .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--accent),var(--accent-ink));display:flex;align-items:center;justify-content:center;color:#fff;font-family:Manrope;font-weight:800;font-size:12px;flex:none}
+  .brand strong{font-size:13px;display:block}
+  .brand span{font-size:11px;color:var(--ink-faint)}
+  .sw-nav{display:flex;flex-direction:column;gap:6px}
+  .sw-nav .group{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);font-weight:700;padding:10px 10px 4px}
+  .sw-nav a{
+    text-decoration:none;color:var(--ink-soft);font-size:12.5px;font-weight:700;
+    padding:10px 12px;border-radius:10px;border:1px solid transparent;display:block;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  .sw-nav a .sw-view-kicker{display:block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.75;margin-bottom:2px}
+  .sw-nav a[data-view="issues"]{border-color:color-mix(in srgb,var(--v-issues) 25%,var(--line))}
+  .sw-nav a[data-view="links"]{border-color:color-mix(in srgb,var(--v-links) 25%,var(--line))}
+  .sw-nav a[data-view="ideas"]{border-color:color-mix(in srgb,var(--v-ideas) 25%,var(--line))}
+  .sw-nav a[data-view="trends"]{border-color:color-mix(in srgb,var(--v-trends) 25%,var(--line))}
+  .sw-nav a.active[data-view="issues"],.sw-nav a:hover[data-view="issues"]{background:var(--v-issues-soft);color:var(--v-issues);box-shadow:inset 3px 0 0 var(--v-issues)}
+  .sw-nav a.active[data-view="links"],.sw-nav a:hover[data-view="links"]{background:var(--v-links-soft);color:var(--v-links);box-shadow:inset 3px 0 0 var(--v-links)}
+  .sw-nav a.active[data-view="ideas"],.sw-nav a:hover[data-view="ideas"]{background:var(--v-ideas-soft);color:var(--v-ideas);box-shadow:inset 3px 0 0 var(--v-ideas)}
+  .sw-nav a.active[data-view="trends"],.sw-nav a:hover[data-view="trends"]{background:var(--v-trends-soft);color:var(--v-trends);box-shadow:inset 3px 0 0 var(--v-trends)}
+  .side-foot{margin-top:18px;padding:8px 6px;font-size:11.5px;color:var(--ink-faint);overflow-wrap:anywhere}
+  .main{padding:24px 28px 72px;max-width:100%;min-width:0;overflow-x:auto}
+  .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+  .topbar h1{font-size:clamp(17px,2.5vw,20px);font-weight:800}
+  .topbar p{margin:4px 0 0;color:var(--ink-soft);font-size:12.5px;max-width:58ch}
+  .shell.accent-issues .topbar{border-bottom-color:color-mix(in srgb,var(--v-issues) 40%,var(--line))}
+  .shell.accent-links .topbar{border-bottom-color:color-mix(in srgb,var(--v-links) 40%,var(--line))}
+  .shell.accent-ideas .topbar{border-bottom-color:color-mix(in srgb,var(--v-ideas) 40%,var(--line))}
+  .shell.accent-trends .topbar{border-bottom-color:color-mix(in srgb,var(--v-trends) 40%,var(--line))}
+  .sw-view-panel{background:var(--paper-raised);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);min-width:0;overflow:hidden}
+  .shell.accent-issues .sw-view-panel{border-top:3px solid var(--v-issues)}
+  .shell.accent-links .sw-view-panel{border-top:3px solid var(--v-links)}
+  .shell.accent-ideas .sw-view-panel{border-top:3px solid var(--v-ideas)}
+  .shell.accent-trends .sw-view-panel{border-top:3px solid var(--v-trends)}
+  .sw-stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .sw-pill{background:var(--chip-bg);border-radius:8px;padding:8px 12px;min-width:72px;flex:1 1 72px;max-width:160px}
+  .sw-pill .k{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);font-weight:700}
+  .sw-pill .v{font-size:18px;font-weight:800;font-family:Manrope}
+  .sw-source{font-size:12px;color:var(--ink-faint);margin:0 0 12px;overflow-wrap:anywhere}
+  .sw-filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .sw-filters input,.sw-filters select{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font:inherit;min-width:0;flex:1 1 140px;max-width:100%}
+  .sw-table-wrap{overflow:auto;-webkit-overflow-scrolling:touch;max-height:min(560px,70vh);border:1px solid var(--line);border-radius:10px;width:100%}
+  .sw-table-wrap.compact{max-height:min(280px,50vh)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:auto}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);font-weight:700;padding:8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper-raised);z-index:1;white-space:nowrap}
+  td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere;word-break:break-word}
+  td.mono,td .mono,td a{overflow-wrap:anywhere;word-break:break-all}
+  .sw-why,.sw-fix{margin-bottom:6px;font-size:12.5px;line-height:1.45}
+  .sw-why strong,.sw-fix strong{display:inline;margin-right:4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint)}
+  .sw-agent-cell{min-width:200px;max-width:420px}
+  .sw-sheet{font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  .num{text-align:right;white-space:nowrap}
+  .sw-note{font-size:11.5px;color:var(--ink-faint);margin-top:4px;overflow-wrap:anywhere}
+  .sw-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin:1px 2px 1px 0}
+  .sw-badge.bad{background:var(--bad-soft);color:var(--bad)}
+  .sw-badge.warn{background:var(--warn-soft);color:var(--warn)}
+  .sw-badge.good{background:var(--good-soft);color:var(--good)}
+  .sw-badge.mute{background:var(--chip-bg);color:var(--ink-faint)}
+  .sw-badge.us{background:#E8EEF8;color:#2F4C8A}
+  .sw-badge.global{background:#EAF6F0;color:#1E6B4A}
+  :root[data-theme="dark"] .sw-badge.us{background:#1A2230;color:#9BB4E8}
+  :root[data-theme="dark"] .sw-badge.global{background:#132520;color:#49C285}
+  .sw-btn{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer;font-family:Manrope;font-size:12px;white-space:nowrap}
+  .sw-btn.secondary{background:var(--chip-bg);color:var(--ink)}
+  .sw-btn.done{opacity:.7}
+  .sw-empty{padding:18px 4px;color:var(--ink-soft)}
+  .sw-obj-grid{display:grid;grid-template-columns:1fr;gap:14px}
+  .sw-obj-card{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:color-mix(in srgb,var(--v-trends-soft) 55%,var(--paper-raised));min-width:0}
+  .sw-obj-card header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:baseline}
+  .sw-obj-card h3{font-size:14px;font-weight:800}
+  .sw-obj-meta{font-size:11.5px;color:var(--ink-faint)}
+  .sw-howto{margin-top:18px;font-size:12px;color:var(--ink-faint);max-width:70ch;overflow-wrap:anywhere}
+  .sw-howto code{font-size:11px;word-break:break-all}
+
+  /* Tablet: keep side-by-side but shrink sidebar */
+  @media(max-width:1100px){
+    :root{--sidebar:200px}
+    .main{padding:20px 16px 56px}
+    .sw-view-panel{padding:14px}
+  }
+
+  /* Phone / narrow: stack; view picker becomes horizontal chips */
+  @media(max-width:960px){
+    .shell{grid-template-columns:1fr}
+    .sidebar{
+      position:static;max-height:none;border-right:none;border-bottom:1px solid var(--line);
+      padding:14px 12px 10px;
+    }
+    .sw-nav{
+      flex-direction:row;flex-wrap:nowrap;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      padding-bottom:6px;margin:0 -4px;padding-left:4px;padding-right:4px;
+    }
+    .sw-nav .group{display:none}
+    .sw-nav a{
+      flex:0 0 auto;min-width:148px;max-width:78vw;white-space:normal;
+      box-shadow:none!important;border-width:1px;
+    }
+    .sw-nav a.active[data-view="issues"],.sw-nav a:hover[data-view="issues"]{box-shadow:inset 0 -3px 0 var(--v-issues)!important}
+    .sw-nav a.active[data-view="links"],.sw-nav a:hover[data-view="links"]{box-shadow:inset 0 -3px 0 var(--v-links)!important}
+    .sw-nav a.active[data-view="ideas"],.sw-nav a:hover[data-view="ideas"]{box-shadow:inset 0 -3px 0 var(--v-ideas)!important}
+    .sw-nav a.active[data-view="trends"],.sw-nav a:hover[data-view="trends"]{box-shadow:inset 0 -3px 0 var(--v-trends)!important}
+    .side-foot{display:none}
+    .main{padding:16px 12px 48px}
+    .sw-view-panel{padding:12px;border-radius:12px}
+    th,td{padding:8px 6px}
+    table{font-size:12px;min-width:640px}
+  }
+
+  @media(max-width:560px){
+    .brand span{display:none}
+    .sw-nav a{min-width:132px;padding:8px 10px;font-size:12px}
+    .sw-pill .v{font-size:16px}
+    .site-nav-chip{display:none}
+  }
+</style>
+<link rel="stylesheet" href="assets/site-nav.css">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site">
+  <div class="site-nav-inner">
+    <a class="site-nav-brand" href="index.html">
+      <span class="site-nav-mark">RT</span>
+      <span class="site-nav-name">Rytsense</span>
+    </a>
+    <div class="site-nav-links">
+      <a href="index.html" data-nav="board">Growth Board</a>
+      <a href="report.html" data-nav="report">Intelligence Report</a>
+      <a href="tasks.html" data-nav="tasks">Team Tasks</a>
+      <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="seo-work.html" data-nav="seo-work">SEO Work</a>
+      <a href="ops.html" data-nav="ops">SEO Ops</a>
+    </div>
+    <div class="site-nav-meta">
+      <span class="site-nav-chip">Issues · Links · Ideas · Trends</span>
+    </div>
+  </div>
+</nav>
+<script src="assets/site-nav.js" defer></script>
+
+<div class="shell" id="sw-shell" data-view="issues">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">SW</div>
+      <div><strong>SEO Work</strong><span>4 separate workstreams</span></div>
+    </div>
+    <nav class="sw-nav" aria-label="SEO Work views">
+      <div class="group">Choose a view</div>
+      <a href="#issues" data-view="issues" class="active">
+        <span class="sw-view-kicker">View 1 · High priority</span>
+        GSC Issues
+      </a>
+      <a href="#links" data-view="links">
+        <span class="sw-view-kicker">View 2 · US &amp; Global</span>
+        Internal Links
+      </a>
+      <a href="#ideas" data-view="ideas">
+        <span class="sw-view-kicker">View 3 · Anti-cannibal</span>
+        Content Ideas
+      </a>
+      <a href="#trends" data-view="trends">
+        <span class="sw-view-kicker">View 4 · Objectives</span>
+        Topic Trends
+      </a>
+    </nav>
+    <div class="side-foot">
+      JSON: gsc-issues · internal-links · content-ideas · topic-trends
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="sw-title">GSC Issues</h1>
+        <p id="sw-blurb">SEO-team audit sheet — URLs to fix by category.</p>
+        <p id="sw-sync" class="sw-note" style="margin-top:6px">Loading…</p>
+      </div>
+    </div>
+    <div class="sw-view-panel" id="sw-view"></div>
+    <p class="sw-howto">
+      Re-import issues: <code>python scripts/import-gsc-issues.py</code> after SEO updates the Excel/Sheet.
+      Weekly agents refresh links, ideas, and objective trends (see <code>scripts/claude-scheduler-weekly-seo360.txt</code>).
+    </p>
+  </div>
+</div>
+<script src="assets/live-api.js"></script>
+<script src="assets/seo-work.js" defer></script>
+</body>
+</html>

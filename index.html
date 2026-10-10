@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rytsensetech Growth Board</title>
+<script>
+(function(){try{var t=localStorage.getItem('gb-theme');if(t!=='dark'&&t!=='light'){t='light';localStorage.setItem('gb-theme',t);try{localStorage.setItem('tt-theme',t);localStorage.setItem('rts-theme',t)}catch(x){}}document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
@@ -29,20 +32,16 @@
   }
 
   @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --paper:#0B1013; --paper-raised:#141A1F; --ink:#E8ECEF; --ink-soft:#A7AFB9; --ink-faint:#6C7480;
-      --line:#232B31; --accent:#3FBFC2; --accent-soft:#132726; --accent-ink:#8FE0E2;
-      --good:#49C285; --good-soft:#132520; --warn:#E3A83B; --warn-soft:#2A2013;
-      --bad:#E4685E; --bad-soft:#2A1717; --chip-bg:#1B2126;
-      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
-    }
+    /* Theme is explicit via data-theme; default remains light. */
   }
-  :root[data-theme="dark"]{
+  :root[data-theme="dark"],
+  html[data-theme="dark"]{
     --paper:#0B1013; --paper-raised:#141A1F; --ink:#E8ECEF; --ink-soft:#A7AFB9; --ink-faint:#6C7480;
     --line:#232B31; --accent:#3FBFC2; --accent-soft:#132726; --accent-ink:#8FE0E2;
     --good:#49C285; --good-soft:#132520; --warn:#E3A83B; --warn-soft:#2A2013;
     --bad:#E4685E; --bad-soft:#2A1717; --chip-bg:#1B2126;
     --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    color-scheme: dark;
   }
 
   *{box-sizing:border-box;}
@@ -121,7 +120,35 @@
   td{ padding:8px 8px 8px 0; border-bottom:1px solid var(--line); vertical-align:top; }
   tr:last-child td{ border-bottom:none; }
   td.q{ max-width:260px; }
+  .num{ text-align:right; white-space:nowrap; }
   .num-cell{ text-align:right; white-space:nowrap; }
+  th.sortable{ cursor:pointer; user-select:none; white-space:nowrap; }
+  th.sortable:hover, th.sortable.sorted{ color:var(--accent-ink); }
+  .filters{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; align-items:center; }
+  .filters input,.filters select{ min-width:100px; background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:6px 10px; color:var(--ink); font:inherit; font-size:12.5px; }
+  .filters .metric{ width:96px; min-width:88px; }
+  .filters .hint{ font-size:11.5px; color:var(--ink-faint); }
+  .gb-dr{margin:0}
+  .gb-dr-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .gb-dr-chip{border:1px solid var(--line);background:var(--paper-raised);color:var(--ink-soft);border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+  .gb-dr-chip:hover{border-color:var(--accent);color:var(--accent-ink)}
+  .gb-dr-chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+  .gb-dr-sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+  .gb-dr-label{font-size:11.5px;color:var(--ink-faint);margin-left:4px}
+  .gb-dr-note{margin:8px 0 0;font-size:12px;color:var(--ink-faint)}
+  .gb-dr-modal{position:fixed;inset:0;background:rgba(18,24,31,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+  .gb-dr-modal[hidden]{display:none!important}
+  .gb-dr-panel{width:min(380px,100%);background:var(--paper-raised);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+  .gb-dr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .gb-dr-x{border:0;background:transparent;font-size:22px;cursor:pointer;color:var(--ink-soft);line-height:1}
+  .gb-dr-presets{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+  .gb-dr-radio{font-size:13px;color:var(--ink);display:flex;gap:8px;align-items:center}
+  .gb-dr-custom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .gb-dr-custom label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--ink-faint);font-weight:600}
+  .gb-dr-custom input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+  .gb-dr-actions{display:flex;justify-content:flex-end;gap:8px}
+  .gb-dr-cancel{border:0;background:transparent;color:var(--ink-soft);font:inherit;font-weight:600;cursor:pointer;padding:8px 12px}
+  .gb-dr-apply{border:0;background:var(--accent);color:#fff;font:inherit;font-weight:700;cursor:pointer;padding:8px 16px;border-radius:999px}
   .opp-badge{ display:inline-block; padding:2px 7px; border-radius:5px; font-weight:700; font-size:11px; background:var(--accent-soft); color:var(--accent-ink); }
   .table-scroll{ overflow-x:auto; }
 
@@ -221,7 +248,10 @@
       <a href="report.html" data-nav="report">Intelligence Report</a>
       <a href="tasks.html" data-nav="tasks">Team Tasks</a>
       <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="seo-work.html" data-nav="seo-work">SEO Work</a>
       <a href="ops.html" data-nav="ops">SEO Ops</a>
+      <a href="ask.html" data-nav="ask">Ask</a>
+      <a href="login.html">Sign in</a>
     </div>
     <div class="site-nav-meta">
       <span class="site-nav-chip">Refreshes on schedule</span>
@@ -231,6 +261,9 @@
   </div>
 </nav>
 <script src="assets/site-nav.js" defer></script>
+<script src="assets/live-api.js"></script>
+<script src="assets/table-sort.js"></script>
+<script src="assets/date-range.js"></script>
 <div class="wrap">
 
   <div class="topbar">
@@ -257,18 +290,24 @@
   </div>
 
   <div class="tiles" id="tiles"></div>
+  <div id="date-range-host" style="margin:0 0 18px"></div>
 
   <div class="grid">
     <div class="card">
       <div class="card-head">
         <h2>Search Console &mdash; near-miss keywords</h2>
-        <span class="sub">positions 4&ndash;15, ranked by opportunity</span>
+        <span class="sub">positions 4&ndash;15 · click headers to sort</span>
+      </div>
+      <div class="filters" id="qw-filters">
+        <input type="search" data-f="q" placeholder="Filter query…">
+        <input class="metric" type="number" data-f="minImpr" placeholder="Min impr" title="Minimum impressions">
+        <input class="metric" type="number" data-f="minClicks" placeholder="Min clicks" title="Minimum clicks">
+        <input class="metric" type="number" data-f="maxPos" placeholder="Max pos" title="Maximum average position">
+        <span class="hint">Click column headers to sort</span>
       </div>
       <div class="table-scroll">
-        <table id="quickwins-table">
-          <thead>
-            <tr><th>Query</th><th class="num-cell">Impr.</th><th class="num-cell">Clicks</th><th class="num-cell">CTR</th><th class="num-cell">Pos.</th><th class="num-cell">Opp.</th></tr>
-          </thead>
+        <table id="quickwins-table" data-sort-id="qw">
+          <thead id="quickwins-head"></thead>
           <tbody id="quickwins-body"></tbody>
         </table>
       </div>
@@ -325,6 +364,12 @@
 <script>
 (function(){
   var fmt = new Intl.NumberFormat('en-US');
+  var qwState = {
+    rows: [],
+    sort: { key: 'opportunity', dir: -1 },
+    filters: { q: '', minImpr: '', minClicks: '', maxPos: '' },
+    bound: false
+  };
   function fmtNum(n){ if(n===undefined||n===null||isNaN(n)) return '–'; return fmt.format(Math.round(n)); }
   function fmtPct(n){ if(n===undefined||n===null||isNaN(n)) return '–'; return n.toFixed(1)+'%'; }
   function fmtDate(iso){
@@ -406,23 +451,102 @@
   }
 
   function renderQuickWins(rows){
+    if(rows) qwState.rows = rows.slice();
     var body = document.getElementById('quickwins-body');
-    if(!rows || !rows.length){ body.innerHTML = '<tr><td colspan="6" style="color:var(--ink-faint);">No near-miss queries in range.</td></tr>'; return; }
-    body.innerHTML = rows.slice(0,8).map(function(r){
-      return '<tr>'+
-        '<td class="q">'+r.query+'</td>'+
-        '<td class="num-cell mono">'+fmtNum(r.impressions)+'</td>'+
-        '<td class="num-cell mono">'+fmtNum(r.clicks)+'</td>'+
-        '<td class="num-cell mono">'+r.ctr.toFixed(2)+'%</td>'+
-        '<td class="num-cell mono">'+r.position.toFixed(1)+'</td>'+
-        '<td class="num-cell"><span class="opp-badge">'+fmtNum(r.opportunity)+'</span></td>'+
-      '</tr>';
-    }).join('');
+    var head = document.getElementById('quickwins-head');
+    var g = window.GbTable;
+    var f = qwState.filters;
+    var filtered = qwState.rows.filter(function(r){
+      if(f.q && String(r.query||'').toLowerCase().indexOf(f.q.toLowerCase()) === -1) return false;
+      var mi = f.minImpr === '' ? null : +f.minImpr;
+      var mc = f.minClicks === '' ? null : +f.minClicks;
+      var mp = f.maxPos === '' ? null : +f.maxPos;
+      if(mi != null && !isNaN(mi) && (r.impressions||0) < mi) return false;
+      if(mc != null && !isNaN(mc) && (r.clicks||0) < mc) return false;
+      if(mp != null && !isNaN(mp) && (r.position == null || r.position > mp)) return false;
+      return true;
+    });
+    var sorted = g ? g.sortRows(filtered, qwState.sort.key, qwState.sort.dir) : filtered.slice().sort(function(a,b){ return (b.opportunity||0)-(a.opportunity||0); });
+    var show = sorted.slice(0, 40);
+    if(head){
+      if(g){
+        head.innerHTML = '<tr>'+
+          g.th('Query','query',qwState.sort)+
+          g.th('Impr.','impressions',qwState.sort,{num:true})+
+          g.th('Clicks','clicks',qwState.sort,{num:true})+
+          g.th('CTR','ctr',qwState.sort,{num:true})+
+          g.th('Pos.','position',qwState.sort,{num:true})+
+          g.th('Opp.','opportunity',qwState.sort,{num:true})+
+        '</tr>';
+      } else {
+        head.innerHTML = '<tr><th>Query</th><th class="num-cell">Impr.</th><th class="num-cell">Clicks</th><th class="num-cell">CTR</th><th class="num-cell">Pos.</th><th class="num-cell">Opp.</th></tr>';
+      }
+    }
+    if(!show.length){
+      body.innerHTML = '<tr><td colspan="6" style="color:var(--ink-faint);">No near-miss queries match filters.</td></tr>';
+    } else {
+      body.innerHTML = show.map(function(r){
+        return '<tr>'+
+          '<td class="q">'+esc(r.query)+'</td>'+
+          '<td class="num-cell mono">'+fmtNum(r.impressions)+'</td>'+
+          '<td class="num-cell mono">'+fmtNum(r.clicks)+'</td>'+
+          '<td class="num-cell mono">'+(r.ctr!=null?Number(r.ctr).toFixed(2):'–')+'%</td>'+
+          '<td class="num-cell mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td>'+
+          '<td class="num-cell"><span class="opp-badge">'+fmtNum(r.opportunity)+'</span></td>'+
+        '</tr>';
+      }).join('');
+    }
+    if(!qwState.bound){
+      qwState.bound = true;
+      var bar = document.getElementById('qw-filters');
+      if(bar){
+        bar.addEventListener('input', function(){
+          bar.querySelectorAll('[data-f]').forEach(function(node){
+            var k = node.getAttribute('data-f');
+            if(k) qwState.filters[k] = node.value;
+          });
+          renderQuickWins();
+        });
+      }
+      if(g){
+        g.bindDelegated(document.getElementById('quickwins-table') || document.body, function(sortId, key){
+          qwState.sort = g.toggle(qwState.sort, key, -1);
+          renderQuickWins();
+        });
+      }
+    }
+  }
+
+  var lastBoardData = null;
+  var lastTaskSummary = null;
+
+  function ymdFromGa4(d){
+    var s = String(d||'');
+    if(s.length===8) return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8);
+    return s;
+  }
+  function filterGa4Daily(daily){
+    if(!daily || !daily.length || !window.GbDateRange) return daily||[];
+    var dr = window.GbDateRange.read();
+    var rows = daily.map(function(d){
+      return { date: ymdFromGa4(d.date), sessions: d.sessions, raw: d };
+    }).filter(function(r){ return window.GbDateRange.inRange(r.date, dr); });
+    if(dr.grain==='day') return rows.map(function(r){ return { date: r.raw.date, sessions: r.sessions }; });
+    var buckets = {};
+    rows.forEach(function(r){
+      var k = window.GbDateRange.bucketKey(r.date, dr.grain);
+      if(!buckets[k]) buckets[k] = { date: k.replace(/-/g,''), sessions: 0 };
+      buckets[k].sessions += r.sessions||0;
+    });
+    return Object.keys(buckets).sort().map(function(k){ return buckets[k]; });
   }
 
   function renderChart(daily){
+    var filtered = filterGa4Daily(daily);
     var wrap = document.getElementById('chart-wrap');
-    if(!daily || !daily.length){ wrap.innerHTML = '<p style="color:var(--ink-faint);font-size:12.5px;">No trend data.</p>'; return; }
+    if(!filtered || !filtered.length){ wrap.innerHTML = '<p style="color:var(--ink-faint);font-size:12.5px;">No GA4 daily points in selected range.</p>'; return; }
+    // reuse original chart with filtered series
+    daily = filtered;
     var w = 620, h = 150, padL = 34, padB = 22, padT = 10, padR = 8;
     var max = Math.max.apply(null, daily.map(function(d){return d.sessions;}));
     max = Math.ceil(max/50)*50 || 50;
@@ -741,6 +865,18 @@
 
   function render(data, taskSummary){
     if(!data) return;
+    lastBoardData = data;
+    lastTaskSummary = taskSummary;
+    if(window.GbDateRange && !document.documentElement._gbDateMounted){
+      document.documentElement._gbDateMounted = true;
+      window.GbDateRange.mount({
+        host: '#date-range-host',
+        note: 'GA4 sessions chart respects Day / Week / Month accurately. GSC KPI tiles stay on the latest Search Console window until multi-period pulls ship.',
+        onChange: function(){
+          if(lastBoardData) render(lastBoardData, lastTaskSummary);
+        }
+      });
+    }
     renderLive(data.updatedAt);
     renderTiles(data.gsc, data.ga4, taskSummary);
     setSourceDot('gsc', !!(data.gsc && data.gsc.current));
@@ -749,7 +885,9 @@
     if(data.ga4){
       renderChart(data.ga4.daily);
       renderChannels(data.ga4.channels);
-      document.getElementById('ga4-total-sub').textContent = fmtNum(data.ga4.totals.sessions)+' sessions total';
+      var dr = window.GbDateRange && window.GbDateRange.read();
+      var grain = dr ? dr.grain : 'day';
+      document.getElementById('ga4-total-sub').textContent = fmtNum(data.ga4.totals.sessions)+' sessions (latest window) · chart: '+grain;
     }
     renderClarity(data.clarity);
     renderGithub(data.github);
@@ -759,9 +897,14 @@
   var lastUpdatedAt = null;
   var lastTaskKey = null;
   function load(){
+    var overview = (window.GbLive && window.GbLive.base())
+      ? window.GbLive.overview().catch(function () { return null; })
+      : Promise.resolve(null);
     Promise.all([
-      fetch('data/latest.json', { cache: 'no-store' }).then(function(r){ return r.json(); }),
-      fetch('/api/tasks', { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+      overview.then(function (live) {
+        return live || fetch('data/latest.json', { cache: 'no-store' }).then(function (r) { return r.json(); });
+      }),
+      ((window.GbLive && window.GbLive.base()) ? window.GbLive.tasks() : fetch('/api/tasks', { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; })).catch(function(){ return null; })
         .then(function(api){
           if(api && api.summary) return api.summary;
           return fetch('data/tasks.json', { cache: 'no-store' }).then(function(r){ return r.json(); }).then(function(seed){

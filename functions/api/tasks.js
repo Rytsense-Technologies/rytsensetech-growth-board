@@ -1,5 +1,6 @@
 /**
- * GET  /api/tasks — seed ∪ KV overrides ∪ KV created customs
+ * GET  /api/tasks — KV seed plus overrides. Fallback only when GB_API_BASE is unset.
+ * Live product tasks are Postgres via the Express API. See PRODUCT-RULEBOOK.md.
  * POST /api/tasks — create custom task { title, details?, team?, priority?, status?, dueDate?, assignee?, owner? }
  * KV key "tasks": { overrides:{}, created:[], updatedAt }
  */
@@ -137,6 +138,58 @@ export async function onRequestPost(context) {
   } catch {
     return json({ error: 'invalid json' }, 400);
   }
+
+  /** Keep only named assignees on the current team roster; everyone else → Unassigned */
+  if (body.action === 'sync-roster') {
+    const keep = new Set(
+      (Array.isArray(body.keep) ? body.keep : [])
+        .map((n) => String(n || '').trim())
+        .filter(Boolean)
+    );
+    if (!keep.size) {
+      try {
+        const origin = new URL(request.url).origin;
+        const tr = await fetch(new URL('/api/team', origin).toString());
+        if (tr.ok) {
+          const tj = await tr.json();
+          (tj.members || []).forEach((m) => {
+            if (m && m.name) keep.add(m.name);
+          });
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    if (!keep.size) return json({ error: 'no roster names' }, 400);
+
+    const seed = await loadSeed(request);
+    const store = await loadStore(env);
+    const now = new Date().toISOString();
+    let changed = 0;
+
+    function maybeClear(task) {
+      if (!task || !task.id) return;
+      const a = task.assignee;
+      if (!a || keep.has(a)) return;
+      const prev = store.overrides[task.id] || {};
+      store.overrides[task.id] = { ...prev, assignee: null };
+      changed += 1;
+    }
+
+    (seed.tasks || []).forEach((t) => {
+      const merged = mergeTask(t, store.overrides[t.id]);
+      maybeClear(merged);
+    });
+    (store.created || []).forEach((t) => {
+      const merged = mergeTask(t, store.overrides[t.id]);
+      maybeClear(merged);
+    });
+
+    store.updatedAt = now;
+    await env.FIXES.put(KEY, JSON.stringify(store));
+    return json({ ok: true, changed, keep: Array.from(keep), updatedAt: now });
+  }
+
   if (!body.title || !String(body.title).trim()) {
     return json({ error: 'title required' }, 400);
   }

@@ -1,26 +1,31 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rytsense Team Tasks</title>
+<script>
+(function(){try{var t=localStorage.getItem('gb-theme');if(t!=='dark'&&t!=='light'){t='light';localStorage.setItem('gb-theme',t);try{localStorage.setItem('tt-theme',t);localStorage.setItem('rts-theme',t)}catch(x){}}document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+</script>
 <link rel="stylesheet" href="assets/site-nav.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
   :root{
+    --bg:#f4f6f5; --panel:#fff; --panel-2:#eceff0; --ink:#131a1c; --ink-2:#465356; --ink-3:#77878a;
+    --line:#d5dcdc; --sig:#c2410c; --sig-soft:#fdebe1; --sig-ink:#7a2208;
+    --good:#146c43; --good-soft:#e2f2e9; --warn:#9a6700; --warn-soft:#fcf3d9;
+    --bad:#b4232a; --bad-soft:#fbe6e7; --teal:#0e7a82; --teal-soft:#e4f2f1;
+    --dev:#0e7a82; --mkt:#c2410c; --cnt:#146c43; --seo:#c2410c;
+    --shadow:0 8px 24px rgba(19,26,28,.08); color-scheme:light;
+  }
+  html[data-theme="dark"],
+  :root[data-theme="dark"]{
     --bg:#0f1416; --panel:#171d20; --panel-2:#1e262a; --ink:#eef2f3; --ink-2:#a8b3b6; --ink-3:#6f7c80;
     --line:#2a3337; --sig:#c2410c; --sig-soft:#3a180c; --sig-ink:#ffd4c2;
     --good:#2dd4a0; --good-soft:#0d2b22; --warn:#f0b429; --warn-soft:#2f2409;
     --bad:#f07178; --bad-soft:#3a1518; --teal:#14b8a6; --teal-soft:#0d2f2c;
     --dev:#14b8a6; --mkt:#c2410c; --cnt:#22c55e; --seo:#ea580c;
     --shadow:0 8px 28px rgba(0,0,0,.35); color-scheme:dark;
-  }
-  html[data-theme="light"]{
-    --bg:#f4f6f5; --panel:#fff; --panel-2:#eceff0; --ink:#131a1c; --ink-2:#465356; --ink-3:#77878a;
-    --line:#d5dcdc; --sig:#c2410c; --sig-soft:#fdebe1; --sig-ink:#7a2208;
-    --good:#146c43; --good-soft:#e2f2e9; --warn:#9a6700; --warn-soft:#fcf3d9;
-    --bad:#b4232a; --bad-soft:#fbe6e7; --teal:#0e7a82; --teal-soft:#e4f2f1;
-    --shadow:0 8px 24px rgba(19,26,28,.08); color-scheme:light;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 'Source Sans 3',system-ui,sans-serif}
@@ -56,7 +61,9 @@
   .toolbar select,.toolbar input[type=search]{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:140px}
   .toolbar input[type=search]{min-width:200px;flex:1;max-width:280px}
 
-  .person-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;align-items:start}
+  .person-board{display:grid;grid-template-columns:repeat(3,minmax(240px,1fr));gap:14px;align-items:start}
+  @media(max-width:1100px){.person-board{grid-template-columns:repeat(2,minmax(240px,1fr))}}
+  @media(max-width:700px){.person-board{grid-template-columns:1fr}}
   .person-col{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;min-height:180px}
   .person-head{display:flex;gap:10px;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
   .av{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;flex:none}
@@ -145,6 +152,7 @@
       <a href="report.html" data-nav="report">Intelligence Report</a>
       <a href="tasks.html" data-nav="tasks">Team Tasks</a>
       <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="seo-work.html" data-nav="seo-work">SEO Work</a>
       <a href="ops.html" data-nav="ops">SEO Ops</a>
     </div>
     <div class="site-nav-meta">
@@ -153,6 +161,7 @@
     </div>
   </div>
 </nav>
+<script src="assets/live-api.js"></script>
 <script src="assets/site-nav.js" defer></script>
 
 <div class="wrap">
@@ -164,7 +173,6 @@
     <div class="hero-actions">
       <a class="btn ghost" href="index.html">SEO dashboard</a>
       <button type="button" class="btn" id="btn-team">Team</button>
-      <button type="button" class="btn icon" id="btn-theme" title="Toggle theme">◐</button>
       <button type="button" class="btn primary" id="btn-new">+ New task</button>
     </div>
   </div>
@@ -274,7 +282,7 @@
   function cardHtml(t){
     var due=dueLabel(t.dueDate);
     var note=(t.notes&&t.notes[0])?('<p class="alert">'+esc(t.notes[0].text)+'</p>'):'';
-    var who=t.assignee||'Unassigned';
+    var who=displayAssignee(t)||'Unassigned';
     return '<div class="tcard" data-id="'+esc(t.id)+'">'+
       '<h3>'+esc(t.title)+'</h3>'+
       '<div class="meta"><span class="tag '+teamKey(t.team)+'">'+esc(teamLabel(t.team))+'</span>'+
@@ -287,20 +295,35 @@
       '</select></div></div>';
   }
 
+  function isRosterName(name){
+    if(!name) return false;
+    return (state.team||[]).some(function(m){return m.name===name});
+  }
+  function displayAssignee(t){
+    var a=t.assignee||null;
+    return isRosterName(a)?a:null;
+  }
+
   function renderPerson(){
     var rows=filtered();
+    var order=[];
     var cols={};
-    (state.team||[]).forEach(function(m){ cols[m.name]={member:m, tasks:[]}; });
-    cols['Unassigned']={member:{name:'Unassigned',team:'—',color:'#6b7280'}, tasks:[]};
+    (state.team||[]).forEach(function(m){
+      cols[m.name]={member:m, tasks:[]};
+      order.push(m.name);
+    });
+    cols['Unassigned']={member:{name:'Unassigned',team:'Queue',color:'#6b7280'}, tasks:[]};
+    order.push('Unassigned');
     rows.forEach(function(t){
-      var a=t.assignee||'Unassigned';
-      if(!cols[a]) cols[a]={member:{name:a,team:t.team||'SEO',color:memberColor(a)}, tasks:[]};
+      var a=displayAssignee(t)||'Unassigned';
+      if(!cols[a]) a='Unassigned';
       cols[a].tasks.push(t);
     });
     var html='<div class="person-board">';
-    Object.keys(cols).forEach(function(name){
-      if(name==='Unassigned' && !cols[name].tasks.length) return;
-      var c=cols[name], open=c.tasks.filter(function(t){return t.status!=='done'}).length;
+    order.forEach(function(name){
+      var c=cols[name];
+      if(!c) return;
+      var open=c.tasks.filter(function(t){return t.status!=='done'}).length;
       var done=c.tasks.filter(function(t){return t.status==='done'}).length;
       html+='<div class="person-col"><div class="person-head">'+
         '<span class="av" style="background:'+esc(c.member.color||'#6b7280')+'">'+esc(initials(name))+'</span>'+
@@ -344,7 +367,7 @@
       html+='<tr data-id="'+esc(t.id)+'"><td><span class="pri '+esc(t.priority)+'">'+esc(t.priority)+'</span></td>'+
         '<td style="font-family:JetBrains Mono,monospace">'+esc(t.id)+'</td><td>'+esc(t.title)+'</td>'+
         '<td><span class="tag '+teamKey(t.team)+'">'+esc(teamLabel(t.team))+'</span></td>'+
-        '<td>'+esc(t.assignee||'—')+'</td><td>'+statusBadge(t.status)+'</td>'+
+        '<td>'+esc(displayAssignee(t)||'—')+'</td><td>'+statusBadge(t.status)+'</td>'+
         '<td class="'+(due.hot?'due hot':'')+'">'+esc(due.text||'—')+'</td></tr>';
     });
     html+='</tbody></table></div>';
@@ -431,7 +454,12 @@
 
   async function reload(){
     var tasksData=null, teamData=null;
-    try{ var r=await fetch('/api/tasks',{cache:'no-store'}); if(r.ok) tasksData=await r.json(); }catch(e){}
+    try{
+      var r = (window.GbLive && window.GbLive.base())
+        ? await window.GbLive.request('/api/tasks')
+        : await fetch('/api/tasks',{cache:'no-store'});
+      if(r.ok) tasksData=await r.json();
+    }catch(e){}
     try{ var r2=await fetch('/api/team',{cache:'no-store'}); if(r2.ok) teamData=await r2.json(); }catch(e){}
     if(!tasksData){
       tasksData=await fetch('data/tasks.json',{cache:'no-store'}).then(function(r){return r.json()});
@@ -440,6 +468,10 @@
     if(!teamData) teamData=await fetch('data/team.json',{cache:'no-store'}).then(function(r){return r.json()});
     state.tasks=tasksData.tasks||[];
     state.team=teamData.members||[];
+    // Keep only roster names on cards; others display as Unassigned until reassigned
+    state.tasks.forEach(function(t){
+      if(t.assignee && !isRosterName(t.assignee)) t.assignee=null;
+    });
     if(tasksData.summary) state.summary=tasksData.summary; else recompute();
     render();
   }
@@ -463,14 +495,6 @@
     await patch(ev.target.getAttribute('data-id'), {status:ev.target.value, doneBy:'dashboard'});
     await reload();
   });
-
-  document.getElementById('btn-theme').addEventListener('click', function(){
-    var cur=document.documentElement.getAttribute('data-theme')||'dark';
-    var next=cur==='dark'?'light':'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    try{localStorage.setItem('tt-theme', next)}catch(e){}
-  });
-  try{ var th=localStorage.getItem('tt-theme'); if(th) document.documentElement.setAttribute('data-theme', th); }catch(e){}
 
   function openModal(id){ document.getElementById(id).classList.add('open'); }
   function closeModal(id){ document.getElementById(id).classList.remove('open'); }

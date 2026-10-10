@@ -23,19 +23,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .site-nav,
-  html:not([data-theme="light"]) .site-nav {
-    --sn-bg: #141a1f;
-    --sn-ink: #e8ecef;
-    --sn-soft: #a7afb9;
-    --sn-faint: #6c7480;
-    --sn-line: #232b31;
-    --sn-accent: #3fbfc2;
-    --sn-accent-soft: #132726;
-    --sn-accent-ink: #8fe0e2;
-    --sn-chip: #1b2126;
-    --sn-ground: #0b1013;
-  }
+  /* Intentionally empty: theme is explicit via data-theme (default light). */
 }
 
 :root[data-theme="dark"] .site-nav,
@@ -50,6 +38,29 @@ html[data-theme="dark"] .site-nav {
   --sn-accent-ink: #8fe0e2;
   --sn-chip: #1b2126;
   --sn-ground: #0b1013;
+}
+
+.site-nav-theme {
+  appearance: none;
+  border: 1px solid var(--sn-line);
+  background: var(--sn-bg);
+  color: var(--sn-ink);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0;
+}
+.site-nav-theme:hover {
+  border-color: var(--sn-accent);
+  background: var(--sn-accent-soft);
+  color: var(--sn-accent-ink);
 }
 
 .site-nav-inner {

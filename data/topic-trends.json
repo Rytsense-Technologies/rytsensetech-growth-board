@@ -1,0 +1,417 @@
+{
+  "updatedAt": "2026-09-23T13:58:56Z",
+  "period": {
+    "startDate": "2026-08-25",
+    "endDate": "2026-09-21"
+  },
+  "source": "seed-from-gscByQuery tagged to business objectives",
+  "title": "Topic Trends by Business Objective",
+  "grainNote": "Uses latest GSC window until daily history supports true day/week/month topic series.",
+  "objectives": [
+    {
+      "id": "ai-automation",
+      "label": "AI Automation Services",
+      "keywords": [
+        "ai automation",
+        "rpa",
+        "workflow automation",
+        "process automation"
+      ]
+    },
+    {
+      "id": "ai-development",
+      "label": "AI Development / Custom AI",
+      "keywords": [
+        "ai development",
+        "machine learning",
+        "custom ai",
+        "llm"
+      ]
+    },
+    {
+      "id": "healthcare-rcm",
+      "label": "Healthcare RCM / NEMT",
+      "keywords": [
+        "revenue cycle",
+        "nemt",
+        "prior authorization",
+        "claims",
+        "billing"
+      ]
+    },
+    {
+      "id": "us-services",
+      "label": "US Market Services",
+      "keywords": [
+        "usa",
+        "united states",
+        "us "
+      ]
+    },
+    {
+      "id": "generative-ai",
+      "label": "Generative AI",
+      "keywords": [
+        "generative ai",
+        "chatgpt",
+        "llm",
+        "gpt"
+      ]
+    }
+  ],
+  "trends": [
+    {
+      "objectiveId": "ai-automation",
+      "label": "AI Automation Services",
+      "queryCount": 8,
+      "impressions": 1026,
+      "clicks": 0,
+      "topics": [
+        {
+          "query": "imaginepediatrics.org billing revenue cycle automation rpa claims prior authorization automation",
+          "clicks": 0,
+          "impressions": 527,
+          "ctr": 0,
+          "position": 9.7,
+          "signal": "watch"
+        },
+        {
+          "query": "rpa services",
+          "clicks": 0,
+          "impressions": 201,
+          "ctr": 0,
+          "position": 45.6,
+          "signal": "watch"
+        },
+        {
+          "query": "rpa development services",
+          "clicks": 0,
+          "impressions": 80,
+          "ctr": 0,
+          "position": 25.9,
+          "signal": "steady"
+        },
+        {
+          "query": "rpa services provider",
+          "clicks": 0,
+          "impressions": 70,
+          "ctr": 0,
+          "position": 69.1,
+          "signal": "steady"
+        },
+        {
+          "query": "rpa services company",
+          "clicks": 0,
+          "impressions": 53,
+          "ctr": 0,
+          "position": 58.9,
+          "signal": "steady"
+        },
+        {
+          "query": "aqua dermatology rpa workflow automation revenue cycle",
+          "clicks": 0,
+          "impressions": 35,
+          "ctr": 0,
+          "position": 7,
+          "signal": "steady"
+        },
+        {
+          "query": "rpa services for enterprise-level businesses",
+          "clicks": 0,
+          "impressions": 31,
+          "ctr": 0,
+          "position": 58.5,
+          "signal": "steady"
+        },
+        {
+          "query": "workflow automation for enterprises",
+          "clicks": 0,
+          "impressions": 29,
+          "ctr": 0,
+          "position": 40.6,
+          "signal": "steady"
+        }
+      ]
+    },
+    {
+      "objectiveId": "ai-development",
+      "label": "AI Development / Custom AI",
+      "queryCount": 8,
+      "impressions": 5933,
+      "clicks": 7,
+      "topics": [
+        {
+          "query": "generative ai development services",
+          "clicks": 1,
+          "impressions": 1598,
+          "ctr": 0.06,
+          "position": 45,
+          "signal": "watch"
+        },
+        {
+          "query": "ai development company",
+          "clicks": 4,
+          "impressions": 1395,
+          "ctr": 0.29,
+          "position": 25,
+          "signal": "watch"
+        },
+        {
+          "query": "machine learning development services",
+          "clicks": 0,
+          "impressions": 1320,
+          "ctr": 0,
+          "position": 49.1,
+          "signal": "watch"
+        },
+        {
+          "query": "custom ai development services",
+          "clicks": 1,
+          "impressions": 413,
+          "ctr": 0.24,
+          "position": 77.2,
+          "signal": "watch"
+        },
+        {
+          "query": "custom machine learning development services",
+          "clicks": 0,
+          "impressions": 356,
+          "ctr": 0,
+          "position": 30,
+          "signal": "watch"
+        },
+        {
+          "query": "generative ai development company",
+          "clicks": 1,
+          "impressions": 302,
+          "ctr": 0.33,
+          "position": 10.3,
+          "signal": "watch"
+        },
+        {
+          "query": "machine learning software development services",
+          "clicks": 0,
+          "impressions": 279,
+          "ctr": 0,
+          "position": 52.2,
+          "signal": "watch"
+        },
+        {
+          "query": "custom ai development company",
+          "clicks": 0,
+          "impressions": 270,
+          "ctr": 0,
+          "position": 67.2,
+          "signal": "watch"
+        }
+      ]
+    },
+    {
+      "objectiveId": "healthcare-rcm",
+      "label": "Healthcare RCM / NEMT",
+      "queryCount": 8,
+      "impressions": 3958,
+      "clicks": 0,
+      "topics": [
+        {
+          "query": "tidewater eye centers revenue cycle automation case study",
+          "clicks": 0,
+          "impressions": 2395,
+          "ctr": 0,
+          "position": 9,
+          "signal": "watch"
+        },
+        {
+          "query": "imaginepediatrics.org billing revenue cycle automation rpa claims prior authorization automation",
+          "clicks": 0,
+          "impressions": 527,
+          "ctr": 0,
+          "position": 9.7,
+          "signal": "watch"
+        },
+        {
+          "query": "cardiology revenue cycle management",
+          "clicks": 0,
+          "impressions": 352,
+          "ctr": 0,
+          "position": 52.8,
+          "signal": "watch"
+        },
+        {
+          "query": "radiology revenue cycle management",
+          "clicks": 0,
+          "impressions": 216,
+          "ctr": 0,
+          "position": 59.9,
+          "signal": "watch"
+        },
+        {
+          "query": "gastroenterology revenue cycle management",
+          "clicks": 0,
+          "impressions": 144,
+          "ctr": 0,
+          "position": 54.5,
+          "signal": "steady"
+        },
+        {
+          "query": "claims processing solution",
+          "clicks": 0,
+          "impressions": 112,
+          "ctr": 0,
+          "position": 67.4,
+          "signal": "steady"
+        },
+        {
+          "query": "imaging revenue cycle management",
+          "clicks": 0,
+          "impressions": 112,
+          "ctr": 0,
+          "position": 63,
+          "signal": "steady"
+        },
+        {
+          "query": "orthopedic revenue cycle management",
+          "clicks": 0,
+          "impressions": 100,
+          "ctr": 0,
+          "position": 61.9,
+          "signal": "steady"
+        }
+      ]
+    },
+    {
+      "objectiveId": "us-services",
+      "label": "US Market Services",
+      "queryCount": 6,
+      "impressions": 452,
+      "clicks": 1,
+      "topics": [
+        {
+          "query": "generative ai development services in usa",
+          "clicks": 1,
+          "impressions": 126,
+          "ctr": 0.79,
+          "position": 29.9,
+          "signal": "steady"
+        },
+        {
+          "query": "custom ai development company in usa",
+          "clicks": 0,
+          "impressions": 121,
+          "ctr": 0,
+          "position": 2.1,
+          "signal": "steady"
+        },
+        {
+          "query": "ai and machine learning development services usa",
+          "clicks": 0,
+          "impressions": 73,
+          "ctr": 0,
+          "position": 39.2,
+          "signal": "steady"
+        },
+        {
+          "query": "ai development company in usa",
+          "clicks": 0,
+          "impressions": 50,
+          "ctr": 0,
+          "position": 11.1,
+          "signal": "steady"
+        },
+        {
+          "query": "us artificial intelligence in retail market",
+          "clicks": 0,
+          "impressions": 48,
+          "ctr": 0,
+          "position": 69.2,
+          "signal": "steady"
+        },
+        {
+          "query": "what are the best computer vision services for business automation in united states?",
+          "clicks": 0,
+          "impressions": 34,
+          "ctr": 0,
+          "position": 8.2,
+          "signal": "steady"
+        }
+      ]
+    },
+    {
+      "objectiveId": "generative-ai",
+      "label": "Generative AI",
+      "queryCount": 8,
+      "impressions": 2753,
+      "clicks": 3,
+      "topics": [
+        {
+          "query": "generative ai development services",
+          "clicks": 1,
+          "impressions": 1598,
+          "ctr": 0.06,
+          "position": 45,
+          "signal": "watch"
+        },
+        {
+          "query": "generative ai development company",
+          "clicks": 1,
+          "impressions": 302,
+          "ctr": 0.33,
+          "position": 10.3,
+          "signal": "watch"
+        },
+        {
+          "query": "generative ai application development",
+          "clicks": 0,
+          "impressions": 196,
+          "ctr": 0,
+          "position": 69.8,
+          "signal": "steady"
+        },
+        {
+          "query": "generative ai development services company",
+          "clicks": 0,
+          "impressions": 178,
+          "ctr": 0,
+          "position": 37.9,
+          "signal": "steady"
+        },
+        {
+          "query": "generative ai consulting services",
+          "clicks": 0,
+          "impressions": 153,
+          "ctr": 0,
+          "position": 69.7,
+          "signal": "steady"
+        },
+        {
+          "query": "generative ai development services in usa",
+          "clicks": 1,
+          "impressions": 126,
+          "ctr": 0.79,
+          "position": 29.9,
+          "signal": "steady"
+        },
+        {
+          "query": "generative ai consulting services and solutions",
+          "clicks": 0,
+          "impressions": 107,
+          "ctr": 0,
+          "position": 67.2,
+          "signal": "steady"
+        },
+        {
+          "query": "enterprise generative ai development services",
+          "clicks": 0,
+          "impressions": 93,
+          "ctr": 0,
+          "position": 37.2,
+          "signal": "steady"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "objectives": 5,
+    "taggedQueries": 38
+  }
+}

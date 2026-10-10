@@ -1,0 +1,270 @@
+LOCAL SCHEDULE: leave this disabled after POST /api/jobs/review has written issue reviews.
+The specialist files stay the prompt source for Express. See PRODUCT-RULEBOOK.md.
+
+SCHEDULED TASK — Rytsense weekly SEO agent programme + auto tasks
+(TOKEN-OPTIMIZED: digest → review → SCOPED 52-agent specialists)
+
+You are running unattended on a WEEKLY schedule (not the daily metrics refresh).
+Do not ask for confirmation. Never invent metrics.
+
+════════════════════════════════════════
+AGENT EXECUTION CONTRACT (non-negotiable)
+════════════════════════════════════════
+Analysis MUST use the named specialists under:
+  E:\growth-board\SEO-agents-main\.claude\agents\*.md
+
+You are seo-orchestrator ONLY for triage, routing, conflict adjudication, and
+collection — not a substitute for the whole department.
+
+HOW TO RUN A SPECIALIST (pick the best path available):
+  1) PREFERRED — Claude Code / Task tool: spawn a subagent with that agent's
+     system prompt = full contents of `.claude/agents/<name>.md`, plus a short
+     brief (domain, deep_work ids, URLs, digest facts to trust).
+  2) FALLBACK — If Task/subagents unavailable: open that agent's .md, then run
+     a dedicated turn/persona that MUST follow that file's role, tools, and
+     output format. Label the turn with the agent name.
+  3) FORBIDDEN — Doing specialist work yourself as a generic assistant without
+     loading the corresponding `.claude/agents/<name>.md`. That is NOT a valid
+     weekly run. If you cannot load agent files, STOP and report
+     `agents: blocked — cannot load .claude/agents`.
+
+TOKEN OPTIMIZATION = fewer specialists + smaller briefs — NOT "skip the 52".
+Never claim "52 agents ran" unless 52 were actually invoked. Always report the
+exact agent names you invoked.
+
+HARD RULE — REVIEW BEFORE DEEP ANALYSE:
+Complete STEP 0 + STEP 1 BEFORE spawning deep specialists. Do not re-crawl the
+whole site or re-derive settled findings from zero.
+
+PROJECT PATHS (Windows):
+  Agents:  E:\growth-board\SEO-agents-main
+  Agent defs: E:\growth-board\SEO-agents-main\.claude\agents\
+  Board:   E:\growth-board
+  Memory:  E:\growth-board\SEO-agents-main\memory\
+
+LIVE BOARD: https://rytsensetech-growth-board.pages.dev
+DOMAIN: rytsensetech.com
+
+────────────────────────────────────────
+GOAL (in order)
+────────────────────────────────────────
+0) Digest (cheap).
+1) Review-gate prior criticals.
+2) Route SCOPED specialists from the 52 (never zero-agent analysis week).
+3) Update memory + data/audit.json.
+4) Publish /api/engagements (list real agentsUsed).
+5) Auto-create tasks for NEW/REGRESSED criticals only.
+6) Slack + short final reply.
+
+Do NOT:
+  - Blind full-site re-analysis of settled items
+  - Skip the agent framework and "just browse the site yourself"
+  - Overwrite data/tasks.json · modify data/latest.json
+  - Auto-create tasks for high/easyWins · mark human tasks done
+  - Invent [NEEDS ANSWER] site-profile fields
+
+────────────────────────────────────────
+STEP 0 — DIGEST (mandatory, cheap)
+────────────────────────────────────────
+Working dir: E:\growth-board\SEO-agents-main
+
+A) python tools/memory.py init rytsensetech.com   (ok if exists)
+B) python tools/memory.py digest rytsensetech.com
+   If shell broken: read memory/rytsensetech.com/* via file bridge.
+C) Read: input/site-profile.md, input/data-access.md,
+   E:\growth-board\data\audit.json, data/latest.json (read-only),
+   GET /api/tasks , GET /api/team
+D) DIGEST SUMMARY (internal): settled facts, prior critical ids, open critical
+   tasks, metric deltas. Pass ONLY relevant slices into specialist briefs —
+   never paste the whole digest into every agent.
+
+Also as orchestrator, skim the agent index (list filenames in .claude/agents/)
+so routing uses real names.
+
+────────────────────────────────────────
+STEP 1 — REVIEW GATE (mandatory)
+────────────────────────────────────────
+For each prior criticalIssues[] (+ open critical tasks), bucket:
+
+  STILL_TRUE  — remains; needs VERIFY specialist (light), not full re-audit
+  FIXED       — resolved; memory learn/change; drop from criticalIssues
+  REGRESSED   — returned → DEEP specialist wave
+  UNKNOWN     — cannot classify → DEEP specialist wave
+  NEW         — only after specialists surface it
+
+Orchestrator may do 1–2 HTTP spot-checks ONLY to choose a bucket — not to replace
+specialists. Produce REVIEW TABLE:
+  id | title | bucket | evidence | verify_or_deep | suggested_agents[]
+
+────────────────────────────────────────
+STEP 2 — ROUTE THE 52 (scoped, required)
+────────────────────────────────────────
+Always start as seo-orchestrator (load seo-orchestrator.md).
+
+THEME → AGENT ROUTING MAP (use these names exactly when themes match):
+  GSC/metrics questions     → gsc-data-analyst, ga4-data-analyst
+  Canonical / redirects / 404 / crawl → technical-seo-engineer, crawler-access-engineer
+  Schema / JSON-LD          → schema-engineer
+  Rendering / JS HTML       → rendering-specialist
+  CWV                       → core-web-vitals-engineer
+  Internal links / hubs     → internal-linking-engineer
+  Titles / on-page          → onpage-optimizer
+  Entity / sameAs / facts   → entity-grounding-specialist, eeat-specialist
+  Trust / compliance copy   → content-architect or content-writer (+ eeat-specialist)
+  AEO / AI answers          → aeo-strategist, answer-extractability-engineer
+  Brand SERP / off-site     → brand-serp-specialist
+  Competitors / SERP        → serp-landscape-analyst, competitor-analyst
+  Opportunities             → opportunity-finder → opportunity-validator
+  Fabrication / QA gate     → seo-qa-auditor (ALWAYS before publish if any NEW/REGRESSED)
+  Conflicts / kill list     → seo-director (if specialists disagree)
+
+2a) STILL_TRUE items — VERIFY SQUAD (token-cheap, still real agents):
+  For each STILL_TRUE id, spawn EXACTLY ONE matching specialist from the map
+  with a tiny brief: "Confirm C# still true on these URLs; yes/no + 3-line proof."
+  Cap: max 5 verify agents per week. If >5 STILL_TRUE, verify the highest-impact
+  5; carry the rest as STILL_TRUE with note "verify deferred".
+
+2b) FIXED items — no specialist required (orchestrator + memory only).
+
+2c) REGRESSED + UNKNOWN — DEEP SQUAD (required):
+  Spawn 2–4 specialists per theme from the map (not the entire 52).
+  Always include seo-qa-auditor at the end of deep work before merging audit.
+  Prefer data agents first when the question is metric-shaped.
+
+2d) Minimum bar for a valid weekly run:
+  - Load seo-orchestrator.md
+  - Invoke ≥1 real specialist .md for any STILL_TRUE (verify) OR deep item
+  - If deep_work is empty AND there are zero STILL_TRUE: still run
+    gsc-data-analyst OR seo-analyst once for a metrics pulse, then stop
+  - NEVER end with agentsUsed = only ["seo-orchestrator"] unless agent files
+    were unreadable (then report blocked)
+
+2e) Do NOT run all 52 every week. Cap deep+verify combined at ~12 specialist
+  invocations unless seo-director escalates. Token win = routing, not skipping.
+
+2f) New criticals from specialists → new ids C6+. Run seo-qa-auditor before
+  they enter audit.json.
+
+Write specialist outputs under SEO-agents-main/output/ when the agent format
+requires files.
+
+────────────────────────────────────────
+STEP 3 — UPDATE MEMORY + audit.json
+────────────────────────────────────────
+Memory (CLI or file write to memory/rytsensetech.com/):
+  baselines for organic_clicks + ga4_sessions from latest.json
+  learn/change for FIXED and REGRESSED
+  facts/decisions for durable new truths
+  Never wipe append-only stores
+
+MERGE E:\growth-board\data\audit.json:
+  auditedAt today UTC; verdict.summary MUST say which agents verified/deep'd
+  criticalIssues = STILL_TRUE (confirmed) + REGRESSED + NEW
+  Preserve ids; carry untouched score dimensions with note if needed
+
+────────────────────────────────────────
+STEP 4 — Publish
+────────────────────────────────────────
+POST https://rytsensetech-growth-board.pages.dev/api/engagements
+
+agentsUsed MUST be the real specialist filenames/names you invoked
+(e.g. "schema-engineer", "technical-seo-engineer") — not a fake full list of 52.
+
+Include:
+  tokenOptimization: { stillTrue, fixed, regressed, unknown, new,
+    specialistsInvoked: <n>, deepWaves: true|false }
+  findings from critical (+ optional high)
+  source: "claude-weekly-scheduler"
+
+Fallback: node tools/publish-to-board.mjs --from-audit ../data/audit.json --post
+Best-effort GitHub API push of audit.json.
+
+────────────────────────────────────────
+STEP 4b — SEO Work JSON (separate dashboard views)
+────────────────────────────────────────
+Refresh these files for https://…/seo-work.html (do NOT invent URLs):
+
+1) data/internal-links.json
+   Agent: internal-linking-engineer
+   For blogs + key pages (US & Global): sourceUrl → targetUrl (money page),
+   anchorSuggestion, reason, market, priority, impressions/clicks if known.
+   Keep moneyPages list current.
+
+2) data/content-ideas.json
+   Agents: keyword-strategist + content-architect (light)
+   Propose keyword + proposedTitle + proposedSlug.
+   HARD: score cannibalization vs existing gscByPage URLs + gscByQuery + known titles:
+     safe | risk | blocked — with reason. Prefer safe only for net-new blogs.
+   Tag objectiveId from topic-trends objectives.
+
+3) data/topic-trends.json
+   Agent: gsc-data-analyst (light) or opportunity-finder
+   Tag rising/watch queries to business objectives (ai-automation, ai-development,
+   healthcare-rcm, us-services, generative-ai). Include period + grainNote.
+   Do not fake day/week/month series unless daily history supports it.
+
+4) data/gsc-issues.json — AGENT WHY / FIX (every weekly run)
+   a) If a new GSC Audit.xlsx / Sheet export was dropped:
+      run: python scripts/import-gsc-issues.py "<path>"
+      (import only — do not invent issues)
+   b) ALWAYS continue agent review of pending issues (no agentReview yet):
+      Follow scripts/claude-scheduler-gsc-issues-review.txt
+      Cap ~40–60 issues / week. Priority order:
+        403 → error → 404 → fix → not-indexed → us-page → global-page
+      Live-check URLs when possible. Write agentReview { why, fix, ownerTeam,
+      effort, reviewedAt, agents, observedStatus } onto each issue.
+      Set lastAgentReviewAt + reviewedCount. Do NOT auto-create tasks from
+      these — humans click Create task on /seo-work.html#issues.
+   Agents: crawler-access-engineer, technical-seo-engineer, index-coverage-analyst
+           (route by category as in the GSC review prompt).
+
+Push updated JSON with the board deploy when possible.
+
+────────────────────────────────────────
+STEP 5 — Auto-create tasks (NEW + REGRESSED only) — ALWAYS UNASSIGNED
+────────────────────────────────────────
+GET /api/tasks · GET /api/team
+Skip duplicates (same id/title open).
+POST /api/tasks for NEW/REGRESSED only.
+
+CRITICAL: set "assignee": null on EVERY created task (Unassigned).
+Do NOT auto-assign to Srivishwa, Rama, or anyone — humans assign later on /tasks.
+Roster may include Rama + Srivishwa for manual assignment only.
+
+Body fields: id, title, details, location, team, owner, assignee:null,
+priority:"critical", status:"todo", dueDate:+7d, effort, doneBy:"claude-weekly-seo360"
+
+Owner map (team only — not assignee):
+  schema/canonical/404/redirect/robots/HTML/JS → Dev / Development
+  copy/FAQ/trust/case study/entity → Content / Content
+  links/titles/cannibalization → SEO / SEO
+  GBP/brand SERP/off-site → Marketing / Marketing
+  default → SEO / SEO
+
+────────────────────────────────────────
+STEP 6 — Slack (required)
+────────────────────────────────────────
+Short message — must include real agent names (not "52 agents" unless true):
+
+Growth Board · weekly SEO-360 ✅
+auditedAt: <date>
+Mode: scoped specialists (not full 52)
+Agents: <comma list actually run>
+Review: still <n> · fixed <n> · regress <n> · unknown <n> · new <n>
+Tasks this run: created <n> [<ids>] · skipped <n>
+Board: open <n> · done <n> · critical open <n> · overdue <n>
+By team: Dev <o>/<d> · Content <o>/<d> · SEO <o>/<d> · Mkt <o>/<d> · Unassigned <o>
+Tools: <MCP/browser/memory/Slack/…>
+Link: https://rytsensetech-growth-board.pages.dev/tasks
+
+────────────────────────────────────────
+STEP 7 — Final reply
+────────────────────────────────────────
+- auditedAt
+- agents invoked: [exact names] (count)
+- review gate counts
+- deep vs verify
+- publish / tasks created / skipped
+- memory / audit / GitHub / Slack
+- token note: which themes were NOT sent to specialists
+- blocked? if agent defs could not be loaded

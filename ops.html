@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rytsense SEO Ops — Live Modules</title>
+<script>
+(function(){try{var t=localStorage.getItem('gb-theme');if(t!=='dark'&&t!=='light'){t='light';localStorage.setItem('gb-theme',t);try{localStorage.setItem('tt-theme',t);localStorage.setItem('rts-theme',t)}catch(x){}}document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
   :root{
@@ -15,13 +18,16 @@
     --sidebar:220px; color-scheme: light;
   }
   @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --paper:#0B1013; --paper-raised:#141A1F; --ink:#E8ECEF; --ink-soft:#A7AFB9; --ink-faint:#6C7480;
-      --line:#232B31; --accent:#3FBFC2; --accent-soft:#132726; --accent-ink:#8FE0E2;
-      --good:#49C285; --good-soft:#132520; --warn:#E3A83B; --warn-soft:#2A2013;
-      --bad:#E4685E; --bad-soft:#2A1717; --chip-bg:#1B2126;
-      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
-    }
+    /* Theme is explicit via data-theme; default remains light. */
+  }
+  :root[data-theme="dark"],
+  html[data-theme="dark"]{
+    --paper:#0B1013; --paper-raised:#141A1F; --ink:#E8ECEF; --ink-soft:#A7AFB9; --ink-faint:#6C7480;
+    --line:#232B31; --accent:#3FBFC2; --accent-soft:#132726; --accent-ink:#8FE0E2;
+    --good:#49C285; --good-soft:#132520; --warn:#E3A83B; --warn-soft:#2A2013;
+    --bad:#E4685E; --bad-soft:#2A1717; --chip-bg:#1B2126;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    color-scheme: dark;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;background:var(--paper);color:var(--ink);font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.5;}
@@ -63,6 +69,16 @@
   .empty{padding:14px 4px;color:var(--ink-soft);font-size:12.5px;}
   .empty .badge{margin-bottom:8px;}
   table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);font-weight:700;padding:8px;border-bottom:1px solid var(--line);}
+  td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;}
+  .num{text-align:right;white-space:nowrap;}
+  th.sortable{cursor:pointer;user-select:none;white-space:nowrap;}
+  th.sortable:hover,th.sortable.sorted{color:var(--accent-ink);}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center;}
+  .filters input,.filters select{min-width:110px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:var(--ink);font:inherit;font-size:12.5px;}
+  .filters .metric{width:96px;min-width:88px;}
+  .filters .hint{font-size:11.5px;color:var(--ink-faint);}
+  .table-wrap{overflow-x:auto;max-height:480px;border:1px solid var(--line);border-radius:10px;}
   th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-faint);font-weight:700;padding:0 8px 8px 0;border-bottom:1px solid var(--line);}
   td{padding:8px 8px 8px 0;border-bottom:1px solid var(--line);vertical-align:top;}
   tr:last-child td{border-bottom:none;}
@@ -90,6 +106,7 @@
       <a href="report.html" data-nav="report">Intelligence Report</a>
       <a href="tasks.html" data-nav="tasks">Team Tasks</a>
       <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="seo-work.html" data-nav="seo-work">SEO Work</a>
       <a href="ops.html" data-nav="ops">SEO Ops</a>
     </div>
     <div class="site-nav-meta">
@@ -99,6 +116,8 @@
   </div>
 </nav>
 <script src="assets/site-nav.js" defer></script>
+<script src="assets/live-api.js"></script>
+<script src="assets/table-sort.js"></script>
 <div class="shell">
   <aside class="sidebar">
     <div class="brand-row">
@@ -138,6 +157,23 @@
 <script>
 (function(){
   var fmt = new Intl.NumberFormat('en-US');
+  var liveCache = null, auditCache = null, sortBound = false;
+  var state = {
+    filters: {},
+    sort: {
+      page:{key:'impressions',dir:-1},
+      kw:{key:'impressions',dir:-1},
+      opp:{key:'opportunity',dir:-1},
+      cann:{key:'impressionSum',dir:-1},
+      content:{key:'impressions',dir:-1},
+      sources:{key:'name',dir:1}
+    }
+  };
+  function emptyFilters(){ return { q:'', type:'', bucket:'', geo:'', minImpr:'', minClicks:'', maxPos:'' }; }
+  function filtersFor(board){
+    if(!state.filters[board]) state.filters[board]=emptyFilters();
+    return state.filters[board];
+  }
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function num(n){if(n==null||isNaN(n))return '–'; return fmt.format(Math.round(n));}
   function pct(n){if(n==null||isNaN(n))return '–'; return Number(n).toFixed(1)+'%';}
@@ -174,6 +210,67 @@
     if(pos<=20) return '11-20';
     if(pos<=50) return '21-50';
     return '51-100';
+  }
+  function T(){ return window.GbTable || null; }
+  function th(label, key, sortId, isNum){
+    var g = T();
+    if(!g) return '<th class="'+(isNum?'num':'')+'">'+label+'</th>';
+    return g.th(label, key, state.sort[sortId], {num:!!isNum});
+  }
+  function applySort(rows, sortId){
+    var g = T(), s = state.sort[sortId] || {key:'impressions',dir:-1};
+    if(!g) return rows;
+    return g.sortRows(rows, s.key, s.dir);
+  }
+  function metricOk(board, impr, clicks, pos){
+    var f = filtersFor(board);
+    var mi = f.minImpr===''?null:+f.minImpr;
+    var mc = f.minClicks===''?null:+f.minClicks;
+    var mp = f.maxPos===''?null:+f.maxPos;
+    if(mi!=null && !isNaN(mi) && (impr||0)<mi) return false;
+    if(mc!=null && !isNaN(mc) && (clicks||0)<mc) return false;
+    if(mp!=null && !isNaN(mp) && (pos==null || pos>mp)) return false;
+    return true;
+  }
+  function matchGeo(board, path){
+    var f = filtersFor(board);
+    var p = String(path||'');
+    if(f.geo==='us') return /^\/us\//i.test(p);
+    if(f.geo==='global') return !/^\/us\//i.test(p);
+    return true;
+  }
+  function matchQ(board, text){
+    var f = filtersFor(board);
+    if(!f.q) return true;
+    return String(text||'').toLowerCase().indexOf(f.q.toLowerCase())!==-1;
+  }
+  function filterBar(board, opts){
+    opts = opts||{};
+    var f = filtersFor(board);
+    var html = '<div class="filters" data-filter-board="'+esc(board)+'">'+
+      '<input type="search" data-f="q" placeholder="'+esc(opts.qPlaceholder||'Filter…')+'" value="'+esc(f.q)+'">';
+    if(opts.type!==false){
+      html += '<select data-f="type"><option value="">All page types</option>'+
+        ['Homepage','US','Blog','Case study','Resource','Service','Other'].map(function(t){
+          return '<option value="'+t+'"'+(f.type===t?' selected':'')+'>'+t+'</option>';
+        }).join('')+'</select>';
+    }
+    if(opts.bucket!==false){
+      html += '<select data-f="bucket"><option value="">All positions</option>'+
+        ['1','2-3','4-5','6-10','11-20','21-50','51-100'].map(function(b){
+          return '<option value="'+b+'"'+(f.bucket===b?' selected':'')+'>Pos '+b+'</option>';
+        }).join('')+'</select>';
+    }
+    if(opts.geo!==false){
+      html += '<select data-f="geo"><option value="">Global + US</option><option value="us"'+(f.geo==='us'?' selected':'')+'>US only (/us/)</option><option value="global"'+(f.geo==='global'?' selected':'')+'>Global (non-/us/)</option></select>';
+    }
+    if(opts.metrics!==false){
+      html += '<input class="metric" type="number" data-f="minImpr" placeholder="Min impr" value="'+esc(f.minImpr)+'">'+
+        '<input class="metric" type="number" data-f="minClicks" placeholder="Min clicks" value="'+esc(f.minClicks)+'">'+
+        '<input class="metric" type="number" data-f="maxPos" placeholder="Max pos" value="'+esc(f.maxPos)+'">';
+    }
+    html += '<span class="hint">This board only</span></div>';
+    return html;
   }
 
   function renderExec(live){
@@ -224,8 +321,9 @@
     el.innerHTML = html;
   }
 
-  function renderPage(live, audit){
-    var el = document.getElementById('m-page');
+  function renderPage(){
+    var live = liveCache, el = document.getElementById('m-page');
+    var f = filtersFor('page');
     var pages = live.gscByPage && live.gscByPage.status==='ok' ? (live.gscByPage.rows||[]) : null;
     var ga = {};
     if(live.ga4ByPage&&live.ga4ByPage.status==='ok'){
@@ -235,20 +333,35 @@
       el.innerHTML = head('Page Performance','')+pending('Needs gscByPage (+ optional ga4ByPage) from next scheduler run.');
       return;
     }
-    var rows = pages.slice().sort(function(a,b){return (b.impressions||0)-(a.impressions||0);}).slice(0,40);
-    el.innerHTML = head('Page Performance','Top by impressions','<span class="badge live">live</span>')+
-      '<div style="overflow-x:auto;"><table><thead><tr><th>URL</th><th>Type</th><th class="num">Impr.</th><th class="num">Clicks</th><th class="num">CTR</th><th class="num">Pos.</th><th class="num">Sessions</th></tr></thead><tbody>'+
+    var rows = pages.filter(function(r){
+      if(!matchQ('page', r.page)) return false;
+      if(!matchGeo('page', r.page)) return false;
+      if(f.type && pageType(r.page)!==f.type) return false;
+      if(f.bucket && bucketPos(r.position||99)!==f.bucket) return false;
+      if(!metricOk('page', r.impressions, r.clicks, r.position)) return false;
+      return true;
+    }).map(function(r){
+      var g = ga[r.page]||{};
+      return Object.assign({}, r, {type:pageType(r.page), sessions:g.sessions||0});
+    });
+    rows = applySort(rows, 'page');
+    el.innerHTML = head('Page Performance', rows.length+' rows · this board only','<span class="badge live">live</span>')+
+      filterBar('page')+
+      '<div class="table-wrap"><table data-sort-id="page"><thead><tr>'+
+        th('URL','page','page')+th('Type','type','page')+th('Impr.','impressions','page',1)+th('Clicks','clicks','page',1)+
+        th('CTR','ctr','page',1)+th('Pos.','position','page',1)+th('Sessions','sessions','page',1)+
+      '</tr></thead><tbody>'+
       rows.map(function(r){
-        var g = ga[r.page]||{};
-        return '<tr><td class="mono" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;">'+esc(r.page)+'</td><td>'+esc(pageType(r.page))+'</td>'+
+        return '<tr><td class="mono" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;">'+esc(r.page)+'</td><td>'+esc(r.type)+'</td>'+
           '<td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td>'+
-          '<td class="num mono">'+num(g.sessions)+'</td></tr>';
+          '<td class="num mono">'+num(r.sessions)+'</td></tr>';
       }).join('')+'</tbody></table></div>'+
       blocked('Leads columns blocked until CRM is connected.');
   }
 
-  function renderKw(live){
-    var el = document.getElementById('m-kw');
+  function renderKw(){
+    var live = liveCache, el = document.getElementById('m-kw');
+    var f = filtersFor('kw');
     var full = live.gscByQuery && live.gscByQuery.status==='ok';
     var rows = full ? (live.gscByQuery.rows||[]) : ((live.gsc&&live.gsc.quickWins)||[]);
     var buckets = full && live.gscByQuery.buckets ? live.gscByQuery.buckets : null;
@@ -256,52 +369,80 @@
       buckets = {'1':0,'2-3':0,'4-5':0,'6-10':0,'11-20':0,'21-50':0,'51-100':0};
       rows.forEach(function(r){ var b=bucketPos(r.position||99); buckets[b]=(buckets[b]||0)+1; });
     }
+    var filtered = rows.filter(function(r){
+      if(!matchQ('kw', r.query)) return false;
+      if(f.bucket && bucketPos(r.position||99)!==f.bucket) return false;
+      if(!metricOk('kw', r.impressions, r.clicks, r.position)) return false;
+      return true;
+    });
+    filtered = applySort(filtered, 'kw');
     var badge = full ? '<span class="badge live">live</span>' : '<span class="badge pending">partial · quickWins only</span>';
     var order = ['1','2-3','4-5','6-10','11-20','21-50','51-100'];
-    el.innerHTML = head('Keyword Performance', full?'Full query report':'Near-miss slice until gscByQuery lands', badge)+
+    el.innerHTML = head('Keyword Performance', filtered.length+' queries · this board only', badge)+
       '<div class="tiles">'+order.map(function(k){
         return '<div class="tile"><div class="label">Pos '+k+'</div><div class="value mono" style="font-size:18px;">'+num(buckets[k])+'</div></div>';
       }).join('')+'</div>'+
-      '<div style="overflow-x:auto;margin-top:12px;"><table><thead><tr><th>Query</th><th class="num">Impr.</th><th class="num">Clicks</th><th class="num">CTR</th><th class="num">Pos.</th></tr></thead><tbody>'+
-      rows.slice(0,25).map(function(r){
+      filterBar('kw', {type:false, geo:false, qPlaceholder:'Filter keyword…'})+
+      '<div class="table-wrap" style="margin-top:4px;"><table data-sort-id="kw"><thead><tr>'+
+        th('Query','query','kw')+th('Impr.','impressions','kw',1)+th('Clicks','clicks','kw',1)+th('CTR','ctr','kw',1)+th('Pos.','position','kw',1)+
+      '</tr></thead><tbody>'+
+      filtered.map(function(r){
         return '<tr><td>'+esc(r.query||'')+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>';
       }).join('')+'</tbody></table></div>';
   }
 
-  function renderOpp(live){
-    var el = document.getElementById('m-opp');
-    var qw = (live.gsc&&live.gsc.quickWins)||[];
+  function renderOpp(){
+    var live = liveCache, el = document.getElementById('m-opp');
+    var qw = ((live.gsc&&live.gsc.quickWins)||[]).filter(function(r){
+      if(!matchQ('opp', r.query)) return false;
+      if(!metricOk('opp', r.impressions, r.clicks, r.position)) return false;
+      return true;
+    });
+    qw = applySort(qw, 'opp');
     var zeroClick = qw.filter(function(r){return (r.clicks||0)===0 && (r.impressions||0)>=100;});
-    el.innerHTML = head('SEO Opportunities','Near-miss + zero-click','<span class="badge live">live</span>')+
-      '<p style="margin:0 0 10px;color:var(--ink-soft);font-size:12.5px;">Core rule already in growth-board: position 4–15, impressions ≥ 100, opportunity-scored.</p>'+
-      '<div style="overflow-x:auto;"><table><thead><tr><th>Query</th><th class="num">Impr.</th><th class="num">Clicks</th><th class="num">Pos.</th><th class="num">Opp.</th></tr></thead><tbody>'+
-      qw.slice(0,12).map(function(r){
+    el.innerHTML = head('SEO Opportunities', qw.length+' opportunities · this board only','<span class="badge live">live</span>')+
+      '<p style="margin:0 0 10px;color:var(--ink-soft);font-size:12.5px;">Core rule: position 4–15, impressions ≥ 100, opportunity-scored.</p>'+
+      filterBar('opp', {type:false, geo:false, qPlaceholder:'Filter query…'})+
+      '<div class="table-wrap"><table data-sort-id="opp"><thead><tr>'+
+        th('Query','query','opp')+th('Impr.','impressions','opp',1)+th('Clicks','clicks','opp',1)+th('Pos.','position','opp',1)+th('Opp.','opportunity','opp',1)+
+      '</tr></thead><tbody>'+
+      qw.map(function(r){
         return '<tr><td>'+esc(r.query)+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td><td class="num mono">'+num(r.opportunity)+'</td></tr>';
       }).join('')+'</tbody></table></div>'+
       (zeroClick.length?('<p style="margin:12px 0 0;font-size:12.5px;color:var(--ink-soft);"><strong>'+zeroClick.length+'</strong> high-impression / zero-click queries in this slice.</p>'):'')+
       pending('Declining-keyword list needs Phase 2 history (or prior-period query diff in scheduler).');
   }
 
-  function renderCann(live, audit){
-    var el = document.getElementById('m-cann');
+  function renderCann(){
+    var live = liveCache, el = document.getElementById('m-cann');
     var warn = (live.gscCannibalization&&live.gscCannibalization.warning) ||
       'Global tree and /us/ tree both target the same English commercial intent — structural cannibalization risk from the Sep 2026 audit.';
     var rows = live.gscCannibalization&&live.gscCannibalization.status==='ok' ? (live.gscCannibalization.rows||[]) : null;
-    var html = head('Cannibalization','Query × page overlap','<span class="badge '+(rows?'live':'pending')+'">'+(rows?'live':'audit warning')+'</span>')+
+    var html = head('Cannibalization','Query × page overlap · this board only','<span class="badge '+(rows?'live':'pending')+'">'+(rows?'live':'audit warning')+'</span>')+
       '<div class="card warn-card" style="box-shadow:none;margin-bottom:12px;"><strong>Standing warning</strong><p style="margin:6px 0 0;font-size:12.5px;">'+esc(warn)+'</p></div>';
     if(!rows){
       html += pending('Full cannibalization table needs GSC dimensions [query,page] → gscCannibalization in the next refresh.');
     } else {
-      html += '<div style="overflow-x:auto;"><table><thead><tr><th>Query</th><th>Pages</th><th class="num">Impr.</th><th class="num">Pos σ</th></tr></thead><tbody>'+
-        rows.slice(0,30).map(function(r){
+      var filtered = rows.filter(function(r){
+        if(!matchQ('cann', r.query+(r.pages||[]).join(' '))) return false;
+        if(!metricOk('cann', r.impressionSum, null, null)) return false;
+        return true;
+      });
+      filtered = applySort(filtered, 'cann');
+      html += filterBar('cann', {type:false, bucket:false, geo:false, qPlaceholder:'Filter keyword / URL…'})+
+        '<div class="table-wrap"><table data-sort-id="cann"><thead><tr>'+
+          th('Query','query','cann')+th('Pages','pages','cann')+th('Impr.','impressionSum','cann',1)+th('Pos σ','positionVariance','cann',1)+
+        '</tr></thead><tbody>'+
+        filtered.map(function(r){
           return '<tr><td>'+esc(r.query)+'</td><td class="mono" style="font-size:11.5px;">'+esc((r.pages||[]).join(', '))+'</td><td class="num mono">'+num(r.impressionSum)+'</td><td class="num mono">'+(r.positionVariance!=null?Number(r.positionVariance).toFixed(2):'–')+'</td></tr>';
         }).join('')+'</tbody></table></div>';
     }
     el.innerHTML = html;
   }
 
-  function renderContent(live, audit){
-    var el = document.getElementById('m-content');
+  function renderContent(){
+    var live = liveCache, audit = auditCache, el = document.getElementById('m-content');
+    var f = filtersFor('content');
     var inv = audit&&audit.pageInventory;
     var pages = live.gscByPage&&live.gscByPage.status==='ok' ? (live.gscByPage.rows||[]) : null;
     var blogCount = inv ? inv.blogPostCount : null;
@@ -313,45 +454,101 @@
         pending('Join gscByPage filtered to /blog/, /case-studies/, /resources/ once page report lands.');
       return;
     }
-    var content = pages.filter(function(r){ return /\/(blog|case-stud|resource)/i.test(r.page||''); });
+    var content = pages.filter(function(r){
+      if(!/\/(blog|case-stud|resource)/i.test(r.page||'')) return false;
+      if(!matchQ('content', r.page)) return false;
+      if(!matchGeo('content', r.page)) return false;
+      if(f.bucket && bucketPos(r.position||99)!==f.bucket) return false;
+      if(!metricOk('content', r.impressions, r.clicks, r.position)) return false;
+      return true;
+    });
+    content = applySort(content, 'content');
     var withImpr = content.filter(function(r){return (r.impressions||0)>0;}).length;
-    el.innerHTML = head('Content Performance','Path-filtered pages','<span class="badge live">live</span>')+
-      '<div class="tiles"><div class="tile"><div class="label">Content URLs in GSC</div><div class="value mono">'+num(content.length)+'</div></div>'+
+    el.innerHTML = head('Content Performance', content.length+' URLs · this board only','<span class="badge live">live</span>')+
+      '<div class="tiles"><div class="tile"><div class="label">Content URLs shown</div><div class="value mono">'+num(content.length)+'</div></div>'+
       '<div class="tile"><div class="label">With impressions</div><div class="value mono">'+num(withImpr)+'</div></div>'+
       '<div class="tile"><div class="label">Audit blog corpus</div><div class="value mono">'+num(blogCount)+'</div></div>'+
       '<div class="tile"><div class="label">Unlinked posts</div><div class="value mono">'+num(unlinked)+'</div></div></div>'+
-      '<div style="overflow-x:auto;margin-top:12px;"><table><thead><tr><th>URL</th><th class="num">Impr.</th><th class="num">Clicks</th><th class="num">Pos.</th></tr></thead><tbody>'+
-      content.slice().sort(function(a,b){return (b.impressions||0)-(a.impressions||0);}).slice(0,25).map(function(r){
+      filterBar('content', {type:false, qPlaceholder:'Filter content URL…'})+
+      '<div class="table-wrap" style="margin-top:4px;"><table data-sort-id="content"><thead><tr>'+
+        th('URL','page','content')+th('Impr.','impressions','content',1)+th('Clicks','clicks','content',1)+th('Pos.','position','content',1)+
+      '</tr></thead><tbody>'+
+      content.map(function(r){
         return '<tr><td class="mono">'+esc(r.page)+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>';
       }).join('')+'</tbody></table></div>';
   }
 
-  function renderSources(audit){
-    var el = document.getElementById('m-sources');
-    var rows = (audit&&audit.sourceStatus)||[];
-    el.innerHTML = head('Data Sources & Integrations','From Intelligence Report + live board','<span class="badge live">live</span>')+
-      '<div style="overflow-x:auto;"><table><thead><tr><th>Source</th><th>Status</th><th>Note</th></tr></thead><tbody>'+
+  function renderSources(){
+    var audit = auditCache, el = document.getElementById('m-sources');
+    var rows = applySort(
+      ((audit&&audit.sourceStatus)||[]).filter(function(s){
+        return matchQ('sources', s.name) || matchQ('sources', s.note) || matchQ('sources', s.status);
+      }),
+      'sources'
+    );
+    el.innerHTML = head('Data Sources & Integrations','This board only','<span class="badge live">live</span>')+
+      filterBar('sources', {type:false, bucket:false, geo:false, metrics:false, qPlaceholder:'Filter source…'})+
+      '<div class="table-wrap"><table data-sort-id="sources"><thead><tr>'+
+        th('Source','name','sources')+th('Status','status','sources')+th('Note','note','sources')+
+      '</tr></thead><tbody>'+
       rows.map(function(s){
         var b = s.status==='live'?'live':(s.status==='not_connected'?'off':'pending');
         return '<tr><td>'+esc(s.name)+'</td><td><span class="badge '+b+'">'+esc(s.status)+'</span></td><td style="color:var(--ink-soft)">'+esc(s.note||'')+'</td></tr>';
       }).join('')+'</tbody></table></div>';
   }
 
+  var FILTER_RENDERERS = {
+    page: renderPage, kw: renderKw, opp: renderOpp, cann: renderCann, content: renderContent, sources: renderSources
+  };
+  function onFilter(ev){
+    var node = ev && ev.target;
+    if(!node || !node.getAttribute) return;
+    var k = node.getAttribute('data-f');
+    if(!k) return;
+    var bar = node.closest('[data-filter-board]');
+    if(!bar) return;
+    var board = bar.getAttribute('data-filter-board');
+    if(!board) return;
+    filtersFor(board)[k] = node.value;
+    if(FILTER_RENDERERS[board]) FILTER_RENDERERS[board]();
+  }
+  function bindUi(){
+    var main = document.querySelector('.main')||document.body;
+    if(!main._gbFilterBound){
+      main._gbFilterBound = true;
+      main.addEventListener('input', onFilter);
+      main.addEventListener('change', onFilter);
+    }
+    var g = T();
+    if(g && !sortBound){
+      sortBound = true;
+      g.bindDelegated(main, function(sortId, key){
+        if(!state.sort[sortId]) state.sort[sortId] = {key:key,dir:-1};
+        state.sort[sortId] = g.toggle(state.sort[sortId], key, -1);
+        if(FILTER_RENDERERS[sortId]) FILTER_RENDERERS[sortId]();
+      });
+    }
+  }
+
   Promise.all([
-    fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.json();}),
+    ((window.GbLive && window.GbLive.base())
+      ? window.GbLive.overview()
+      : fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.json();})
+    ).catch(function(){ return fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.json();}); }),
     fetch('data/audit.json',{cache:'no-store'}).then(function(r){return r.json();})
   ]).then(function(pair){
-    var live = pair[0], audit = pair[1];
-    document.getElementById('sync').textContent = 'Last synced '+(live.updatedAt?new Date(live.updatedAt).toLocaleString():'—')+' · Audit '+((audit&&audit.auditedRange)||'');
+    liveCache = pair[0]; auditCache = pair[1];
+    document.getElementById('sync').textContent = 'Last synced '+(liveCache.updatedAt?new Date(liveCache.updatedAt).toLocaleString():'—')+' · Audit '+((auditCache&&auditCache.auditedRange)||'');
     document.getElementById('sync-pill').innerHTML = '<span class="badge live">GSC/GA4 connected</span>';
-    renderExec(live);
-    renderGeo(live);
-    renderPage(live, audit);
-    renderKw(live);
-    renderOpp(live);
-    renderCann(live, audit);
-    renderContent(live, audit);
-    renderSources(audit);
+    renderExec(liveCache);
+    renderGeo(liveCache);
+    renderPage();
+    renderKw();
+    renderOpp();
+    renderCann();
+    renderContent();
+    renderSources();
+    bindUi();
   }).catch(function(err){
     document.getElementById('sync').textContent = 'Failed to load: '+err.message;
   });

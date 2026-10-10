@@ -1,0 +1,186 @@
+{
+  "updatedAt": "2026-09-23T13:58:56Z",
+  "source": "seed-from-gsc-quickWins + cannibalization check vs gscByQuery/gscByPage",
+  "title": "Blog Keyword & Title Suggestions",
+  "objectives": [
+    {
+      "id": "ai-automation",
+      "label": "AI Automation Services",
+      "keywords": [
+        "ai automation",
+        "rpa",
+        "workflow automation",
+        "process automation"
+      ]
+    },
+    {
+      "id": "ai-development",
+      "label": "AI Development / Custom AI",
+      "keywords": [
+        "ai development",
+        "machine learning",
+        "custom ai",
+        "llm"
+      ]
+    },
+    {
+      "id": "healthcare-rcm",
+      "label": "Healthcare RCM / NEMT",
+      "keywords": [
+        "revenue cycle",
+        "nemt",
+        "prior authorization",
+        "claims",
+        "billing"
+      ]
+    },
+    {
+      "id": "us-services",
+      "label": "US Market Services",
+      "keywords": [
+        "usa",
+        "united states",
+        "us "
+      ]
+    },
+    {
+      "id": "generative-ai",
+      "label": "Generative AI",
+      "keywords": [
+        "generative ai",
+        "chatgpt",
+        "llm",
+        "gpt"
+      ]
+    }
+  ],
+  "ideas": [
+    {
+      "id": "ci-001",
+      "keyword": "what purpose do fairness measures serve in ai product development",
+      "proposedTitle": "What Purpose Do Fairness Measures Serve In Ai Product Development | Rytsense",
+      "proposedSlug": "/blog/what-purpose-do-fairness-measures-serve-in-ai-product-develo/",
+      "market": "global",
+      "objectiveId": "ai-development",
+      "cannibalization": "risk",
+      "reason": "Query already appears in GSC with some traffic \u2014 refresh existing page instead of new URL.",
+      "existingCollision": "what purpose do fairness measures serve in ai product development",
+      "impressions": 6202,
+      "position": 9.4,
+      "opportunity": 681,
+      "status": "proposed"
+    },
+    {
+      "id": "ci-002",
+      "keyword": "tidewater eye centers revenue cycle automation case study",
+      "proposedTitle": "Tidewater Eye Centers Revenue Cycle Automation Case Study | Rytsense",
+      "proposedSlug": "/blog/tidewater-eye-centers-revenue-cycle-automation-case-study/",
+      "market": "global",
+      "objectiveId": "healthcare-rcm",
+      "cannibalization": "safe",
+      "reason": "No strong colliding URL/title in current GSC set \u2014 safe to draft.",
+      "existingCollision": null,
+      "impressions": 2395,
+      "position": 9,
+      "opportunity": 263,
+      "status": "proposed"
+    },
+    {
+      "id": "ci-003",
+      "keyword": "carc codes",
+      "proposedTitle": "Carc Codes | Rytsense",
+      "proposedSlug": "/blog/carc-codes/",
+      "market": "global",
+      "objectiveId": "ai-development",
+      "cannibalization": "safe",
+      "reason": "No strong colliding URL/title in current GSC set \u2014 safe to draft.",
+      "existingCollision": null,
+      "impressions": 737,
+      "position": 7.8,
+      "opportunity": 81,
+      "status": "proposed"
+    },
+    {
+      "id": "ci-004",
+      "keyword": "imaginepediatrics.org billing revenue cycle automation rpa claims prior authorization automation",
+      "proposedTitle": "Imaginepediatrics.Org Billing Revenue Cycle Automation Rpa Claims P\u2026 | Rytsense",
+      "proposedSlug": "/blog/imaginepediatrics-org-billing-revenue-cycle-automation-rpa-c/",
+      "market": "global",
+      "objectiveId": "ai-automation",
+      "cannibalization": "safe",
+      "reason": "No strong colliding URL/title in current GSC set \u2014 safe to draft.",
+      "existingCollision": null,
+      "impressions": 527,
+      "position": 9.7,
+      "opportunity": 58,
+      "status": "proposed"
+    },
+    {
+      "id": "ci-005",
+      "keyword": "zomato mcp",
+      "proposedTitle": "Zomato Mcp | Rytsense",
+      "proposedSlug": "/blog/zomato-mcp/",
+      "market": "global",
+      "objectiveId": "ai-development",
+      "cannibalization": "risk",
+      "reason": "Query already appears in GSC with some traffic \u2014 refresh existing page instead of new URL.",
+      "existingCollision": "zomato mcp",
+      "impressions": 427,
+      "position": 9.4,
+      "opportunity": 45,
+      "status": "proposed"
+    },
+    {
+      "id": "ci-006",
+      "keyword": "generative ai development company",
+      "proposedTitle": "Generative Ai Development Company | Rytsense",
+      "proposedSlug": "/blog/generative-ai-development-company/",
+      "market": "global",
+      "objectiveId": "ai-development",
+      "cannibalization": "risk",
+      "reason": "Query already appears in GSC with some traffic \u2014 refresh existing page instead of new URL.",
+      "existingCollision": "generative ai development company",
+      "impressions": 302,
+      "position": 10.3,
+      "opportunity": 32,
+      "status": "proposed"
+    },
+    {
+      "id": "ci-007",
+      "keyword": "carc",
+      "proposedTitle": "Carc | Rytsense",
+      "proposedSlug": "/blog/carc/",
+      "market": "global",
+      "objectiveId": "ai-development",
+      "cannibalization": "safe",
+      "reason": "No strong colliding URL/title in current GSC set \u2014 safe to draft.",
+      "existingCollision": null,
+      "impressions": 279,
+      "position": 8.4,
+      "opportunity": 31,
+      "status": "proposed"
+    },
+    {
+      "id": "ci-008",
+      "keyword": "software development company in chennai",
+      "proposedTitle": "Software Development Company In Chennai | Rytsense",
+      "proposedSlug": "/blog/software-development-company-in-chennai/",
+      "market": "global",
+      "objectiveId": "ai-development",
+      "cannibalization": "blocked",
+      "reason": "Exact query already gets clicks \u2014 do not publish competing URL.",
+      "existingCollision": "software development company in chennai",
+      "impressions": 267,
+      "position": 9.7,
+      "opportunity": 24,
+      "status": "proposed"
+    }
+  ],
+  "totals": {
+    "all": 8,
+    "safe": 4,
+    "risk": 3,
+    "blocked": 1
+  },
+  "note": "Weekly keyword-strategist + content-architect should expand and re-score against full URL/title inventory."
+}

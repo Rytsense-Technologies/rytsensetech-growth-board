@@ -6,9 +6,15 @@
   "description": "Live SEO & marketing dashboard for rytsensetech.com — data pulled from Search Console, GA4 and Clarity on a schedule via GitHub Actions, served as a static site on Vercel.",
   "scripts": {
     "fetch-data": "node scripts/fetch-data.mjs",
-    "deploy:cf": "node scripts/deploy-cloudflare.mjs"
+    "deploy:cf": "node scripts/deploy-cloudflare.mjs",
+    "import:gsc-issues": "python scripts/import-gsc-issues.py",
+    "import:product": "node scripts/import-product.mjs",
+    "api": "node server/src/index.js",
+    "test:product": "node --test server/test/scope.test.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "express": "^5.1.0",
     "googleapis": "^140.0.0"
   }
 }

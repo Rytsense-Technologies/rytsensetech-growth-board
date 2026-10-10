@@ -1,0 +1,164 @@
+LOCAL SCHEDULE: leave this disabled after the Express weekly review job is the writer.
+See PRODUCT-RULEBOOK.md.
+
+SCHEDULED TASK — Rytsense weekly GSC Issues agent review
+(SEO Work → View 1: Why + Fix suggestions; humans Create task in UI)
+
+You are running unattended on a WEEKLY schedule.
+Do not ask for confirmation. Never invent HTTP status, metrics, or URLs.
+
+════════════════════════════════════════
+CREATE THIS IN CLAUDE SCHEDULERS (you)
+════════════════════════════════════════
+Name:     growth-board-weekly-gsc-issues
+Cadence:  Weekly (e.g. Tuesday 07:00 IST — after daily refresh has run)
+Folder:   E:\growth-board  (grant Claude access to this path + SEO-agents-main)
+Paste:    THIS ENTIRE FILE as the scheduled task instructions.
+
+Keep the separate daily metrics job and (optional) full weekly SEO-360 job.
+This job ONLY analyses GSC Issues for the SEO Work board.
+
+════════════════════════════════════════
+PROJECT PATHS
+════════════════════════════════════════
+Board:      E:\growth-board
+Agents:     E:\growth-board\SEO-agents-main\.claude\agents\
+Issues:     E:\growth-board\data\gsc-issues.json
+Latest:     E:\growth-board\data\latest.json          (read-only)
+Audit:      E:\growth-board\data\audit.json           (read-only)
+Fixes seed: E:\growth-board\data\fixes.json           (read-only)
+Tasks API:  https://rytsensetech-growth-board.pages.dev/api/tasks
+Fixes API:  https://rytsensetech-growth-board.pages.dev/api/fixes
+Team API:   https://rytsensetech-growth-board.pages.dev/api/team
+Live UI:    https://rytsensetech-growth-board.pages.dev/seo-work.html#issues
+Domain:     rytsensetech.com
+
+════════════════════════════════════════
+AGENT EXECUTION CONTRACT
+════════════════════════════════════════
+Analysis MUST use named specialists from:
+  E:\growth-board\SEO-agents-main\.claude\agents\<name>.md
+
+HOW TO RUN A SPECIALIST:
+  1) PREFERRED — spawn a subagent whose system prompt = full contents of that .md
+     plus a short brief (issue ids, URLs, sheet action, probe results, related
+     project facts).
+  2) FALLBACK — open the .md and run a dedicated persona turn that follows it.
+  3) FORBIDDEN — generic “just fix SEO” without loading the agent file.
+     If agent files cannot be loaded → STOP and report agents: blocked.
+
+Route by GSC category:
+  403, 404, error     → crawler-access-engineer + technical-seo-engineer
+  not-indexed, fix    → index-coverage-analyst + technical-seo-engineer
+  us-page, global-page→ technical-seo-engineer + onpage-optimizer
+                        (+ internal-linking-engineer if action is about links)
+
+Cap this run: 40–60 issues max (quality over volume).
+
+════════════════════════════════════════
+STEP 0 — LOAD CONTEXT (compare with project)
+════════════════════════════════════════
+1) Read data/gsc-issues.json
+   Count: total, with agentReview, pending (no agentReview).
+2) Read (skim) data/latest.json — gsc period, quickWins, sample gscByPage /
+   gscByQuery that overlap issue URLs (do not paste whole file into agents).
+3) Read data/audit.json — critical/high findings that overlap same URLs/themes.
+4) GET /api/fixes and read data/fixes.json — note already-fixed / in-progress
+   items so you do not contradict resolved work.
+5) GET /api/tasks — open tasks that mention the same URLs (avoid duplicate advice;
+   you still do NOT create tasks in this job).
+6) Optional structure check (when relevant to the batch):
+   - robots.txt / sitemap references if 403/index issues
+   - Live HEAD/GET of each URL in this week’s batch (browser or fetch)
+   - Note observedStatus (200/301/403/404/error). If unverifiable, say so.
+
+Build an internal “related map” per issue when possible:
+  sheet action · live status · matching latest.json row · audit id · open task id · fix status
+
+════════════════════════════════════════
+STEP 1 — SELECT THIS WEEK’S BATCH
+════════════════════════════════════════
+Take pending issues only (skip rows that already have agentReview.why/fix
+unless URL or sheet action changed since reviewedAt).
+
+Priority order:
+  1. 403
+  2. error (redirect errors)
+  3. 404
+  4. fix (canonical / params)
+  5. not-indexed
+  6. us-page
+  7. global-page
+
+Within a category, prefer: money/hub paths (/services/, /us/, /blog/) and
+URLs that also appear in latest.json with impressions/clicks.
+
+════════════════════════════════════════
+STEP 2 — SPECIALIST ANALYSIS (per issue in batch)
+════════════════════════════════════════
+For each selected issue, agents must produce grounded:
+  why  — 1–2 sentences: impact on crawl/index/rank/UX (use live + sheet + project)
+  fix  — concrete steps for Dev/SEO/Content (commands, config, redirects, templates)
+  ownerTeam — Dev | SEO | Content | Marketing
+  effort — 15m | 1h | half-day | 1d+
+
+Rules:
+- Keep original SEO sheet fields (url, action, note) unchanged — source of truth.
+- If live status already 200 and sheet is stale, say so; still give canonical hygiene if needed.
+- If issue overlaps an open Team Task or Fixes tracker item, reference it in fix
+  (“align with open task T-… / fix …”) — do not reopen conflicting instructions.
+- If URL is malformed / not a URL (e.g. a GSC label pasted as a cell), say re-export
+  real URLs; do not invent destinations.
+- Never invent repo file paths. Only cite paths you actually opened.
+
+Write onto the issue:
+  agentReview: {
+    why, fix, ownerTeam, effort,
+    observedStatus,          // number or null
+    relatedAuditIds,         // [] if none
+    relatedTaskIds,          // [] if none
+    relatedFixIds,           // [] if none
+    reviewedAt: ISO8601,
+    agents: ["technical-seo-engineer", ...]
+  }
+
+════════════════════════════════════════
+STEP 3 — WRITE BACK + DEPLOY
+════════════════════════════════════════
+Update E:\growth-board\data\gsc-issues.json in place:
+  - merge agentReview on matching ids
+  - set reviewedCount, lastAgentReviewAt, lastAgentReviewNote
+  - do not delete issues or change ids
+
+Deploy:
+  cd E:\growth-board && npm run deploy:cf
+
+If deploy fails, keep JSON saved and report deploy pending.
+
+════════════════════════════════════════
+STEP 4 — DO NOT CREATE TASKS HERE
+════════════════════════════════════════
+Humans choose Create task on:
+  https://rytsensetech-growth-board.pages.dev/seo-work.html#issues
+Do NOT bulk POST /api/tasks from this scheduler.
+(Full weekly SEO-360 may still auto-create NEW/REGRESSED audit criticals — that
+is a different job.)
+
+════════════════════════════════════════
+STEP 5 — SLACK + FINAL REPLY
+════════════════════════════════════════
+GSC Issues weekly review ✅
+pending before: <n> · reviewed this run: <n> · still pending: <n>
+by category this run: 403 <n> · error <n> · 404 <n> · …
+agents: <exact names>
+related: audit hits <n> · open-task overlaps <n> · fix overlaps <n>
+notable: <1–3 critical patterns, e.g. “/services/ still 403”>
+Board: https://rytsensetech-growth-board.pages.dev/seo-work.html#issues
+Filter: Agent reviewed
+
+════════════════════════════════════════
+IF EXCEL WAS UPDATED
+════════════════════════════════════════
+If a new workbook exists at E:\growth-board\GSC Audit.xlsx (or path given):
+  python scripts/import-gsc-issues.py "E:\growth-board\GSC Audit.xlsx"
+THEN run STEPS 0–5 on the new pending rows (still 40–60 cap).
