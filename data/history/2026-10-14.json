@@ -1,6 +1,6 @@
 {
   "date": "2026-10-14",
-  "updatedAt": "2026-10-14T05:10:34Z",
+  "updatedAt": "2026-10-14T05:43:21Z",
   "gsc": {
     "current": {
       "clicks": 992,
@@ -18,10 +18,10 @@
     }
   },
   "ga4": {
-    "sessions": 4377,
-    "activeUsers": 3328,
-    "engagementRate": 0.4905,
-    "pageViews": 8375
+    "sessions": 4183,
+    "activeUsers": 3212,
+    "engagementRate": 0.4894,
+    "pageViews": 8021
   },
   "clarityStatus": "unavailable",
   "githubStatus": "ok"
