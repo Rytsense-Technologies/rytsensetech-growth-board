@@ -1,6 +1,6 @@
 {
   "site": "rytsensetech.com",
-  "updatedAt": "2026-10-22T05:09:15Z",
+  "updatedAt": "2026-10-22T05:37:38Z",
   "gsc": {
     "period": {
       "startDate": "2026-09-24",
@@ -8,7 +8,7 @@
     },
     "current": {
       "clicks": 916,
-      "impressions": 86864,
+      "impressions": 86929,
       "ctr": 1.05,
       "position": 27.8
     },
@@ -21,8 +21,8 @@
     "change": {
       "clicks": -173,
       "clicksPercent": -15.89,
-      "impressions": -23118,
-      "impressionsPercent": -21.02,
+      "impressions": -23053,
+      "impressionsPercent": -20.96,
       "ctr": 0.06,
       "position": -1.8
     },
@@ -97,8 +97,8 @@
     "totals": {
       "sessions": 4107,
       "activeUsers": 3153,
-      "engagementRate": 0.4911,
-      "pageViews": 7875
+      "engagementRate": 0.4914,
+      "pageViews": 7877
     },
     "daily": [
       {
@@ -108,6 +108,10 @@
       {
         "date": "20260925",
         "sessions": 143
+      },
+      {
+        "date": "20260926",
+        "sessions": 267
       },
       {
         "date": "20260927",
@@ -211,17 +215,13 @@
       },
       {
         "date": "20261022",
-        "sessions": 21
-      },
-      {
-        "date": "20261026",
-        "sessions": 267
+        "sessions": 22
       }
     ],
     "channels": [
       {
         "channel": "Organic Search",
-        "sessions": 1924,
+        "sessions": 1925,
         "activeUsers": 1250,
         "conversions": 33
       },
@@ -233,8 +233,8 @@
       },
       {
         "channel": "Referral",
-        "sessions": 101,
-        "activeUsers": 16,
+        "sessions": 102,
+        "activeUsers": 17,
         "conversions": 0
       },
       {
@@ -258,8 +258,241 @@
     ]
   },
   "clarity": {
-    "status": "unavailable",
-    "note": "Clarity worker URL blocked by egress policy (HTTP 403 from proxy CONNECT); Clarity MCP intentionally not used"
+    "status": "ok",
+    "data": {
+      "DeadClickCount": {
+        "sessionsCount": 99,
+        "sessionsWithMetricPercentage": 17.17,
+        "pagesViews": 20,
+        "subTotal": 66
+      },
+      "RageClickCount": {
+        "sessionsCount": 99,
+        "sessionsWithMetricPercentage": 1.01,
+        "pagesViews": 1,
+        "subTotal": 2
+      },
+      "QuickbackClick": {
+        "sessionsCount": 99,
+        "sessionsWithMetricPercentage": 10.1,
+        "pagesViews": 12,
+        "subTotal": 12
+      },
+      "ExcessiveScroll": {
+        "sessionsCount": 99,
+        "sessionsWithMetricPercentage": 0,
+        "subTotal": 0
+      },
+      "ScriptErrorCount": {
+        "sessionsCount": 99,
+        "sessionsWithMetricPercentage": 0,
+        "subTotal": 0
+      },
+      "ErrorClickCount": {
+        "sessionsCount": 99,
+        "sessionsWithMetricPercentage": 0,
+        "subTotal": 0
+      },
+      "ScrollDepth": {
+        "averageScrollDepth": 33.46
+      },
+      "Traffic": {
+        "totalSessionCount": 99,
+        "totalBotSessionCount": 41,
+        "distinctUserCount": 71,
+        "pagesPerSessionPercentage": 2.15
+      },
+      "EngagementTime": {
+        "totalTime": 591,
+        "activeTime": 67
+      },
+      "Browser": [
+        {
+          "name": "Chrome",
+          "value": 71
+        },
+        {
+          "name": "Edge",
+          "value": 14
+        },
+        {
+          "name": "ChromeMobile",
+          "value": 12
+        },
+        {
+          "name": "MobileSafari",
+          "value": 1
+        },
+        {
+          "name": "Firefox",
+          "value": 1
+        }
+      ],
+      "Device": [
+        {
+          "name": "PC",
+          "value": 86
+        },
+        {
+          "name": "Mobile",
+          "value": 13
+        }
+      ],
+      "OS": [
+        {
+          "name": "Windows",
+          "value": 80
+        },
+        {
+          "name": "Android",
+          "value": 12
+        },
+        {
+          "name": "MacOSX",
+          "value": 5
+        },
+        {
+          "name": "IOS",
+          "value": 1
+        },
+        {
+          "name": "Linux",
+          "value": 1
+        }
+      ],
+      "Country": [
+        {
+          "name": "India",
+          "value": 73
+        },
+        {
+          "name": "United States",
+          "value": 15
+        },
+        {
+          "name": "Italy",
+          "value": 4
+        },
+        {
+          "name": "United Arab Emirates",
+          "value": 3
+        },
+        {
+          "name": "Malaysia",
+          "value": 1
+        },
+        {
+          "name": "Singapore",
+          "value": 1
+        },
+        {
+          "name": "United Kingdom",
+          "value": 1
+        },
+        {
+          "name": "Brazil",
+          "value": 1
+        }
+      ],
+      "PageTitle": [
+        {
+          "name": "AI Development Company in India | Global AI Experts | Rytsense",
+          "value": 37
+        },
+        {
+          "name": "Careers at Rytsense Technologies | AI & Tech Jobs in India, USA & UAE",
+          "value": 25
+        },
+        {
+          "name": "Custom AI Development Company in USA | Rytsense Technologies",
+          "value": 12
+        },
+        {
+          "name": "Contact Rytsense Technologies - Free AI Consultation",
+          "value": 10
+        },
+        {
+          "name": "Blitzy Multi-Agent AI Software Development Case Study | Rytsense",
+          "value": 5
+        },
+        {
+          "name": "AI Development Company in USA | Custom AI Solutions | Rytsense Technologies",
+          "value": 4
+        },
+        {
+          "name": "Case Studies | AI & Software Solutions by Rytsense",
+          "value": 4
+        },
+        {
+          "name": "RAG vs LLM: Key Differences, Use Cases & Benefits Explained",
+          "value": 4
+        }
+      ],
+      "ReferrerUrl": [
+        {
+          "name": "www.google.com",
+          "value": 37
+        },
+        {
+          "name": "rytsensetech.com",
+          "value": 27
+        },
+        {
+          "name": "www.bing.com",
+          "value": 10
+        },
+        {
+          "name": "www.linkedin.com",
+          "value": 2
+        },
+        {
+          "name": "lnkd.in",
+          "value": 1
+        },
+        {
+          "name": "search.yahoo.com",
+          "value": 1
+        },
+        {
+          "name": "selectedfirms.co",
+          "value": 1
+        }
+      ],
+      "PopularPages": [
+        {
+          "name": "https://rytsensetech.com/",
+          "value": 37
+        },
+        {
+          "name": "https://rytsensetech.com/company/career/",
+          "value": 25
+        },
+        {
+          "name": "https://rytsensetech.com/contact-us/",
+          "value": 10
+        },
+        {
+          "name": "https://rytsensetech.com/us/",
+          "value": 10
+        },
+        {
+          "name": "https://rytsensetech.com/case-studies/blitzy-multi-agent-ai-software-development/",
+          "value": 6
+        },
+        {
+          "name": "https://rytsensetech.com/ai-development-company-usa/",
+          "value": 4
+        },
+        {
+          "name": "https://rytsensetech.com/blog/what-is-the-difference-between-rag-and-llm/",
+          "value": 4
+        },
+        {
+          "name": "https://rytsensetech.com/case-studies/",
+          "value": 4
+        }
+      ]
+    }
   },
   "github": {
     "status": "ok",
@@ -303,7 +536,7 @@
     ]
   },
   "cloudflare": {
-    "status": "unavailable",
+    "status": "ok",
     "analytics": {
       "requests": 0,
       "bytes": 0,
@@ -312,27 +545,26 @@
       "cacheHitRatio": 0
     },
     "deployment": {
-      "status": "failed",
+      "status": "queued",
       "url": "https://rytsensetech-growth-board.pages.dev",
-      "deployedAt": "2026-10-22T05:09:15Z"
+      "deployedAt": "2026-10-22T05:37:38Z"
     },
-    "note": "GitHub push unavailable from this run (device git has no credentials; latest.json too large for MCP Contents API) and local wrangler deploy failed (EPERM unlink in .cf-pages) — run npm run deploy:cf and git push from Cursor. Analytics unavailable (no token/zone)."
+    "note": "Analytics unavailable (no token in cloud); deploy queued via GitHub Actions after push"
   },
   "gscByCountry": {
     "status": "ok",
     "us": {
       "clicks": 22,
-      "impressions": 38963,
+      "impressions": 39001,
       "ctr": 0.06,
       "position": 34.8
     },
     "global": {
       "clicks": 894,
-      "impressions": 47901,
+      "impressions": 47928,
       "ctr": 1.87,
       "position": 22.1
-    },
-    "note": "global = all countries except United States (derived as site total minus US)"
+    }
   },
   "gscByPage": {
     "status": "ok",
@@ -354,14 +586,14 @@
       {
         "page": "/machine-learning-development-services/",
         "clicks": 6,
-        "impressions": 3830,
+        "impressions": 3833,
         "ctr": 0.16,
         "position": 46.6
       },
       {
         "page": "/",
         "clicks": 158,
-        "impressions": 3181,
+        "impressions": 3182,
         "ctr": 4.97,
         "position": 14.7
       },
@@ -382,28 +614,28 @@
       {
         "page": "/artificial-intelligence-development-company-in-dubai/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=dubai",
         "clicks": 30,
-        "impressions": 2329,
+        "impressions": 2334,
         "ctr": 1.29,
         "position": 5.6
       },
       {
         "page": "/generative-ai-development-services/",
         "clicks": 0,
-        "impressions": 1865,
+        "impressions": 1867,
         "ctr": 0,
         "position": 39.4
       },
       {
         "page": "/artificial-intelligence-development-company-in-dubai/",
         "clicks": 2,
-        "impressions": 1279,
+        "impressions": 1280,
         "ctr": 0.16,
         "position": 45.8
       },
       {
         "page": "/us/insurance-verification-ai/",
         "clicks": 7,
-        "impressions": 1230,
+        "impressions": 1231,
         "ctr": 0.57,
         "position": 20.8
       },
@@ -443,6 +675,13 @@
         "position": 20.6
       },
       {
+        "page": "/blog/chennai-top-ten-custom-software-development-company/",
+        "clicks": 3,
+        "impressions": 1025,
+        "ctr": 0.29,
+        "position": 26
+      },
+      {
         "page": "/us/blog/top-insurance-eligibility-verification-software/",
         "clicks": 2,
         "impressions": 1025,
@@ -457,18 +696,11 @@
         "position": 16.5
       },
       {
-        "page": "/blog/chennai-top-ten-custom-software-development-company/",
-        "clicks": 3,
-        "impressions": 1024,
-        "ctr": 0.29,
-        "position": 26
-      },
-      {
         "page": "/blog/top-ai-agent-development-companies/",
         "clicks": 2,
-        "impressions": 963,
+        "impressions": 965,
         "ctr": 0.21,
-        "position": 59.1
+        "position": 59.2
       },
       {
         "page": "/contact-us/",
@@ -501,14 +733,14 @@
       {
         "page": "/hire-developers-in-india/",
         "clicks": 0,
-        "impressions": 847,
+        "impressions": 848,
         "ctr": 0,
-        "position": 48.5
+        "position": 48.4
       },
       {
         "page": "/us/healthcare-claims-management-automation/",
         "clicks": 0,
-        "impressions": 824,
+        "impressions": 826,
         "ctr": 0,
         "position": 43.3
       },
@@ -520,18 +752,18 @@
         "position": 8.9
       },
       {
+        "page": "/blog/what-are-the-four-types-of-ai-technology/",
+        "clicks": 0,
+        "impressions": 730,
+        "ctr": 0,
+        "position": 28.5
+      },
+      {
         "page": "/computer-vision-development-services/",
         "clicks": 2,
         "impressions": 729,
         "ctr": 0.27,
         "position": 36.7
-      },
-      {
-        "page": "/blog/what-are-the-four-types-of-ai-technology/",
-        "clicks": 0,
-        "impressions": 728,
-        "ctr": 0,
-        "position": 28.5
       },
       {
         "page": "/blog/what-are-the-seven-stages-of-machine-learning/",
@@ -550,14 +782,14 @@
       {
         "page": "/ai-consulting-services/",
         "clicks": 2,
-        "impressions": 660,
+        "impressions": 661,
         "ctr": 0.3,
         "position": 62.1
       },
       {
         "page": "/us/blog/enterprise-generative-ai-use-cases/",
         "clicks": 0,
-        "impressions": 627,
+        "impressions": 628,
         "ctr": 0,
         "position": 23
       },
@@ -585,29 +817,29 @@
       {
         "page": "/blog/ecommerce-ai-agents-and-agentic-commerce-explained/",
         "clicks": 0,
-        "impressions": 568,
+        "impressions": 569,
         "ctr": 0,
         "position": 62.9
       },
       {
         "page": "/us/generative-ai-consulting-services/",
         "clicks": 1,
-        "impressions": 556,
+        "impressions": 557,
         "ctr": 0.18,
-        "position": 68.6
+        "position": 68.5
       },
       {
         "page": "/blog/ai-in-oil-and-gas-industry/",
         "clicks": 0,
-        "impressions": 554,
+        "impressions": 555,
         "ctr": 0,
         "position": 62.7
       },
       {
         "page": "/blog/what-is-the-best-ai-model/",
         "clicks": 3,
-        "impressions": 512,
-        "ctr": 0.59,
+        "impressions": 513,
+        "ctr": 0.58,
         "position": 35.2
       },
       {
@@ -634,7 +866,7 @@
       {
         "page": "/blog/best-generative-ai-development-company/",
         "clicks": 0,
-        "impressions": 467,
+        "impressions": 468,
         "ctr": 0,
         "position": 20.3
       },
@@ -655,14 +887,14 @@
       {
         "page": "/us/blog/ai-agents-logistics-workflow-automation/",
         "clicks": 1,
-        "impressions": 443,
+        "impressions": 444,
         "ctr": 0.23,
         "position": 25.3
       },
       {
         "page": "/ai-integration-services/",
         "clicks": 2,
-        "impressions": 435,
+        "impressions": 436,
         "ctr": 0.46,
         "position": 39.7
       },
@@ -676,9 +908,9 @@
       {
         "page": "/blog/hire-coders-india/",
         "clicks": 2,
-        "impressions": 425,
+        "impressions": 426,
         "ctr": 0.47,
-        "position": 33
+        "position": 33.1
       },
       {
         "page": "/blog/advantages-of-using-prompts-in-ai-model-development/",
@@ -711,9 +943,9 @@
       {
         "page": "/hire/hire-salesforce-developers/",
         "clicks": 0,
-        "impressions": 410,
+        "impressions": 411,
         "ctr": 0,
-        "position": 26.9
+        "position": 27
       },
       {
         "page": "/company/who-we-are/",
@@ -767,9 +999,9 @@
       {
         "page": "/us/industry/ai-in-insurance/",
         "clicks": 0,
-        "impressions": 369,
+        "impressions": 373,
         "ctr": 0,
-        "position": 73.1
+        "position": 73.2
       },
       {
         "page": "/ai-agent-development-services/",
@@ -830,9 +1062,9 @@
       {
         "page": "/ai-development-company-india/",
         "clicks": 1,
-        "impressions": 293,
+        "impressions": 294,
         "ctr": 0.34,
-        "position": 42.3
+        "position": 42.4
       },
       {
         "page": "/blog/ai-agents-in-construction/",
@@ -858,9 +1090,16 @@
       {
         "page": "/case-studies/automating-insurance-underwriting-with-python-ocr/",
         "clicks": 1,
-        "impressions": 278,
+        "impressions": 279,
         "ctr": 0.36,
         "position": 4.3
+      },
+      {
+        "page": "/us/blog/270-271-eligibility-verification/",
+        "clicks": 1,
+        "impressions": 279,
+        "ctr": 0.36,
+        "position": 9.2
       },
       {
         "page": "/hire/hire-ai-developer/",
@@ -875,13 +1114,6 @@
         "impressions": 278,
         "ctr": 0,
         "position": 11
-      },
-      {
-        "page": "/us/blog/270-271-eligibility-verification/",
-        "clicks": 1,
-        "impressions": 277,
-        "ctr": 0.36,
-        "position": 9.1
       },
       {
         "page": "/us/",
@@ -935,9 +1167,9 @@
       {
         "page": "/us/blog/best-rcm-solutions/",
         "clicks": 0,
-        "impressions": 239,
+        "impressions": 240,
         "ctr": 0,
-        "position": 23.7
+        "position": 23.8
       },
       {
         "page": "/us/blog/how-to-modernize-legacy-enterprise-applications/",
@@ -949,7 +1181,7 @@
       {
         "page": "/us/speciality/gastroenterology/",
         "clicks": 0,
-        "impressions": 235,
+        "impressions": 236,
         "ctr": 0,
         "position": 56.5
       },
@@ -963,7 +1195,7 @@
       {
         "page": "/blog/agentic-ai-for-healthcare/",
         "clicks": 0,
-        "impressions": 231,
+        "impressions": 232,
         "ctr": 0,
         "position": 31.7
       },
@@ -977,9 +1209,9 @@
       {
         "page": "/blog/hire-blockchain-developers/",
         "clicks": 0,
-        "impressions": 227,
+        "impressions": 229,
         "ctr": 0,
-        "position": 28.2
+        "position": 28.5
       },
       {
         "page": "/ai-development-company-in-noida/",
@@ -991,9 +1223,9 @@
       {
         "page": "/blog/ai-decision-making-transforming-industries/",
         "clicks": 0,
-        "impressions": 216,
+        "impressions": 217,
         "ctr": 0,
-        "position": 31.5
+        "position": 31.7
       },
       {
         "page": "/ai-machine-learning-course/",
@@ -1003,18 +1235,18 @@
         "position": 7.5
       },
       {
+        "page": "/us/industry/ai-in-retail/",
+        "clicks": 0,
+        "impressions": 205,
+        "ctr": 0,
+        "position": 51.7
+      },
+      {
         "page": "/blog/hire-developers-in-india/",
         "clicks": 0,
         "impressions": 204,
         "ctr": 0,
         "position": 17.7
-      },
-      {
-        "page": "/us/industry/ai-in-retail/",
-        "clicks": 0,
-        "impressions": 204,
-        "ctr": 0,
-        "position": 51.5
       },
       {
         "page": "/intelligent-document-processing/",
@@ -1061,7 +1293,7 @@
       {
         "page": "/blog/agentic-ai-use-cases-in-banking/",
         "clicks": 1,
-        "impressions": 188,
+        "impressions": 189,
         "ctr": 0.53,
         "position": 76.1
       },
@@ -1087,18 +1319,18 @@
         "position": 4.1
       },
       {
+        "page": "/us/case-studies/",
+        "clicks": 0,
+        "impressions": 180,
+        "ctr": 0,
+        "position": 4.2
+      },
+      {
         "page": "/blog/ai-augmented-software-development-is-changing-industry/",
         "clicks": 0,
         "impressions": 179,
         "ctr": 0,
         "position": 51.9
-      },
-      {
-        "page": "/us/case-studies/",
-        "clicks": 0,
-        "impressions": 179,
-        "ctr": 0,
-        "position": 4.1
       },
       {
         "page": "/blog/who-are-the-big-four-of-ai/",
@@ -1138,14 +1370,14 @@
       {
         "page": "/us/speciality/orthopedics/",
         "clicks": 0,
-        "impressions": 168,
+        "impressions": 169,
         "ctr": 0,
         "position": 65.5
       },
       {
         "page": "/blog/ai-software-development-practices-tools/",
         "clicks": 0,
-        "impressions": 167,
+        "impressions": 168,
         "ctr": 0,
         "position": 32.6
       },
@@ -1304,18 +1536,18 @@
         "position": 18.5
       },
       {
+        "page": "/ai-development-company-uk/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=uk",
+        "clicks": 0,
+        "impressions": 120,
+        "ctr": 0,
+        "position": 4.3
+      },
+      {
         "page": "/us/blog/ai-workflow-automation-vs-full-custom-ai-development/",
         "clicks": 0,
         "impressions": 120,
         "ctr": 0,
         "position": 7.7
-      },
-      {
-        "page": "/ai-development-company-uk/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=uk",
-        "clicks": 0,
-        "impressions": 119,
-        "ctr": 0,
-        "position": 4.3
       },
       {
         "page": "/case-studies/ai-fraud-detection-prevention-banking-usa/",
@@ -1332,6 +1564,13 @@
         "position": 51.4
       },
       {
+        "page": "/industry/real-estate-app-development-company/",
+        "clicks": 0,
+        "impressions": 118,
+        "ctr": 0,
+        "position": 35.4
+      },
+      {
         "page": "/us/blog/generative-ai-development-cost/",
         "clicks": 0,
         "impressions": 118,
@@ -1344,13 +1583,6 @@
         "impressions": 117,
         "ctr": 4.27,
         "position": 4.1
-      },
-      {
-        "page": "/industry/real-estate-app-development-company/",
-        "clicks": 0,
-        "impressions": 117,
-        "ctr": 0,
-        "position": 35.5
       },
       {
         "page": "/blog/ai-developer-salary/",
@@ -1556,6 +1788,13 @@
         "position": 23
       },
       {
+        "page": "/us/payment-posting-ai/",
+        "clicks": 1,
+        "impressions": 85,
+        "ctr": 1.18,
+        "position": 39.4
+      },
+      {
         "page": "/us/blog/ai-development-company-red-flags/",
         "clicks": 0,
         "impressions": 85,
@@ -1582,13 +1821,6 @@
         "impressions": 83,
         "ctr": 1.2,
         "position": 48.8
-      },
-      {
-        "page": "/us/payment-posting-ai/",
-        "clicks": 1,
-        "impressions": 83,
-        "ctr": 1.2,
-        "position": 39.4
       },
       {
         "page": "/industry/ai-in-ott/",
@@ -1633,18 +1865,18 @@
         "position": 23.4
       },
       {
+        "page": "/hire/hire-backend-developers/",
+        "clicks": 0,
+        "impressions": 78,
+        "ctr": 0,
+        "position": 18.9
+      },
+      {
         "page": "/us/blog/",
         "clicks": 0,
         "impressions": 78,
         "ctr": 0,
         "position": 7.5
-      },
-      {
-        "page": "/hire/hire-backend-developers/",
-        "clicks": 0,
-        "impressions": 77,
-        "ctr": 0,
-        "position": 19.1
       },
       {
         "page": "/us/blog/predictive-modeling-tools-credit-risk-analysis/",
@@ -1675,6 +1907,13 @@
         "position": 6.7
       },
       {
+        "page": "/blog/freelance-software-developers-for-hire/",
+        "clicks": 0,
+        "impressions": 73,
+        "ctr": 0,
+        "position": 21.3
+      },
+      {
         "page": "/industry/on-demand-app-development-company/",
         "clicks": 0,
         "impressions": 73,
@@ -1694,13 +1933,6 @@
         "impressions": 72,
         "ctr": 0,
         "position": 41.8
-      },
-      {
-        "page": "/blog/freelance-software-developers-for-hire/",
-        "clicks": 0,
-        "impressions": 72,
-        "ctr": 0,
-        "position": 20.6
       },
       {
         "page": "/us/solutions/biometric-authentication-identity-verification/",
@@ -1724,6 +1956,13 @@
         "position": 11.4
       },
       {
+        "page": "/us/logistics-compliance-ai-agent/",
+        "clicks": 0,
+        "impressions": 70,
+        "ctr": 0,
+        "position": 46.7
+      },
+      {
         "page": "/resource/blog/ai-development/",
         "clicks": 5,
         "impressions": 69,
@@ -1736,13 +1975,6 @@
         "impressions": 69,
         "ctr": 0,
         "position": 10.1
-      },
-      {
-        "page": "/us/logistics-compliance-ai-agent/",
-        "clicks": 0,
-        "impressions": 69,
-        "ctr": 0,
-        "position": 46.2
       },
       {
         "page": "/us/blog/voice-ai-hvac-appointment-scheduling/",
@@ -1808,6 +2040,13 @@
         "position": 52.9
       },
       {
+        "page": "/us/blog/cms-hets-medicare-eligibility-rejections-2026/",
+        "clicks": 1,
+        "impressions": 63,
+        "ctr": 1.59,
+        "position": 6.4
+      },
+      {
         "page": "/blog/java-for-your-web-application-development/",
         "clicks": 0,
         "impressions": 63,
@@ -1822,13 +2061,6 @@
         "position": 7.6
       },
       {
-        "page": "/us/blog/cms-hets-medicare-eligibility-rejections-2026/",
-        "clicks": 1,
-        "impressions": 62,
-        "ctr": 1.61,
-        "position": 6.5
-      },
-      {
         "page": "/us/blog/voice-ai-insurance-eligibility-verification/",
         "clicks": 0,
         "impressions": 62,
@@ -1841,6 +2073,13 @@
         "impressions": 62,
         "ctr": 0,
         "position": 35.6
+      },
+      {
+        "page": "/hire/hire-django-developers/",
+        "clicks": 0,
+        "impressions": 61,
+        "ctr": 0,
+        "position": 44.1
       },
       {
         "page": "/us/blog/how-does-revenue-cycle-management-work/",
@@ -1869,13 +2108,6 @@
         "impressions": 60,
         "ctr": 1.67,
         "position": 6.4
-      },
-      {
-        "page": "/hire/hire-django-developers/",
-        "clicks": 0,
-        "impressions": 60,
-        "ctr": 0,
-        "position": 44.8
       },
       {
         "page": "/hire/hire-golang-developers/",
@@ -1941,6 +2173,13 @@
         "position": 47.5
       },
       {
+        "page": "/us/ai-chatbot-development-services/",
+        "clicks": 0,
+        "impressions": 58,
+        "ctr": 0,
+        "position": 28.4
+      },
+      {
         "page": "/us/blog/ai-medical-coding-vs-human-coders/",
         "clicks": 0,
         "impressions": 58,
@@ -1960,13 +2199,6 @@
         "impressions": 57,
         "ctr": 0,
         "position": 24.1
-      },
-      {
-        "page": "/us/ai-chatbot-development-services/",
-        "clicks": 0,
-        "impressions": 57,
-        "ctr": 0,
-        "position": 28.5
       },
       {
         "page": "/resource/blog/all/",
@@ -2445,6 +2677,13 @@
         "position": 13
       },
       {
+        "page": "/us/blog/generative-ai-use-cases-in-customer-service/",
+        "clicks": 0,
+        "impressions": 34,
+        "ctr": 0,
+        "position": 29.7
+      },
+      {
         "page": "/us/blog/insurance-eligibility-verification-payer-errors/",
         "clicks": 0,
         "impressions": 34,
@@ -2501,13 +2740,6 @@
         "position": 10.4
       },
       {
-        "page": "/us/blog/generative-ai-use-cases-in-customer-service/",
-        "clicks": 0,
-        "impressions": 33,
-        "ctr": 0,
-        "position": 29.2
-      },
-      {
         "page": "/us/blog/multilingual-ai-chatbot-development/",
         "clicks": 0,
         "impressions": 33,
@@ -2536,18 +2768,18 @@
         "position": 8.2
       },
       {
+        "page": "/us/accounts-receivable-ai/",
+        "clicks": 0,
+        "impressions": 31,
+        "ctr": 0,
+        "position": 45.7
+      },
+      {
         "page": "/security/",
         "clicks": 1,
         "impressions": 30,
         "ctr": 3.33,
         "position": 7.1
-      },
-      {
-        "page": "/us/accounts-receivable-ai/",
-        "clicks": 0,
-        "impressions": 30,
-        "ctr": 0,
-        "position": 44.6
       },
       {
         "page": "/blog/ai-development-cost/",
@@ -2578,7 +2810,7 @@
         "position": 44.8
       },
       {
-        "page": "/blog/advantages-of-using-prompts-in-ai-model-development/#use-cases-highlighting-the-advantages-of-using-prompts-in-ai-model-development",
+        "page": "/blog/advantages-of-using-prompts-in-ai-model-development/",
         "clicks": 0,
         "impressions": 28,
         "ctr": 0,
@@ -2592,14 +2824,14 @@
         "position": 20
       },
       {
-        "page": "/blog/fairness-measures-in-ai-product-development/#preventing-discrimination-and-bias",
+        "page": "/blog/fairness-measures-in-ai-product-development/",
         "clicks": 0,
         "impressions": 28,
         "ctr": 0,
         "position": 8.1
       },
       {
-        "page": "/blog/fairness-measures-in-ai-product-development/#statistical-fairness-measures",
+        "page": "/blog/fairness-measures-in-ai-product-development/",
         "clicks": 0,
         "impressions": 28,
         "ctr": 0,
@@ -2625,6 +2857,13 @@
         "impressions": 27,
         "ctr": 0,
         "position": 25.4
+      },
+      {
+        "page": "/hire-data-scientists/",
+        "clicks": 0,
+        "impressions": 27,
+        "ctr": 0,
+        "position": 41.9
       },
       {
         "page": "/services/iot-development-services/",
@@ -2674,13 +2913,6 @@
         "impressions": 26,
         "ctr": 0,
         "position": 19.3
-      },
-      {
-        "page": "/hire-data-scientists/",
-        "clicks": 0,
-        "impressions": 26,
-        "ctr": 0,
-        "position": 40.8
       },
       {
         "page": "/intelligent-document-processing/document-classification/",
@@ -2760,7 +2992,7 @@
         "position": 24.3
       },
       {
-        "page": "/blog/advantages-of-using-prompts-in-ai-model-development/#designing-effective-prompts-to-maximize-advantages",
+        "page": "/blog/advantages-of-using-prompts-in-ai-model-development/",
         "clicks": 0,
         "impressions": 23,
         "ctr": 0,
@@ -2774,7 +3006,7 @@
         "position": 11
       },
       {
-        "page": "/blog/hire-blockchain-developers/#hire-freelancers-or-remote-developers",
+        "page": "/blog/hire-blockchain-developers/",
         "clicks": 0,
         "impressions": 23,
         "ctr": 0,
@@ -2851,7 +3083,7 @@
         "position": 22.1
       },
       {
-        "page": "/blog/hire-blockchain-developers/#security-developer-in-blockchain",
+        "page": "/blog/hire-blockchain-developers/",
         "clicks": 0,
         "impressions": 21,
         "ctr": 0,
@@ -2893,28 +3125,28 @@
         "position": 10.6
       },
       {
-        "page": "/blog/fairness-measures-in-ai-product-development/#building-trust-with-users",
+        "page": "/blog/fairness-measures-in-ai-product-development/",
         "clicks": 0,
         "impressions": 20,
         "ctr": 0,
         "position": 8.2
       },
       {
-        "page": "/blog/fairness-measures-in-ai-product-development/#continuous-enhancement-or-improvement",
+        "page": "/blog/fairness-measures-in-ai-product-development/",
         "clicks": 0,
         "impressions": 20,
         "ctr": 0,
         "position": 8.2
       },
       {
-        "page": "/blog/fairness-measures-in-ai-product-development/#during-validation-and-testing",
+        "page": "/blog/fairness-measures-in-ai-product-development/",
         "clicks": 0,
         "impressions": 20,
         "ctr": 0,
         "position": 8.2
       },
       {
-        "page": "/blog/fairness-measures-in-ai-product-development/#meeting-legal-and-moral-standards-concerned",
+        "page": "/blog/fairness-measures-in-ai-product-development/",
         "clicks": 0,
         "impressions": 20,
         "ctr": 0,
@@ -3320,14 +3552,14 @@
         "position": 7
       },
       {
-        "page": "/blog/hire-blockchain-developers/#core-blockchain-developer",
+        "page": "/blog/hire-blockchain-developers/",
         "clicks": 0,
         "impressions": 12,
         "ctr": 0,
         "position": 2.8
       },
       {
-        "page": "/blog/hire-blockchain-developers/#methods-of-offshore-blockchain-development-services",
+        "page": "/blog/hire-blockchain-developers/",
         "clicks": 0,
         "impressions": 12,
         "ctr": 0,
@@ -3425,6 +3657,13 @@
         "position": 44.1
       },
       {
+        "page": "/hire/hire-laravel-developers/",
+        "clicks": 0,
+        "impressions": 11,
+        "ctr": 0,
+        "position": 30.4
+      },
+      {
         "page": "/hire/hire-react-native-developers/",
         "clicks": 0,
         "impressions": 11,
@@ -3481,21 +3720,21 @@
         "position": 37.7
       },
       {
-        "page": "/blog/hire-blockchain-developers/#blockchain-front-end-developer",
+        "page": "/blog/hire-blockchain-developers/",
         "clicks": 0,
         "impressions": 10,
         "ctr": 0,
         "position": 3
       },
       {
-        "page": "/blog/hire-blockchain-developers/#blockchain-software-dapp-developer",
+        "page": "/blog/hire-blockchain-developers/",
         "clicks": 0,
         "impressions": 10,
         "ctr": 0,
         "position": 3
       },
       {
-        "page": "/blog/hire-blockchain-developers/#choose-developers-based-in-cost-effective-countries",
+        "page": "/blog/hire-blockchain-developers/",
         "clicks": 0,
         "impressions": 10,
         "ctr": 0,
@@ -3514,13 +3753,6 @@
         "impressions": 10,
         "ctr": 0,
         "position": 12.5
-      },
-      {
-        "page": "/hire/hire-laravel-developers/",
-        "clicks": 0,
-        "impressions": 10,
-        "ctr": 0,
-        "position": 31.2
       },
       {
         "page": "/hire/hire-python-developers/",
@@ -3544,14 +3776,14 @@
         "position": 13.7
       },
       {
-        "page": "/us/blog/carc-codes-medical-billing/#50-carc-codes-medical-billing-teams-should-know",
+        "page": "/us/blog/carc-codes-medical-billing/",
         "clicks": 0,
         "impressions": 10,
         "ctr": 0,
         "position": 9.7
       },
       {
-        "page": "/us/blog/carc-codes-medical-billing/#carc-codes-by-denial-category",
+        "page": "/us/blog/carc-codes-medical-billing/",
         "clicks": 0,
         "impressions": 10,
         "ctr": 0,
@@ -3782,14 +4014,14 @@
         "position": 16
       },
       {
-        "page": "/blog/chennai-top-ten-custom-software-development-company/#21rytsense-technologies",
+        "page": "/blog/chennai-top-ten-custom-software-development-company/",
         "clicks": 0,
         "impressions": 7,
         "ctr": 0,
         "position": 11.4
       },
       {
-        "page": "/blog/chennai-top-ten-custom-software-development-company/#32-vetting-process-beyond-portfolios-case-studies",
+        "page": "/blog/chennai-top-ten-custom-software-development-company/",
         "clicks": 0,
         "impressions": 7,
         "ctr": 0,
@@ -3837,32 +4069,32 @@
         "ctr": 0,
         "position": 51.1
       }
-    ],
-    "note": "GSC MCP row_limit ceiling: 500 rows returned (tool max)."
+    ]
   },
   "gscByQuery": {
     "status": "ok",
+    "note": "GSC MCP row_limit ceiling: 500 rows returned (tool max). Not the full keyword universe.",
     "buckets": {
-      "1": 8,
-      "2-3": 20,
-      "4-5": 18,
-      "6-10": 67,
-      "11-20": 61,
-      "21-50": 197,
-      "51-100": 129
+      "1": 5,
+      "2-3": 17,
+      "4-5": 17,
+      "6-10": 70,
+      "11-20": 64,
+      "21-50": 196,
+      "51-100": 131
     },
     "rows": [
       {
         "query": "generative ai development services",
         "clicks": 0,
-        "impressions": 1405,
+        "impressions": 1407,
         "ctr": 0,
         "position": 33.6
       },
       {
         "query": "machine learning development services",
         "clicks": 3,
-        "impressions": 1212,
+        "impressions": 1213,
         "ctr": 0.25,
         "position": 43.3
       },
@@ -3925,7 +4157,7 @@
       {
         "query": "hire developers in india",
         "clicks": 0,
-        "impressions": 343,
+        "impressions": 344,
         "ctr": 0,
         "position": 39.1
       },
@@ -3939,7 +4171,7 @@
       {
         "query": "custom machine learning development services",
         "clicks": 0,
-        "impressions": 308,
+        "impressions": 309,
         "ctr": 0,
         "position": 26.1
       },
@@ -4037,9 +4269,9 @@
       {
         "query": "ai agent development services",
         "clicks": 0,
-        "impressions": 228,
+        "impressions": 229,
         "ctr": 0,
-        "position": 55
+        "position": 55.1
       },
       {
         "query": "machine learning development company",
@@ -4128,7 +4360,7 @@
       {
         "query": "ai consulting services",
         "clicks": 0,
-        "impressions": 166,
+        "impressions": 167,
         "ctr": 0,
         "position": 76.4
       },
@@ -4161,18 +4393,18 @@
         "position": 11.1
       },
       {
+        "query": "ai development company dubai",
+        "clicks": 0,
+        "impressions": 154,
+        "ctr": 0,
+        "position": 10.1
+      },
+      {
         "query": "ai ml development services",
         "clicks": 0,
         "impressions": 153,
         "ctr": 0,
         "position": 45.4
-      },
-      {
-        "query": "ai development company dubai",
-        "clicks": 0,
-        "impressions": 152,
-        "ctr": 0,
-        "position": 10.2
       },
       {
         "query": "ai integration services",
@@ -4191,9 +4423,9 @@
       {
         "query": "ai development company in chennai",
         "clicks": 1,
-        "impressions": 141,
-        "ctr": 0.71,
-        "position": 10.3
+        "impressions": 142,
+        "ctr": 0.7,
+        "position": 10.7
       },
       {
         "query": "app development companies in dubai",
@@ -4226,9 +4458,9 @@
       {
         "query": "ai software development",
         "clicks": 1,
-        "impressions": 136,
-        "ctr": 0.74,
-        "position": 37.9
+        "impressions": 137,
+        "ctr": 0.73,
+        "position": 37.8
       },
       {
         "query": "enterprise application modernization",
@@ -4296,9 +4528,9 @@
       {
         "query": "machine learning software development services",
         "clicks": 0,
-        "impressions": 117,
+        "impressions": 118,
         "ctr": 0,
-        "position": 48.7
+        "position": 48.8
       },
       {
         "query": "ml development solutions",
@@ -4387,7 +4619,7 @@
       {
         "query": "ai agent development solutions",
         "clicks": 0,
-        "impressions": 107,
+        "impressions": 108,
         "ctr": 0,
         "position": 77.5
       },
@@ -4770,6 +5002,13 @@
         "position": 61.3
       },
       {
+        "query": "gastroenterology revenue cycle management",
+        "clicks": 0,
+        "impressions": 67,
+        "ctr": 0,
+        "position": 55.4
+      },
+      {
         "query": "mobile app development in dubai",
         "clicks": 0,
         "impressions": 67,
@@ -4789,13 +5028,6 @@
         "impressions": 66,
         "ctr": 0,
         "position": 7.3
-      },
-      {
-        "query": "gastroenterology revenue cycle management",
-        "clicks": 0,
-        "impressions": 66,
-        "ctr": 0,
-        "position": 55.5
       },
       {
         "query": "hire dedicated web developers",
@@ -5071,6 +5303,13 @@
         "position": 1.8
       },
       {
+        "query": "artificial intelligence development companies",
+        "clicks": 0,
+        "impressions": 55,
+        "ctr": 0,
+        "position": 39.7
+      },
+      {
         "query": "enterprise ai development company",
         "clicks": 0,
         "impressions": 55,
@@ -5097,13 +5336,6 @@
         "impressions": 54,
         "ctr": 0,
         "position": 5.8
-      },
-      {
-        "query": "artificial intelligence development companies",
-        "clicks": 0,
-        "impressions": 54,
-        "ctr": 0,
-        "position": 40.3
       },
       {
         "query": "developing ai",
@@ -5204,6 +5436,13 @@
         "position": 27.2
       },
       {
+        "query": "orthopedic revenue cycle management",
+        "clicks": 0,
+        "impressions": 52,
+        "ctr": 0,
+        "position": 69.5
+      },
+      {
         "query": "top saas application development services chennai",
         "clicks": 0,
         "impressions": 52,
@@ -5237,13 +5476,6 @@
         "impressions": 51,
         "ctr": 0,
         "position": 55.4
-      },
-      {
-        "query": "orthopedic revenue cycle management",
-        "clicks": 0,
-        "impressions": 51,
-        "ctr": 0,
-        "position": 69.6
       },
       {
         "query": "ai modernization platforms vs custom internal automation",
@@ -5351,6 +5583,13 @@
         "position": 34
       },
       {
+        "query": "hire salesforce developer",
+        "clicks": 0,
+        "impressions": 48,
+        "ctr": 0,
+        "position": 42.1
+      },
+      {
         "query": "ryt games concepts",
         "clicks": 0,
         "impressions": 48,
@@ -5391,13 +5630,6 @@
         "impressions": 47,
         "ctr": 0,
         "position": 19.7
-      },
-      {
-        "query": "hire salesforce developer",
-        "clicks": 0,
-        "impressions": 47,
-        "ctr": 0,
-        "position": 42.1
       },
       {
         "query": "ml solutions development",
@@ -5554,6 +5786,13 @@
         "position": 32.7
       },
       {
+        "query": "ai integrator",
+        "clicks": 0,
+        "impressions": 43,
+        "ctr": 0,
+        "position": 40.1
+      },
+      {
         "query": "gen ai consulting services",
         "clicks": 0,
         "impressions": 43,
@@ -5580,13 +5819,6 @@
         "impressions": 43,
         "ctr": 0,
         "position": 42.2
-      },
-      {
-        "query": "ai integrator",
-        "clicks": 0,
-        "impressions": 42,
-        "ctr": 0,
-        "position": 40
       },
       {
         "query": "enterprise software as ai infrastructure",
@@ -6051,6 +6283,13 @@
         "position": 44.2
       },
       {
+        "query": "medical claims automation",
+        "clicks": 0,
+        "impressions": 33,
+        "ctr": 0,
+        "position": 42.2
+      },
+      {
         "query": "mobile app development companies in uae",
         "clicks": 0,
         "impressions": 33,
@@ -6114,6 +6353,13 @@
         "position": 27.3
       },
       {
+        "query": "ai agents for supply chain compliance",
+        "clicks": 0,
+        "impressions": 32,
+        "ctr": 0,
+        "position": 80.9
+      },
+      {
         "query": "custom ai copilot development services",
         "clicks": 0,
         "impressions": 32,
@@ -6133,13 +6379,6 @@
         "impressions": 32,
         "ctr": 0,
         "position": 58.7
-      },
-      {
-        "query": "medical claims automation",
-        "clicks": 0,
-        "impressions": 32,
-        "ctr": 0,
-        "position": 42.1
       },
       {
         "query": "predictive maintenance for power equipment",
@@ -6175,13 +6414,6 @@
         "impressions": 31,
         "ctr": 0,
         "position": 9
-      },
-      {
-        "query": "ai agents for supply chain compliance",
-        "clicks": 0,
-        "impressions": 31,
-        "ctr": 0,
-        "position": 80.9
       },
       {
         "query": "ai and ml development company",
@@ -6415,6 +6647,13 @@
         "position": 28.4
       },
       {
+        "query": "ai companies near me",
+        "clicks": 1,
+        "impressions": 29,
+        "ctr": 3.45,
+        "position": 13.4
+      },
+      {
         "query": "ai powered software development",
         "clicks": 0,
         "impressions": 29,
@@ -6506,13 +6745,6 @@
         "position": 12
       },
       {
-        "query": "ai companies near me",
-        "clicks": 1,
-        "impressions": 28,
-        "ctr": 3.57,
-        "position": 13.4
-      },
-      {
         "query": "\"santander\" code optimization strategies",
         "clicks": 0,
         "impressions": 28,
@@ -6581,6 +6813,20 @@
         "impressions": 28,
         "ctr": 0,
         "position": 23.5
+      },
+      {
+        "query": "best ai development company dubai",
+        "clicks": 0,
+        "impressions": 28,
+        "ctr": 0,
+        "position": 3.5
+      },
+      {
+        "query": "chatbot development company dubai",
+        "clicks": 0,
+        "impressions": 28,
+        "ctr": 0,
+        "position": 4.3
       },
       {
         "query": "enterprise ai use cases",
@@ -6709,6 +6955,13 @@
         "position": 74.7
       },
       {
+        "query": "artificial intelligence app development company in uae",
+        "clicks": 0,
+        "impressions": 27,
+        "ctr": 0,
+        "position": 2.6
+      },
+      {
         "query": "automated claims settlement software",
         "clicks": 0,
         "impressions": 27,
@@ -6721,20 +6974,6 @@
         "impressions": 27,
         "ctr": 0,
         "position": 2.4
-      },
-      {
-        "query": "best ai development company dubai",
-        "clicks": 0,
-        "impressions": 27,
-        "ctr": 0,
-        "position": 3.5
-      },
-      {
-        "query": "chatbot development company dubai",
-        "clicks": 0,
-        "impressions": 27,
-        "ctr": 0,
-        "position": 4.3
       },
       {
         "query": "enterprise ai services usa",
@@ -6756,6 +6995,13 @@
         "impressions": 27,
         "ctr": 0,
         "position": 18.2
+      },
+      {
+        "query": "payment posting automation",
+        "clicks": 0,
+        "impressions": 27,
+        "ctr": 0,
+        "position": 41.1
       },
       {
         "query": "pi 29 denial code description",
@@ -6833,13 +7079,6 @@
         "impressions": 26,
         "ctr": 0,
         "position": 7.2
-      },
-      {
-        "query": "artificial intelligence app development company in uae",
-        "clicks": 0,
-        "impressions": 26,
-        "ctr": 0,
-        "position": 2.5
       },
       {
         "query": "automated insurance underwriting",
@@ -7036,13 +7275,6 @@
         "impressions": 25,
         "ctr": 0,
         "position": 2
-      },
-      {
-        "query": "payment posting automation",
-        "clicks": 0,
-        "impressions": 25,
-        "ctr": 0,
-        "position": 41.2
       },
       {
         "query": "windows application development company chennai",
@@ -7352,8 +7584,7 @@
         "ctr": 0,
         "position": 49.7
       }
-    ],
-    "note": "GSC MCP row_limit ceiling: 500 rows returned (tool max). Not the full keyword universe."
+    ]
   },
   "gscCannibalization": {
     "status": "ok",
@@ -7382,7 +7613,7 @@
           "/ai-development-company-in-bengaluru/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=bengaluru"
         ],
         "impressionSum": 4138,
-        "positionVariance": 5.7
+        "positionVariance": 7.9
       },
       {
         "query": "generative ai development services",
@@ -7392,8 +7623,8 @@
           "/blog/best-generative-ai-development-company/",
           "/us/generative-ai-development-services/"
         ],
-        "impressionSum": 1571,
-        "positionVariance": 772.3
+        "impressionSum": 1573,
+        "positionVariance": 74.2
       },
       {
         "query": "machine learning development services",
@@ -7401,8 +7632,8 @@
           "/machine-learning-development-services/",
           "/us/machine-learning-development-services/"
         ],
-        "impressionSum": 1212,
-        "positionVariance": 49.0
+        "impressionSum": 1213,
+        "positionVariance": 14.0
       },
       {
         "query": "ai companies in chennai",
@@ -7413,7 +7644,7 @@
           "/ai-development-company-india/"
         ],
         "impressionSum": 696,
-        "positionVariance": 566.5
+        "positionVariance": 61.5
       },
       {
         "query": "ai development company",
@@ -7426,7 +7657,7 @@
           "/artificial-intelligence-development-company-in-dubai/"
         ],
         "impressionSum": 520,
-        "positionVariance": 488.8
+        "positionVariance": 63.2
       },
       {
         "query": "ai company in chennai",
@@ -7437,7 +7668,7 @@
           "/ai-development-company-india/"
         ],
         "impressionSum": 415,
-        "positionVariance": 601.8
+        "positionVariance": 64.5
       },
       {
         "query": "hire developers in india",
@@ -7447,8 +7678,8 @@
           "/blog/hire-dedicated-software-developers-india/",
           "/blog/hire-coders-india/"
         ],
-        "impressionSum": 384,
-        "positionVariance": 586.4
+        "impressionSum": 385,
+        "positionVariance": 65.5
       },
       {
         "query": "ai development company in dubai",
@@ -7457,7 +7688,7 @@
           "/artificial-intelligence-development-company-in-dubai/"
         ],
         "impressionSum": 313,
-        "positionVariance": 187.7
+        "positionVariance": 27.4
       },
       {
         "query": "software development company in chennai",
@@ -7466,7 +7697,7 @@
           "/blog/chennai-top-ten-custom-software-development-company/"
         ],
         "impressionSum": 279,
-        "positionVariance": 287.3
+        "positionVariance": 33.9
       },
       {
         "query": "ai development company in india",
@@ -7475,7 +7706,7 @@
           "/?utm_source=google-listing&utm_medium=organic&utm_content=india"
         ],
         "impressionSum": 269,
-        "positionVariance": 10.2
+        "positionVariance": 6.4
       },
       {
         "query": "custom generative ai development services",
@@ -7486,7 +7717,7 @@
           "/blog/best-generative-ai-development-company/"
         ],
         "impressionSum": 249,
-        "positionVariance": 261.6
+        "positionVariance": 40.3
       },
       {
         "query": "gen ai development services",
@@ -7496,7 +7727,7 @@
           "/blog/best-generative-ai-development-company/"
         ],
         "impressionSum": 247,
-        "positionVariance": 73.4
+        "positionVariance": 19.3
       },
       {
         "query": "ai agent development services",
@@ -7504,8 +7735,8 @@
           "/ai-agent-development-services/",
           "/blog/top-ai-agent-development-companies/"
         ],
-        "impressionSum": 245,
-        "positionVariance": 10.2
+        "impressionSum": 246,
+        "positionVariance": 6.5
       },
       {
         "query": "machine learning development company",
@@ -7515,7 +7746,7 @@
           "/ai-development-company-in-delhi/"
         ],
         "impressionSum": 239,
-        "positionVariance": 28.1
+        "positionVariance": 11.3
       },
       {
         "query": "ai development services",
@@ -7524,7 +7755,7 @@
           "/ai-development-company-usa/"
         ],
         "impressionSum": 234,
-        "positionVariance": 134.6
+        "positionVariance": 23.2
       },
       {
         "query": "ai and machine learning development services",
@@ -7534,7 +7765,7 @@
           "/ai-development-company-in-delhi/"
         ],
         "impressionSum": 207,
-        "positionVariance": 259.2
+        "positionVariance": 35.2
       },
       {
         "query": "hire software developers india",
@@ -7544,7 +7775,7 @@
           "/blog/hire-coders-india/"
         ],
         "impressionSum": 206,
-        "positionVariance": 269.8
+        "positionVariance": 38.4
       },
       {
         "query": "ai development company in chennai",
@@ -7554,7 +7785,7 @@
           "/ai-development-company-in-chennai/"
         ],
         "impressionSum": 204,
-        "positionVariance": 69.4
+        "positionVariance": 19.6
       },
       {
         "query": "rytsense technologies | top artificial intelligence (ai) development company",
@@ -7566,7 +7797,7 @@
           "/ai-development-company-new-york/"
         ],
         "impressionSum": 204,
-        "positionVariance": 8.5
+        "positionVariance": 7.6
       },
       {
         "query": "ai agent development company",
@@ -7575,7 +7806,7 @@
           "/ai-agent-development-services/"
         ],
         "impressionSum": 187,
-        "positionVariance": 210.2
+        "positionVariance": 29.0
       },
       {
         "query": "rytsense technologies private limited",
@@ -7587,7 +7818,7 @@
           "/company/who-we-are/"
         ],
         "impressionSum": 177,
-        "positionVariance": 4.4
+        "positionVariance": 6.2
       },
       {
         "query": "ai development company dubai",
@@ -7595,8 +7826,8 @@
           "/artificial-intelligence-development-company-in-dubai/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=dubai",
           "/artificial-intelligence-development-company-in-dubai/"
         ],
-        "impressionSum": 171,
-        "positionVariance": 320.4
+        "impressionSum": 173,
+        "positionVariance": 35.8
       },
       {
         "query": "custom ai development services",
@@ -7606,7 +7837,7 @@
           "/?utm_source=google-listing&utm_medium=organic&utm_content=india"
         ],
         "impressionSum": 166,
-        "positionVariance": 86.5
+        "positionVariance": 22.7
       },
       {
         "query": "custom software development company in chennai",
@@ -7615,7 +7846,7 @@
           "/?utm_source=google-listing&utm_medium=organic&utm_content=india"
         ],
         "impressionSum": 159,
-        "positionVariance": 26.5
+        "positionVariance": 10.3
       },
       {
         "query": "ai integration services",
@@ -7624,7 +7855,7 @@
           "/ai-integration-services/"
         ],
         "impressionSum": 146,
-        "positionVariance": 18.9
+        "positionVariance": 8.7
       },
       {
         "query": "generative ai development company",
@@ -7633,7 +7864,7 @@
           "/blog/best-generative-ai-development-company/"
         ],
         "impressionSum": 145,
-        "positionVariance": 30.8
+        "positionVariance": 11.1
       },
       {
         "query": "ai development company in uae",
@@ -7642,7 +7873,7 @@
           "/artificial-intelligence-development-company-in-dubai/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=dubai"
         ],
         "impressionSum": 135,
-        "positionVariance": 306.3
+        "positionVariance": 35.0
       },
       {
         "query": "ai ml development services",
@@ -7651,7 +7882,7 @@
           "/machine-learning-development-services/"
         ],
         "impressionSum": 134,
-        "positionVariance": 739.8
+        "positionVariance": 54.4
       },
       {
         "query": "ai ml development company",
@@ -7660,7 +7891,7 @@
           "/ai-development-company-in-bengaluru/"
         ],
         "impressionSum": 113,
-        "positionVariance": 58.5
+        "positionVariance": 15.3
       },
       {
         "query": "ai and machine learning development services usa",
@@ -7669,7 +7900,7 @@
           "/machine-learning-development-services/"
         ],
         "impressionSum": 106,
-        "positionVariance": 3.1
+        "positionVariance": 3.5
       },
       {
         "query": "best enterprise software development company in chennai",
@@ -7678,7 +7909,7 @@
           "/blog/chennai-top-ten-custom-software-development-company/"
         ],
         "impressionSum": 99,
-        "positionVariance": 88.4
+        "positionVariance": 18.8
       },
       {
         "query": "ai developments",
@@ -7687,7 +7918,7 @@
           "/blog/latest-ai-development/"
         ],
         "impressionSum": 93,
-        "positionVariance": 9.9
+        "positionVariance": 6.3
       },
       {
         "query": "rytsense",
@@ -7697,7 +7928,7 @@
           "/company/career/"
         ],
         "impressionSum": 85,
-        "positionVariance": 6.3
+        "positionVariance": 5.5
       },
       {
         "query": "rytsense technologies chennai",
@@ -7707,7 +7938,7 @@
           "/company/career/"
         ],
         "impressionSum": 81,
-        "positionVariance": 1.4
+        "positionVariance": 2.9
       },
       {
         "query": "ai agent development agency",
@@ -7716,7 +7947,7 @@
           "/ai-agent-development-services/"
         ],
         "impressionSum": 77,
-        "positionVariance": 1410.0
+        "positionVariance": 75.1
       },
       {
         "query": "top saas application development services chennai",
@@ -7725,7 +7956,7 @@
           "/?utm_source=google-listing&utm_medium=organic&utm_content=india"
         ],
         "impressionSum": 76,
-        "positionVariance": 88.4
+        "positionVariance": 18.8
       },
       {
         "query": "hire ai developers",
@@ -7734,7 +7965,7 @@
           "/blog/strategies-to-hire-ai-ml-developers/"
         ],
         "impressionSum": 73,
-        "positionVariance": 764.5
+        "positionVariance": 55.3
       },
       {
         "query": "best software development company in chennai",
@@ -7743,7 +7974,7 @@
           "/blog/chennai-top-ten-custom-software-development-company/"
         ],
         "impressionSum": 63,
-        "positionVariance": 69.7
+        "positionVariance": 16.7
       },
       {
         "query": "artificial intelligence developments",
@@ -7752,7 +7983,7 @@
           "/blog/important-ai-developments/"
         ],
         "impressionSum": 60,
-        "positionVariance": 193.2
+        "positionVariance": 27.8
       }
     ]
   },
@@ -7772,15 +8003,15 @@
     "rows": [
       {
         "pagePath": "/",
-        "sessions": 1404,
-        "engagementRate": 0.7813,
-        "pageViews": 1683
+        "sessions": 1407,
+        "engagementRate": 0.7804,
+        "pageViews": 1685
       },
       {
         "pagePath": "/company/career/",
-        "sessions": 784,
-        "engagementRate": 0.8865,
-        "pageViews": 936
+        "sessions": 785,
+        "engagementRate": 0.8866,
+        "pageViews": 937
       },
       {
         "pagePath": "/us/",
@@ -11791,13 +12022,13 @@
     "rows": [
       {
         "referrer": "chatgpt.com",
-        "sessions": 175,
-        "activeUsers": 150
+        "sessions": 176,
+        "activeUsers": 151
       },
       {
-        "referrer": "gemini",
-        "sessions": 4,
-        "activeUsers": 2
+        "referrer": "gemini (all)",
+        "sessions": 5,
+        "activeUsers": 3
       },
       {
         "referrer": "openai",
@@ -11805,17 +12036,7 @@
         "activeUsers": 3
       },
       {
-        "referrer": "chatgpt.com=====",
-        "sessions": 1,
-        "activeUsers": 1
-      },
-      {
         "referrer": "claude.ai",
-        "sessions": 1,
-        "activeUsers": 1
-      },
-      {
-        "referrer": "gemini.google.com",
         "sessions": 1,
         "activeUsers": 1
       },
@@ -11830,6 +12051,16 @@
     "status": "ok",
     "rows": [
       {
+        "type": "zero_click",
+        "query": "generative ai development services",
+        "page": "/generative-ai-development-services/",
+        "impressions": 1407,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 33.6,
+        "note": "Impressions with zero clicks"
+      },
+      {
         "type": "high_impr_low_ctr",
         "query": "what purpose do fairness measures serve in ai product development",
         "page": "/blog/fairness-measures-in-ai-product-development/",
@@ -11837,7 +12068,7 @@
         "clicks": 0,
         "ctr": 0,
         "position": 8.7,
-        "note": ""
+        "note": "High impressions, CTR under 1% on page-1 position"
       },
       {
         "type": "high_impr_low_ctr",
@@ -11847,7 +12078,7 @@
         "clicks": 2,
         "ctr": 0.27,
         "position": 7.3,
-        "note": ""
+        "note": "High impressions, CTR under 1% on page-1 position"
       },
       {
         "type": "zero_click",
@@ -11857,7 +12088,7 @@
         "clicks": 0,
         "ctr": 0,
         "position": 25.9,
-        "note": ""
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "high_impr_low_ctr",
@@ -11867,7 +12098,7 @@
         "clicks": 3,
         "ctr": 0.6,
         "position": 8.1,
-        "note": ""
+        "note": "High impressions, CTR under 1% on page-1 position"
       },
       {
         "type": "pos_4_10",
@@ -11877,17 +12108,37 @@
         "clicks": 5,
         "ctr": 1.41,
         "position": 5.3,
-        "note": ""
+        "note": "Position 4-10: push to top 3"
+      },
+      {
+        "type": "zero_click",
+        "query": "hire developers in india",
+        "page": "/hire-developers-in-india/",
+        "impressions": 344,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 39.1,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "zero_click",
         "query": "custom machine learning development services",
         "page": "/machine-learning-development-services/",
-        "impressions": 308,
+        "impressions": 309,
         "clicks": 0,
         "ctr": 0,
         "position": 26.1,
-        "note": ""
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "mobile app development company in dubai",
+        "page": "/mobile-app-development-company-dubai/",
+        "impressions": 298,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 54.8,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "pos_11_20",
@@ -11897,7 +12148,27 @@
         "clicks": 0,
         "ctr": 0,
         "position": 12.6,
-        "note": ""
+        "note": "Position 11-20: push to page 1"
+      },
+      {
+        "type": "zero_click",
+        "query": "ai developers",
+        "page": "/blog/how-to-become-ai-developer/",
+        "impressions": 274,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 32.8,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "custom generative ai development services",
+        "page": "/generative-ai-development-services/",
+        "impressions": 263,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 33.5,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "high_impr_low_ctr",
@@ -11907,17 +12178,17 @@
         "clicks": 0,
         "ctr": 0,
         "position": 6,
-        "note": ""
+        "note": "High impressions, CTR under 1% on page-1 position"
       },
       {
-        "type": "pos_4_10",
-        "query": "ai development company in india",
-        "page": "/",
-        "impressions": 246,
-        "clicks": 6,
-        "ctr": 2.44,
-        "position": 8.5,
-        "note": ""
+        "type": "zero_click",
+        "query": "mobile app development company",
+        "page": "/mobile-app-development-company-dubai/",
+        "impressions": 244,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 46.6,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "pos_11_20",
@@ -11927,7 +12198,27 @@
         "clicks": 2,
         "ctr": 0.82,
         "position": 12,
-        "note": ""
+        "note": "Position 11-20: push to page 1"
+      },
+      {
+        "type": "pos_4_10",
+        "query": "ai development company in india",
+        "page": "/",
+        "impressions": 246,
+        "clicks": 6,
+        "ctr": 2.44,
+        "position": 8.5,
+        "note": "Position 4-10: push to top 3"
+      },
+      {
+        "type": "zero_click",
+        "query": "gen ai development services",
+        "page": "/generative-ai-development-services/",
+        "impressions": 237,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 39.8,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "high_impr_low_ctr",
@@ -11937,7 +12228,67 @@
         "clicks": 0,
         "ctr": 0,
         "position": 6.6,
-        "note": ""
+        "note": "High impressions, CTR under 1% on page-1 position"
+      },
+      {
+        "type": "zero_click",
+        "query": "ai and machine learning development services",
+        "page": "/machine-learning-development-services/",
+        "impressions": 232,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 49.9,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "companies in manyata tech park",
+        "page": "/ai-development-company-in-bengaluru/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=bengaluru",
+        "impressions": 232,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 41.3,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "app development company dubai",
+        "page": "/mobile-app-development-company-dubai/",
+        "impressions": 230,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 52.6,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "ai agent development services",
+        "page": "/ai-agent-development-services/",
+        "impressions": 229,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 55.1,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "machine learning development company",
+        "page": "/machine-learning-development-services/",
+        "impressions": 228,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 37.4,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "mobile app development dubai",
+        "page": "/mobile-app-development-company-dubai/",
+        "impressions": 223,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 52.5,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "zero_click",
@@ -11947,7 +12298,27 @@
         "clicks": 0,
         "ctr": 0,
         "position": 27.2,
-        "note": ""
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "ml development company",
+        "page": "/machine-learning-development-services/",
+        "impressions": 216,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 48.3,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "ml development service",
+        "page": "/machine-learning-development-services/",
+        "impressions": 214,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 56.6,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "pos_11_20",
@@ -11957,17 +12328,77 @@
         "clicks": 0,
         "ctr": 0,
         "position": 11.5,
-        "note": ""
+        "note": "Position 11-20: push to page 1"
       },
       {
-        "type": "pos_11_20",
-        "query": "generative ai development company",
-        "page": "/us/blog/top-generative-ai-development-companies-usa/",
+        "type": "zero_click",
+        "query": "ai developer",
+        "page": "/blog/how-to-become-ai-developer/",
+        "impressions": 192,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 35.6,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "ai agent development company",
+        "page": "/blog/top-ai-agent-development-companies/",
+        "impressions": 184,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 44.2,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "mobile app development company in uae",
+        "page": "/mobile-app-development-company-dubai/",
+        "impressions": 184,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 50,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "hire software developers india",
+        "page": "/hire-developers-in-india/",
+        "impressions": 172,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 41.2,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "ai consulting services",
+        "page": "/ai-consulting-services/",
+        "impressions": 167,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 76.4,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "mobile app development company dubai",
+        "page": "/mobile-app-development-company-dubai/",
+        "impressions": 156,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 48.4,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "app development dubai",
+        "page": "/mobile-app-development-company-dubai/",
         "impressions": 155,
-        "clicks": 1,
-        "ctr": 0.65,
-        "position": 18.8,
-        "note": ""
+        "clicks": 0,
+        "ctr": 0,
+        "position": 56.5,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "pos_11_20",
@@ -11977,17 +12408,47 @@
         "clicks": 0,
         "ctr": 0,
         "position": 11.1,
-        "note": ""
+        "note": "Position 11-20: push to page 1"
       },
       {
         "type": "pos_11_20",
         "query": "ai development company dubai",
         "page": "/artificial-intelligence-development-company-in-dubai/?utm_source=google-listing&utm_medium=organic&utm_id=GMB&utm_content=dubai",
-        "impressions": 152,
+        "impressions": 154,
         "clicks": 0,
         "ctr": 0,
-        "position": 10.2,
-        "note": ""
+        "position": 10.1,
+        "note": "Position 11-20: push to page 1"
+      },
+      {
+        "type": "pos_11_20",
+        "query": "generative ai development company",
+        "page": "/us/blog/top-generative-ai-development-companies-usa/",
+        "impressions": 155,
+        "clicks": 1,
+        "ctr": 0.65,
+        "position": 18.8,
+        "note": "Position 11-20: push to page 1"
+      },
+      {
+        "type": "zero_click",
+        "query": "ai ml development services",
+        "page": "/ai-development-company-in-delhi/",
+        "impressions": 153,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 45.4,
+        "note": "Impressions with zero clicks"
+      },
+      {
+        "type": "zero_click",
+        "query": "ai integration services",
+        "page": "/us/ai-integration-services/",
+        "impressions": 147,
+        "clicks": 0,
+        "ctr": 0,
+        "position": 45.6,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "high_impr_low_ctr",
@@ -11997,27 +12458,27 @@
         "clicks": 1,
         "ctr": 0.68,
         "position": 7.4,
-        "note": ""
+        "note": "High impressions, CTR under 1% on page-1 position"
       },
       {
         "type": "pos_11_20",
         "query": "ai development company in chennai",
         "page": "/?utm_source=google-listing&utm_medium=organic&utm_content=india",
-        "impressions": 141,
+        "impressions": 142,
         "clicks": 1,
-        "ctr": 0.71,
-        "position": 10.3,
-        "note": ""
+        "ctr": 0.7,
+        "position": 10.7,
+        "note": "Position 11-20: push to page 1"
       },
       {
-        "type": "pos_11_20",
-        "query": "custom ai development company",
-        "page": "/us/blog/top-custom-ai-development-companies/",
+        "type": "zero_click",
+        "query": "hire codeigniter developers",
+        "page": "/hire/hire-codeigniter-developers/",
         "impressions": 141,
-        "clicks": 1,
-        "ctr": 0.71,
-        "position": 13,
-        "note": ""
+        "clicks": 0,
+        "ctr": 0,
+        "position": 30.8,
+        "note": "Impressions with zero clicks"
       },
       {
         "type": "pos_11_20",
@@ -12027,307 +12488,67 @@
         "clicks": 0,
         "ctr": 0,
         "position": 19.6,
-        "note": ""
+        "note": "Position 11-20: push to page 1"
       },
       {
         "type": "pos_11_20",
-        "query": "increase conversions with forecasting",
-        "page": "/us/case-studies/ai-crm-integration/",
-        "impressions": 115,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 18.9,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "generative ai custom services",
-        "page": "/us/blog/enterprise-generative-ai-use-cases/",
-        "impressions": 112,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 12.4,
-        "note": ""
-      },
-      {
-        "type": "high_impr_low_ctr",
-        "query": "imaginepediatrics.org billing revenue cycle automation rpa claims prior authorization automation",
-        "page": "/us/speciality/pediatric/",
-        "impressions": 109,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 9.7,
-        "note": ""
-      },
-      {
-        "type": "high_impr_low_ctr",
-        "query": "ai development companies in india",
-        "page": "/?utm_source=google-listing&utm_medium=organic&utm_content=india",
-        "impressions": 106,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 6.5,
-        "note": ""
-      },
-      {
-        "type": "high_impr_low_ctr",
-        "query": "hire dedicated java developers",
-        "page": "/hire/hire-java-developers/",
-        "impressions": 101,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 7.1,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "developers on demand",
-        "page": "/blog/why-should-hire-on-demand-developers/",
-        "impressions": 96,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 13.6,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "ai development company in bangalore",
-        "page": "/ai-development-company-in-bengaluru/",
-        "impressions": 94,
+        "query": "custom ai development company",
+        "page": "/us/blog/top-custom-ai-development-companies/",
+        "impressions": 141,
         "clicks": 1,
-        "ctr": 1.06,
-        "position": 18.6,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "carc code",
-        "page": "/us/blog/carc-codes-medical-billing/",
-        "impressions": 93,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 9.8,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "insurance verification ai",
-        "page": "/us/insurance-verification-ai/",
-        "impressions": 90,
-        "clicks": 3,
-        "ctr": 3.33,
-        "position": 4.1,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "carc codes in medical billing",
-        "page": "/us/blog/carc-codes-medical-billing/",
-        "impressions": 78,
-        "clicks": 2,
-        "ctr": 2.56,
-        "position": 8.8,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "insurance eligibility verification ai",
-        "page": "/us/insurance-verification-ai/",
-        "impressions": 76,
-        "clicks": 0,
-        "ctr": 0,
+        "ctr": 0.71,
         "position": 13,
-        "note": ""
+        "note": "Position 11-20: push to page 1"
       },
       {
-        "type": "pos_11_20",
-        "query": "generative ai consulting & development services",
-        "page": "/us/blog/top-generative-ai-development-companies-usa/",
-        "impressions": 74,
+        "type": "zero_click",
+        "query": "enterprise application modernization",
+        "page": "/us/blog/how-to-modernize-legacy-enterprise-applications/",
+        "impressions": 136,
         "clicks": 0,
         "ctr": 0,
-        "position": 10.6,
-        "note": ""
+        "position": 58,
+        "note": "Impressions with zero clicks"
       },
       {
-        "type": "pos_4_10",
-        "query": "best enterprise software development company in chennai",
-        "page": "/?utm_source=google-listing&utm_medium=organic&utm_content=india",
-        "impressions": 73,
+        "type": "zero_click",
+        "query": "ai development company in uae",
+        "page": "/artificial-intelligence-development-company-in-dubai/",
+        "impressions": 133,
         "clicks": 0,
         "ctr": 0,
-        "position": 5.7,
-        "note": ""
+        "position": 31.5,
+        "note": "Impressions with zero clicks"
       },
       {
-        "type": "pos_11_20",
-        "query": "chatbot development services",
-        "page": "/ai-chatbot-development-services/",
-        "impressions": 72,
-        "clicks": 1,
-        "ctr": 1.39,
-        "position": 19,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "hire dedicated java developer",
-        "page": "/hire/hire-java-developers/",
-        "impressions": 69,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 6.5,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "ai insurance verification",
+        "type": "zero_click",
+        "query": "automated insurance verification",
         "page": "/us/insurance-verification-ai/",
-        "impressions": 67,
+        "impressions": 129,
         "clicks": 0,
         "ctr": 0,
-        "position": 8.1,
-        "note": ""
+        "position": 40.9,
+        "note": "Impressions with zero clicks"
       },
       {
-        "type": "pos_4_10",
-        "query": "crm software development company in chennai",
-        "page": "/?utm_source=google-listing&utm_medium=organic&utm_content=india",
-        "impressions": 66,
+        "type": "zero_click",
+        "query": "salesforce development services",
+        "page": "/services/salesforce-development-services/",
+        "impressions": 126,
         "clicks": 0,
         "ctr": 0,
-        "position": 7.3,
-        "note": ""
+        "position": 67.5,
+        "note": "Impressions with zero clicks"
       },
       {
-        "type": "pos_11_20",
-        "query": "on demand developers",
-        "page": "/blog/why-should-hire-on-demand-developers/",
-        "impressions": 66,
+        "type": "zero_click",
+        "query": "ai technology consulting",
+        "page": "/ai-consulting-services/",
+        "impressions": 125,
         "clicks": 0,
         "ctr": 0,
-        "position": 13.4,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "top ai software development companies in india",
-        "page": "/?utm_source=google-listing&utm_medium=organic&utm_content=india",
-        "impressions": 64,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 5.1,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "ai staff augmentation service",
-        "page": "/case-studies/digital-transformation-through-staff-augmentation/",
-        "impressions": 62,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 20,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "ai development services in chennai",
-        "page": "/?utm_source=google-listing&utm_medium=organic&utm_content=india",
-        "impressions": 61,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 8.9,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "hire laravel developer",
-        "page": "/blog/hire-laravel-developer/",
-        "impressions": 61,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 15.8,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "best software development company in chennai",
-        "page": "/?utm_source=google-listing&utm_medium=organic&utm_content=india",
-        "impressions": 60,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 8,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "ai model development",
-        "page": "/blog/can-cursor-ai-be-used-for-ai-model-development/",
-        "impressions": 59,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 15.4,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "it companies in perungudi",
-        "page": "/?utm_source=google-listing&utm_medium=organic&utm_content=india",
-        "impressions": 58,
-        "clicks": 6,
-        "ctr": 10.34,
-        "position": 5.6,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "ai staff augmentation services",
-        "page": "/case-studies/digital-transformation-through-staff-augmentation/",
-        "impressions": 58,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 12.5,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "hire front end developer",
-        "page": "/hire/hire-frontend-developers/",
-        "impressions": 57,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 12.6,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "ai software development company in india",
-        "page": "/?utm_source=google-listing&utm_medium=organic&utm_content=india",
-        "impressions": 56,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 7,
-        "note": ""
-      },
-      {
-        "type": "pos_4_10",
-        "query": "allyzent",
-        "page": "/case-studies/allyzent/",
-        "impressions": 56,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 7.3,
-        "note": ""
-      },
-      {
-        "type": "pos_11_20",
-        "query": "generative ai consulting and development services",
-        "page": "/us/blog/top-generative-ai-development-companies-usa/",
-        "impressions": 56,
-        "clicks": 0,
-        "ctr": 0,
-        "position": 14.2,
-        "note": ""
+        "position": 74,
+        "note": "Impressions with zero clicks"
       }
     ]
   }

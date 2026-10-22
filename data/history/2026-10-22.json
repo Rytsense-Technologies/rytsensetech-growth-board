@@ -1,18 +1,16 @@
 {
   "date": "2026-10-22",
-  "updatedAt": "2026-10-22T05:09:15Z",
+  "updatedAt": "2026-10-22T05:37:38Z",
   "gsc": {
-    "current": {
-      "clicks": 916,
-      "impressions": 86864,
-      "ctr": 1.05,
-      "position": 27.8
-    },
+    "clicks": 916,
+    "impressions": 86929,
+    "ctr": 1.05,
+    "position": 27.8,
     "change": {
       "clicks": -173,
       "clicksPercent": -15.89,
-      "impressions": -23118,
-      "impressionsPercent": -21.02,
+      "impressions": -23053,
+      "impressionsPercent": -20.96,
       "ctr": 0.06,
       "position": -1.8
     }
@@ -20,9 +18,9 @@
   "ga4": {
     "sessions": 4107,
     "activeUsers": 3153,
-    "engagementRate": 0.4911,
-    "pageViews": 7875
+    "engagementRate": 0.4914,
+    "pageViews": 7877
   },
-  "clarityStatus": "unavailable",
+  "clarityStatus": "ok",
   "githubStatus": "ok"
 }
