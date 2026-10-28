@@ -10,39 +10,123 @@
   main { max-width: 420px; margin: 48px auto; background: #fff; border: 1px solid #e2e5ea; border-radius: 12px; padding: 20px; }
   label { display: block; font-size: 12px; margin: 10px 0 4px; }
   input, button { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e5ea; }
-  button { margin-top: 14px; background: #0e7a82; color: #fff; border: 0; font-weight: 700; }
+  button { margin-top: 14px; background: #0e7a82; color: #fff; border: 0; font-weight: 700; cursor: pointer; }
   p { font-size: 13px; color: #4b5563; }
+  details { margin-top: 16px; font-size: 12px; color: #6b7280; }
+  details summary { cursor: pointer; }
 </style>
 </head>
 <body>
 <main>
   <h1>Sign in</h1>
-  <p>Client and superadmin use the same page. Role comes from membership.</p>
-  <label for="url">Supabase URL</label>
-  <input id="url" autocomplete="off">
-  <label for="anon">Supabase anon key</label>
-  <input id="anon" autocomplete="off">
+  <p>Use your Growth Board email and password. This browser stays signed in so you do not enter them on every visit.</p>
   <label for="email">Email</label>
-  <input id="email" type="email">
+  <input id="email" type="email" autocomplete="username">
   <label for="password">Password</label>
-  <input id="password" type="password">
-  <label for="apibase">Growth Board API URL</label>
-  <input id="apibase" autocomplete="off" placeholder="http://localhost:8787 or https://your-api.onrender.com">
+  <input id="password" type="password" autocomplete="current-password">
   <button id="go" type="button">Sign in</button>
   <p id="msg"></p>
+  <details>
+    <summary>Technical settings</summary>
+    <label for="url">Supabase URL</label>
+    <input id="url" autocomplete="off">
+    <label for="anon">Supabase anon key</label>
+    <input id="anon" autocomplete="off">
+    <label for="apibase">Growth Board API URL</label>
+    <input id="apibase" autocomplete="off">
+  </details>
 </main>
+<script src="assets/app-config.js"></script>
 <script type="module">
   const msg = document.getElementById('msg');
-  try {
-    const savedBase = localStorage.getItem('gb-api-base') || '';
-    if (savedBase) document.getElementById('apibase').value = savedBase;
-    else if (location.origin.includes('localhost')) document.getElementById('apibase').value = 'http://localhost:8787';
-  } catch (e) {}
+  const STORE = {
+    url: 'gb-supabase-url',
+    anon: 'gb-supabase-anon',
+    email: 'gb-email',
+    api: 'gb-api-base',
+    token: 'gb-access-token',
+    refresh: 'gb-refresh-token',
+  };
+  const cfg = window.GB_CONFIG || {};
+  const DEFAULT_API = cfg.apiBase || (location.origin.includes('localhost')
+    ? 'http://localhost:8787'
+    : 'https://rytsensetech-growth-board.onrender.com');
+  const DEFAULT_URL = cfg.supabaseUrl || '';
+  const DEFAULT_ANON = cfg.supabaseAnonKey || '';
+
+  function get(key) {
+    try { return localStorage.getItem(key) || ''; } catch (e) { return ''; }
+  }
+  function set(key, value) {
+    try { if (value) localStorage.setItem(key, value); } catch (e) {}
+  }
+  function nextPage() {
+    try {
+      const next = new URLSearchParams(location.search).get('next') || '';
+      if (next.startsWith('/') || /^\w[\w.-]*\.html(\?|#|$)/.test(next)) return next;
+    } catch (e) {}
+    return 'index.html';
+  }
+  function saveSession(data, url, anon, email, apiBase) {
+    set(STORE.token, data.access_token || '');
+    set(STORE.refresh, data.refresh_token || '');
+    set(STORE.url, url);
+    set(STORE.anon, anon);
+    set(STORE.email, email);
+    if (apiBase) set(STORE.api, apiBase.replace(/\/$/, ''));
+  }
+  function fillForm() {
+    document.getElementById('url').value = get(STORE.url) || DEFAULT_URL;
+    document.getElementById('anon').value = get(STORE.anon) || DEFAULT_ANON;
+    document.getElementById('email').value = get(STORE.email);
+    document.getElementById('apibase').value = get(STORE.api) || DEFAULT_API;
+  }
+  async function refreshSession() {
+    const url = (get(STORE.url) || DEFAULT_URL).replace(/\/$/, '');
+    const anon = get(STORE.anon) || DEFAULT_ANON;
+    const refresh = get(STORE.refresh);
+    if (!url || !anon || !refresh) return false;
+    const res = await fetch(url + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { apikey: anon, 'content-type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refresh }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) return false;
+    saveSession(data, url, anon, get(STORE.email), get(STORE.api) || DEFAULT_API);
+    return true;
+  }
+
+  fillForm();
+  (async () => {
+    try {
+      if (get(STORE.token) || get(STORE.refresh)) {
+        msg.textContent = 'Signing you in…';
+        const ok = await refreshSession() || !!get(STORE.token);
+        if (ok) {
+          location.href = nextPage();
+          return;
+        }
+        msg.textContent = 'Session expired. Enter your password.';
+      }
+    } catch (e) {}
+  })();
+
   document.getElementById('go').onclick = async () => {
-    const url = document.getElementById('url').value.trim();
-    const anon = document.getElementById('anon').value.trim();
+    const url = (document.getElementById('url').value.trim() || DEFAULT_URL).replace(/\/$/, '');
+    const anon = document.getElementById('anon').value.trim() || DEFAULT_ANON;
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
+    const apiBase = (document.getElementById('apibase').value.trim() || DEFAULT_API).replace(/\/$/, '');
+    if (!email || !password) {
+      msg.textContent = 'Enter email and password.';
+      return;
+    }
+    if (!url || !anon) {
+      msg.textContent = 'Sign-in is not configured. Open Technical settings.';
+      return;
+    }
+    msg.textContent = 'Signing in…';
     const res = await fetch(url + '/auth/v1/token?grant_type=password', {
       method: 'POST',
       headers: { apikey: anon, 'content-type': 'application/json' },
@@ -50,13 +134,13 @@
     });
     const data = await res.json();
     if (!res.ok) { msg.textContent = data.error_description || data.msg || 'Sign-in failed'; return; }
-    localStorage.setItem('gb-access-token', data.access_token);
-    var apiBase = document.getElementById('apibase').value.trim().replace(/\/$/, '');
-    if (!apiBase) apiBase = location.origin.includes('localhost') ? 'http://localhost:8787' : (localStorage.getItem('gb-api-base') || '');
-    if (apiBase) localStorage.setItem('gb-api-base', apiBase);
-    msg.textContent = 'Signed in. Open Page Speed.';
-    location.href = 'psi.html';
+    saveSession(data, url, anon, email, apiBase);
+    msg.textContent = 'Signed in.';
+    location.href = nextPage();
   };
+  document.getElementById('password').addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter') document.getElementById('go').click();
+  });
 </script>
 </body>
 </html>

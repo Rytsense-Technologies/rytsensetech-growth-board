@@ -122,6 +122,23 @@
       var el = document.getElementById(id);
       if (el) el.hidden = true;
     });
+
+    document.querySelectorAll('.site-nav-links a[href="login.html"]').forEach(function (a) {
+      var signedIn = false;
+      try {
+        signedIn = !!(localStorage.getItem('gb-access-token') || localStorage.getItem('gb-refresh-token'));
+      } catch (e) {}
+      if (!signedIn) return;
+      a.textContent = 'Sign out';
+      a.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        try {
+          localStorage.removeItem('gb-access-token');
+          localStorage.removeItem('gb-refresh-token');
+        } catch (e) {}
+        location.href = 'login.html';
+      });
+    });
   }
 
   if (document.readyState === 'loading') {

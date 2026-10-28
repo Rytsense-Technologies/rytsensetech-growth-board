@@ -1,9 +1,21 @@
-/* Optional live API. Leave GB_API_BASE empty to keep reading the deployed JSON files. */
+/* Live API. Production Pages talks to the Render service unless a local override is set. */
 (function () {
+  var PROD_API = 'https://rytsensetech-growth-board.onrender.com';
+  function defaultBase() {
+    if (window.GB_CONFIG && window.GB_CONFIG.apiBase) return String(window.GB_CONFIG.apiBase);
+    if (/^(localhost|127\.0\.0\.1)$/i.test(location.hostname)) return 'http://localhost:8787';
+    return PROD_API;
+  }
   function base() {
-    return String(window.GB_API_BASE || (function () {
-      try { return localStorage.getItem('gb-api-base') || ''; } catch (e) { return ''; }
-    })()).replace(/\/$/, '');
+    var fromWindow = String(window.GB_API_BASE || '').replace(/\/$/, '');
+    if (fromWindow) return fromWindow;
+    try {
+      var stored = (localStorage.getItem('gb-api-base') || '').replace(/\/$/, '');
+      if (stored) return stored;
+    } catch (e) {}
+    var resolved = defaultBase().replace(/\/$/, '');
+    try { if (resolved) localStorage.setItem('gb-api-base', resolved); } catch (e) {}
+    return resolved;
   }
   function token() {
     try { return localStorage.getItem('gb-access-token') || ''; } catch (e) { return ''; }
@@ -13,11 +25,17 @@
     if (extra) Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
     return h;
   }
+  function fail(path, res) {
+    var err = new Error(path + ' ' + res.status);
+    err.code = res.status;
+    err.status = res.status;
+    return err;
+  }
   async function get(path) {
     var b = base();
     if (!b) return null;
     var res = await fetch(b + path, { headers: headers(), cache: 'no-store' });
-    if (!res.ok) throw new Error(path + ' ' + res.status);
+    if (!res.ok) throw fail(path, res);
     return res.json();
   }
   window.GbLive = {
