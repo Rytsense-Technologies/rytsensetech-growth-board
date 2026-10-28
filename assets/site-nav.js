@@ -123,7 +123,10 @@
       if (el) el.hidden = true;
     });
 
-    document.querySelectorAll('.site-nav-links a[href="login.html"]').forEach(function (a) {
+    document.querySelectorAll('.site-nav-links a[href="login.html"], .site-nav-links a[href^="login.html?"]').forEach(function (a) {
+      var here = (location.pathname.split('/').pop() || 'index.html') + location.search;
+      if (!/\.html(\?|$)/.test(here)) here = 'index.html';
+      a.setAttribute('href', 'login.html?next=' + encodeURIComponent(here));
       var signedIn = false;
       try {
         signedIn = !!(localStorage.getItem('gb-access-token') || localStorage.getItem('gb-refresh-token'));
@@ -136,7 +139,7 @@
           localStorage.removeItem('gb-access-token');
           localStorage.removeItem('gb-refresh-token');
         } catch (e) {}
-        location.href = 'login.html';
+        location.href = 'login.html?next=' + encodeURIComponent(here);
       });
     });
   }

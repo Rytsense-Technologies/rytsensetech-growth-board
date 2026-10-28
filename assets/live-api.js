@@ -1,6 +1,8 @@
 /* Live API. Production Pages talks to the Render service unless a local override is set. */
 (function () {
   var PROD_API = 'https://rytsensetech-growth-board.onrender.com';
+  var refreshing = null;
+
   function defaultBase() {
     if (window.GB_CONFIG && window.GB_CONFIG.apiBase) return String(window.GB_CONFIG.apiBase);
     if (/^(localhost|127\.0\.0\.1)$/i.test(location.hostname)) return 'http://localhost:8787';
@@ -20,6 +22,9 @@
   function token() {
     try { return localStorage.getItem('gb-access-token') || ''; } catch (e) { return ''; }
   }
+  function refreshToken() {
+    try { return localStorage.getItem('gb-refresh-token') || ''; } catch (e) { return ''; }
+  }
   function headers(extra) {
     var h = { Authorization: 'Bearer ' + token() };
     if (extra) Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
@@ -31,29 +36,68 @@
     err.status = res.status;
     return err;
   }
+  function clearSession() {
+    try {
+      localStorage.removeItem('gb-access-token');
+      localStorage.removeItem('gb-refresh-token');
+    } catch (e) {}
+  }
+  function saveSession(data) {
+    try {
+      if (data.access_token) localStorage.setItem('gb-access-token', data.access_token);
+      if (data.refresh_token) localStorage.setItem('gb-refresh-token', data.refresh_token);
+    } catch (e) {}
+  }
+  async function refreshAccess() {
+    if (refreshing) return refreshing;
+    var refresh = refreshToken();
+    var api = base();
+    if (!refresh || !api) return false;
+    refreshing = (async function () {
+      var res = await fetch(api + '/api/auth/refresh', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refresh }),
+      });
+      var data = {};
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok || !data.access_token) return false;
+      saveSession(data);
+      return true;
+    })();
+    try { return await refreshing; } finally { refreshing = null; }
+  }
+  async function send(path, options) {
+    options = options || {};
+    var attempt = function () {
+      return fetch((base() || '') + path, {
+        method: options.method || 'GET',
+        headers: headers(options.headers),
+        body: options.body,
+        cache: 'no-store',
+      });
+    };
+    var res = await attempt();
+    if (res.status === 401 && await refreshAccess()) res = await attempt();
+    if (res.status === 401) clearSession();
+    return res;
+  }
   async function get(path) {
     var b = base();
     if (!b) return null;
-    var res = await fetch(b + path, { headers: headers(), cache: 'no-store' });
+    var res = await send(path, {});
     if (!res.ok) throw fail(path, res);
     return res.json();
   }
   window.GbLive = {
     base: base,
     token: token,
+    saveSession: saveSession,
+    clearSession: clearSession,
     overview: function () { return get('/api/sites/current/overview'); },
     issues: function () { return get('/api/sites/current/issues'); },
     tasks: function () { return get('/api/tasks'); },
     sync: function () { return get('/api/sites/current/sync'); },
-    request: function (path, options) {
-      options = options || {};
-      var b = base();
-      return fetch((b || '') + path, {
-        method: options.method || 'GET',
-        headers: headers(options.headers),
-        body: options.body,
-        cache: 'no-store',
-      });
-    },
+    request: function (path, options) { return send(path, options); },
   };
 })();

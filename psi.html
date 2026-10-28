@@ -227,7 +227,7 @@
 
   async function load(){
     if(!window.GbLive || !window.GbLive.base()){
-      notice('Page Speed needs the live API. <a href="login.html">Sign in</a> with your Growth Board email.');
+      notice('Page Speed needs the live API. <a href="login.html?next=psi.html">Sign in</a> with your Growth Board email.');
       document.getElementById('scores-body').innerHTML = document.getElementById('issues-body').innerHTML = '<tr><td colspan="6" class="empty">Live API not configured.</td></tr>';
       return;
     }
@@ -235,7 +235,7 @@
       notice('');
       await Promise.all([loadScores(), loadIssues()]);
     } catch(err){
-      if(err.code === 401) notice('Your session has expired. <a href="login.html">Sign in</a> to see Page Speed data.');
+      if(err.code === 401) notice('Your session has expired. <a href="login.html?next=psi.html">Sign in</a> to see Page Speed data.');
       else notice('Could not load Page Speed data: ' + esc(err.message));
     }
   }

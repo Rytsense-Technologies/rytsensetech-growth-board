@@ -92,9 +92,57 @@ export function createApp() {
     json(res, { ok: true, database: Boolean(supabaseAdmin()) });
   });
 
+  async function supabaseToken(grantType, body) {
+    const url = String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
+    const key = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    if (!url || !key) return { ok: false, status: 503, data: { error: 'auth not configured' } };
+    const res = await fetch(url + '/auth/v1/token?grant_type=' + grantType, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: 'Bearer ' + key,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) { data = { error: 'invalid auth response' }; }
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  function sessionBody(data) {
+    return {
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_in: data.expires_in,
+      user: data.user ? { id: data.user.id, email: data.user.email } : null,
+    };
+  }
+
+  app.post('/api/auth/login', async (req, res) => {
+    const email = String((req.body && req.body.email) || '').trim();
+    const password = String((req.body && req.body.password) || '');
+    if (!email || !password) return json(res, { error: 'email and password required' }, 400);
+    const result = await supabaseToken('password', { email, password });
+    if (!result.ok || !result.data.access_token) {
+      return json(res, { error: result.data.error_description || result.data.error || result.data.msg || 'Sign-in failed' }, result.status === 503 ? 503 : 401);
+    }
+    json(res, sessionBody(result.data));
+  });
+
+  app.post('/api/auth/refresh', async (req, res) => {
+    const refresh = String((req.body && req.body.refresh_token) || '');
+    if (!refresh) return json(res, { error: 'refresh token required' }, 400);
+    const result = await supabaseToken('refresh_token', { refresh_token: refresh });
+    if (!result.ok || !result.data.access_token) {
+      return json(res, { error: result.data.error_description || result.data.error || result.data.msg || 'Session expired' }, 401);
+    }
+    json(res, sessionBody(result.data));
+  });
+
   app.use('/api', (req, res, next) => {
     const path = req.path || '';
-    if (path.includes('/jobs/') || path.includes('/oauth/google/callback') || path.endsWith('/health')) return next();
+    if (path.includes('/jobs/') || path.includes('/oauth/google/callback') || path.endsWith('/health') || path.startsWith('/auth/')) return next();
     const db = supabaseAdmin();
     if (!db) return json(res, { error: 'database not configured' }, 503);
     req.db = db;
