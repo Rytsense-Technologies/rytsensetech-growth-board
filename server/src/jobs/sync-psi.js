@@ -1,238 +1,195 @@
-import { supabaseAdmin } from '../db.js';
-import { RYTSENSE_ORG, RYTSENSE_SITE } from '../scope.js';
+// Daily Page Speed Insights sync.
+// For each active site: take the top pages by GSC impressions, run Lighthouse via
+// the PageSpeed Insights API (mobile + desktop), store one psi_scores row per page
+// per day and one psi_issues row per failing performance audit per strategy.
 
-const PSI_API_KEY = process.env.GOOGLE_PAGESPEED_API_KEY;
-const PSI_BATCH_SIZE = 10; // Conservative rate limiting
+const PSI_ENDPOINT = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
+const TOP_PAGES = 25;
+const CONCURRENCY = 3;          // pages in flight at once (each = 2 PSI calls)
+const REQUEST_TIMEOUT_MS = 90_000;
 
-async function fetchPSI(url, strategy = 'mobile') {
-  if (!PSI_API_KEY) {
-    throw new Error('GOOGLE_PAGESPEED_API_KEY not configured');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+export async function fetchPSI(url, strategy, { fetchImpl = fetch } = {}) {
+  const params = new URLSearchParams({ url, strategy, category: 'performance' });
+  const key = process.env.GOOGLE_PAGESPEED_API_KEY;
+  if (key) params.set('key', key);
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const res = await fetchImpl(`${PSI_ENDPOINT}?${params}`, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+    if (res.ok) return res.json();
+    const retryable = res.status === 429 || res.status >= 500;
+    if (!retryable || attempt === 2) {
+      let detail = '';
+      try { detail = (await res.json())?.error?.message || ''; } catch { /* ignore */ }
+      throw new Error(`PSI ${strategy} ${res.status}${detail ? ': ' + detail : ''}`);
+    }
+    await sleep(5000);
   }
-  
-  const params = new URLSearchParams({
-    url,
-    strategy,
-    key: PSI_API_KEY,
-  });
-  
-  const response = await fetch(`https://pagespeedonline.googleapis.com/pagereight/v5/runPagespeed?${params}`);
-  if (!response.ok) {
-    throw new Error(`PSI API error: ${response.status}`);
-  }
-  return response.json();
 }
 
-function extractMetrics(data, strategy) {
-  const lighthouseResult = data.lighthouseResult || {};
-  const audits = lighthouseResult.audits || {};
-  
+const seconds = (audit) => (audit && Number.isFinite(audit.numericValue) ? +(audit.numericValue / 1000).toFixed(3) : null);
+
+export function extractMetrics(data) {
+  const lh = (data && data.lighthouseResult) || {};
+  const audits = lh.audits || {};
+  const perf = lh.categories && lh.categories.performance;
+  const cls = audits['cumulative-layout-shift'];
   return {
-    score: lighthouseResult.score ? Math.round(lighthouseResult.score * 100) : null,
-    lcp: audits['largest-contentful-paint']?.numericValue / 1000, // ms to s
-    fcp: audits['first-contentful-paint']?.numericValue / 1000,
-    cls: audits['cumulative-layout-shift']?.numericValue,
-    ttfb: audits['server-response-time']?.numericValue / 1000,
+    score: perf && Number.isFinite(perf.score) ? Math.round(perf.score * 100) : null,
+    lcp: seconds(audits['largest-contentful-paint']),
+    fcp: seconds(audits['first-contentful-paint']),
+    cls: cls && Number.isFinite(cls.numericValue) ? +cls.numericValue.toFixed(4) : null,
+    ttfb: seconds(audits['server-response-time']),
   };
 }
 
-function extractIssues(data, strategy) {
-  const lighthouseResult = data.lighthouseResult || {};
-  const audits = lighthouseResult.audits || {};
+export function severityFor(score) {
+  if (score < 0.25) return 'critical';
+  if (score < 0.5) return 'high';
+  if (score < 0.75) return 'medium';
+  return 'low';
+}
+
+const SKIP_MODES = new Set(['notApplicable', 'informative', 'manual', 'error']);
+
+// Only audits that belong to the performance category and are not the headline
+// metrics themselves (those are stored as columns on psi_scores).
+export function extractIssues(data, strategy) {
+  const lh = (data && data.lighthouseResult) || {};
+  const audits = lh.audits || {};
+  const refs = (lh.categories && lh.categories.performance && lh.categories.performance.auditRefs) || [];
   const issues = [];
-  
-  for (const [auditId, audit] of Object.entries(audits)) {
-    const score = audit.score;
-    let severity = 'low';
-    
-    // Determine severity from score + impact
-    if (score !== null) {
-      if (score < 0.25) severity = 'critical';
-      else if (score < 0.5) severity = 'high';
-      else if (score < 0.75) severity = 'medium';
-      else severity = 'low';
-    }
-    
-    // Skip opportunities and low-severity items
-    if (audit.scoreDisplayMode === 'notApplicable' || severity === 'low') {
-      continue;
-    }
-    
-    const impactScore = Math.max(0, Math.round((1 - (score || 0)) * 100));
-    
+  for (const ref of refs) {
+    if (ref.group === 'metrics' || ref.group === 'hidden') continue;
+    const audit = audits[ref.id];
+    if (!audit || SKIP_MODES.has(audit.scoreDisplayMode) || !Number.isFinite(audit.score)) continue;
+    const severity = severityFor(audit.score);
+    if (severity === 'low') continue;
     issues.push({
-      issue_type: audit.scoreDisplayMode === 'error' ? 'error' : 'warning',
+      strategy,
+      audit_id: ref.id,
+      issue_type: audit.details && audit.details.type === 'opportunity' ? 'opportunity' : 'diagnostic',
       severity,
       title: audit.title,
-      description: audit.description,
-      impact_score: impactScore,
+      description: audit.description || null,
+      impact_score: Math.round((1 - audit.score) * 100),
       estimated_savings: audit.displayValue || null,
-      category: audit.categories?.[0] || 'performance',
+      category: 'performance',
     });
   }
-  
   return issues;
 }
 
-async function getTopPages(db, siteId) {
-  // Get top 25 pages by impressions from GSC in last 28 days
-  const { data, error } = await db
-    .from('search_pages')
-    .select('url')
-    .eq('site_id', siteId)
-    .order('impressions', { ascending: false })
-    .limit(25);
-  
-  if (error) {
-    console.error('Failed to fetch top pages:', error);
-    // Fallback: scan homepage + /blog + /services
-    return ['/', '/blog', '/services', '/about', '/contact'];
+// GSC stores full URLs. Keep only URLs on the site's own host, without fragments.
+export function pickPages(rows, domain, limit = TOP_PAGES) {
+  const host = String(domain || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '').toLowerCase();
+  const seen = new Set();
+  const out = [];
+  for (const row of rows || []) {
+    let u;
+    try { u = new URL(row.page); } catch { continue; }
+    if (u.hostname.replace(/^www\./, '').toLowerCase() !== host) continue;
+    u.hash = '';
+    const href = u.toString();
+    if (seen.has(href)) continue;
+    seen.add(href);
+    out.push(href);
+    if (out.length >= limit) break;
   }
-  
-  return (data || []).map((p) => p.url);
+  if (!out.length && host) out.push(`https://${host}/`);
+  return out;
 }
 
-export async function runPSISync(orgId = RYTSENSE_ORG, siteId = RYTSENSE_SITE) {
-  const db = supabaseAdmin();
-  if (!db) throw new Error('Database not configured');
-  
-  const startTime = Date.now();
-  let syncedPages = 0;
-  let syncedIssues = 0;
-  let errors = 0;
-  
-  try {
-    console.log(`[PSI Sync] Starting for org=${orgId}, site=${siteId}`);
-    
-    // Get site info
-    const { data: site, error: siteError } = await db
-      .from('sites')
-      .select('id, domain')
-      .eq('id', siteId)
-      .eq('organization_id', orgId)
-      .maybeSingle();
-    
-    if (siteError || !site) {
-      throw new Error(`Site not found: ${siteId}`);
+async function mapPool(items, size, fn) {
+  let next = 0;
+  const workers = Array.from({ length: Math.min(size, items.length) }, async () => {
+    while (next < items.length) {
+      const i = next++;
+      await fn(items[i], i);
     }
-    
-    // Get pages to check
-    const pages = await getTopPages(db, siteId);
-    console.log(`[PSI Sync] Scanning ${pages.length} pages`);
-    
-    const metricDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    
-    // Batch process pages
-    for (let i = 0; i < pages.length; i += PSI_BATCH_SIZE) {
-      const batch = pages.slice(i, i + PSI_BATCH_SIZE);
-      
-      for (const pageUrl of batch) {
-        try {
-          const fullUrl = `https://${site.domain}${pageUrl}`;
-          console.log(`[PSI Sync] Fetching ${fullUrl}`);
-          
-          // Fetch PSI for both mobile and desktop
-          const [mobileData, desktopData] = await Promise.all([
-            fetchPSI(fullUrl, 'mobile'),
-            fetchPSI(fullUrl, 'desktop'),
-          ]);
-          
-          const mobileMetrics = extractMetrics(mobileData, 'mobile');
-          const desktopMetrics = extractMetrics(desktopData, 'desktop');
-          
-          // Insert or update score
-          const { data: scoreData, error: scoreError } = await db
-            .from('psi_scores')
-            .upsert({
-              organization_id: orgId,
-              site_id: siteId,
-              page_url: pageUrl,
-              metric_date: metricDate,
-              mobile_score: mobileMetrics.score,
-              desktop_score: desktopMetrics.score,
-              lcp_mobile: mobileMetrics.lcp,
-              lcp_desktop: desktopMetrics.lcp,
-              fcp_mobile: mobileMetrics.fcp,
-              fcp_desktop: desktopMetrics.fcp,
-              cls_mobile: mobileMetrics.cls,
-              cls_desktop: desktopMetrics.cls,
-              ttfb_mobile: mobileMetrics.ttfb,
-              ttfb_desktop: desktopMetrics.ttfb,
-            }, { onConflict: 'organization_id,site_id,page_url,metric_date' })
-            .select('id')
-            .single();
-          
-          if (scoreError) throw scoreError;
-          
-          syncedPages++;
-          
-          // Extract and insert issues
-          const mobileIssues = extractIssues(mobileData, 'mobile');
-          const desktopIssues = extractIssues(desktopData, 'desktop');
-          const allIssues = [...mobileIssues, ...desktopIssues];
-          
-          for (const issue of allIssues) {
-            const { error: issueError } = await db
-              .from('psi_issues')
-              .insert({
-                organization_id: orgId,
-                site_id: siteId,
-                psi_score_id: scoreData.id,
-                ...issue,
-              })
-              .select();
-            
-            if (issueError && !issueError.message.includes('duplicate')) {
-              console.error('Issue insert error:', issueError);
-            } else if (!issueError) {
-              syncedIssues++;
-            }
-          }
-          
-          // Rate limit: 25 requests per 100 seconds free tier
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        } catch (err) {
-          console.error(`[PSI Sync] Error on ${pageUrl}:`, err.message);
-          errors++;
-        }
+  });
+  await Promise.all(workers);
+}
+
+async function syncSite(db, site, metricDate, deps) {
+  const result = { siteId: site.id, domain: site.domain, syncedPages: 0, syncedIssues: 0, errors: 0, failures: [] };
+  const { data: rows, error } = await db
+    .from('search_pages')
+    .select('page, impressions')
+    .eq('site_id', site.id)
+    .order('impressions', { ascending: false })
+    .limit(TOP_PAGES * 3);
+  if (error) throw new Error(`search_pages: ${error.message}`);
+  const pages = pickPages(rows, site.domain);
+  console.log(`[PSI Sync] ${site.domain}: scanning ${pages.length} pages`);
+
+  await mapPool(pages, CONCURRENCY, async (pageUrl) => {
+    try {
+      const [mobile, desktop] = await Promise.all([
+        fetchPSI(pageUrl, 'mobile', deps),
+        fetchPSI(pageUrl, 'desktop', deps),
+      ]);
+      const m = extractMetrics(mobile);
+      const d = extractMetrics(desktop);
+      const { data: score, error: scoreError } = await db
+        .from('psi_scores')
+        .upsert({
+          organization_id: site.organization_id,
+          site_id: site.id,
+          page_url: pageUrl,
+          metric_date: metricDate,
+          mobile_score: m.score, desktop_score: d.score,
+          lcp_mobile: m.lcp, lcp_desktop: d.lcp,
+          fcp_mobile: m.fcp, fcp_desktop: d.fcp,
+          cls_mobile: m.cls, cls_desktop: d.cls,
+          ttfb_mobile: m.ttfb, ttfb_desktop: d.ttfb,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'organization_id,site_id,page_url,metric_date' })
+        .select('id')
+        .single();
+      if (scoreError) throw new Error(`psi_scores: ${scoreError.message}`);
+      result.syncedPages++;
+
+      const issues = [...extractIssues(mobile, 'mobile'), ...extractIssues(desktop, 'desktop')].map((i) => ({
+        ...i,
+        organization_id: site.organization_id,
+        site_id: site.id,
+        psi_score_id: score.id,
+      }));
+      if (issues.length) {
+        // Re-running on the same day refreshes the rows; task_id is never overwritten.
+        const { error: issueError } = await db.from('psi_issues').upsert(issues, { onConflict: 'psi_score_id,strategy,audit_id' });
+        if (issueError) throw new Error(`psi_issues: ${issueError.message}`);
+        result.syncedIssues += issues.length;
       }
-      
-      // Batch delay
-      if (i + PSI_BATCH_SIZE < pages.length) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
+    } catch (err) {
+      result.errors++;
+      result.failures.push({ page: pageUrl, error: err.message });
+      console.error(`[PSI Sync] ${pageUrl}: ${err.message}`);
     }
-    
-    // Update connection status
-    await db
-      .from('connections')
-      .update({
-        last_sync_at: new Date().toISOString(),
-        sync_status: 'success',
-      })
-      .eq('organization_id', orgId)
-      .eq('site_id', siteId)
-      .eq('source', 'psi');
-    
-    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(
-      `[PSI Sync] Complete: ${syncedPages} pages, ${syncedIssues} issues, ${errors} errors in ${duration}s`
-    );
-    
-    return { syncedPages, syncedIssues, errors };
-  } catch (err) {
-    console.error('[PSI Sync] Fatal error:', err);
-    
-    // Mark sync as failed
-    await db
-      .from('connections')
-      .update({
-        sync_status: 'error',
-        error_message: err.message,
-      })
-      .eq('organization_id', orgId)
-      .eq('site_id', siteId)
-      .eq('source', 'psi');
-    
-    throw err;
-  }
+  });
+  return result;
+}
+
+// siteId: limit to one site; omit to sync every site in an active organization.
+export async function runPSISync(db, { siteId = null, fetchImpl } = {}) {
+  if (!db) throw new Error('database not configured');
+  if (!process.env.GOOGLE_PAGESPEED_API_KEY) console.warn('[PSI Sync] GOOGLE_PAGESPEED_API_KEY not set; using the unauthenticated quota');
+
+  let query = db.from('sites').select('id, organization_id, domain, organizations!inner(status)').eq('organizations.status', 'active');
+  if (siteId) query = query.eq('id', siteId);
+  const { data: sites, error } = await query;
+  if (error) throw new Error(`sites: ${error.message}`);
+  if (siteId && !(sites || []).length) throw new Error(`site not found or company suspended: ${siteId}`);
+
+  const metricDate = new Date().toISOString().slice(0, 10);
+  const started = Date.now();
+  const perSite = [];
+  for (const site of sites || []) perSite.push(await syncSite(db, site, metricDate, { fetchImpl }));
+
+  const total = (k) => perSite.reduce((a, s) => a + s[k], 0);
+  const out = { syncedPages: total('syncedPages'), syncedIssues: total('syncedIssues'), errors: total('errors'), seconds: Math.round((Date.now() - started) / 1000), sites: perSite };
+  console.log(`[PSI Sync] done: ${out.syncedPages} pages, ${out.syncedIssues} issues, ${out.errors} errors in ${out.seconds}s`);
+  return out;
 }

@@ -46,6 +46,7 @@ const staticFiles = [
   ['login.html', 'login.html'],
   ['admin.html', 'admin.html'],
   ['ask.html', 'ask.html'],
+  ['psi.html', 'psi.html'],
   ['assets/rts-report.css', 'assets/rts-report.css'],
   ['assets/site-nav.css', 'assets/site-nav.css'],
   ['assets/site-nav.js', 'assets/site-nav.js'],

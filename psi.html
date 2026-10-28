@@ -1,282 +1,250 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Page Speed Index · Growth Board</title>
-  <link rel="stylesheet" href="assets/rts-report.css">
-  <link rel="stylesheet" href="assets/site-nav.css">
-  <style>
-    main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
-    
-    .psi-header {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    
-    .kpi-tile {
-      background: #f5f5f5;
-      border-radius: 8px;
-      padding: 1.5rem;
-      border-left: 4px solid #00a3e0;
-    }
-    
-    .kpi-tile.critical { border-left-color: #d32f2f; }
-    .kpi-tile.high { border-left-color: #f57c00; }
-    .kpi-tile.good { border-left-color: #388e3c; }
-    
-    .kpi-value {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #1a1a1a;
-      line-height: 1;
-    }
-    
-    .kpi-label {
-      font-size: 0.875rem;
-      color: #666;
-      margin-top: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    
-    .controls {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-    }
-    
-    .controls select {
-      padding: 0.5rem 0.75rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 0.875rem;
-      background: white;
-      cursor: pointer;
-    }
-    
-    .scores-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      margin-bottom: 2rem;
-    }
-    
-    .scores-table th {
-      background: #f5f5f5;
-      padding: 1rem;
-      text-align: left;
-      font-weight: 600;
-      font-size: 0.875rem;
-      color: #666;
-      border-bottom: 1px solid #e0e0e0;
-    }
-    
-    .scores-table td {
-      padding: 1rem;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    
-    .scores-table tr:hover {
-      background: #fafafa;
-    }
-    
-    .page-url {
-      font-family: monospace;
-      font-size: 0.875rem;
-      color: #00a3e0;
-    }
-    
-    .score {
-      font-weight: 600;
-      font-size: 1.125rem;
-      border-radius: 4px;
-      padding: 0.25rem 0.5rem;
-      display: inline-block;
-      min-width: 3rem;
-      text-align: center;
-    }
-    
-    .score.excellent { background: #e8f5e9; color: #2e7d32; }
-    .score.good { background: #fff3e0; color: #e65100; }
-    .score.poor { background: #ffebee; color: #c62828; }
-    
-    .issues-list {
-      font-size: 0.75rem;
-      color: #999;
-    }
-    
-    .issue-badge {
-      display: inline-block;
-      padding: 0.25rem 0.5rem;
-      border-radius: 3px;
-      margin: 0.25rem 0.25rem 0.25rem 0;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    
-    .issue-badge.critical { background: #ffcdd2; color: #d32f2f; }
-    .issue-badge.high { background: #ffe0b2; color: #f57c00; }
-    .issue-badge.medium { background: #fff9c4; color: #f9a825; }
-    
-    .chart-container {
-      background: white;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .chart-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: #1a1a1a;
-    }
-    
-    .loading { color: #666; font-style: italic; }
-    .error { color: #d32f2f; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page Speed · Rytsensetech Growth Board</title>
+<script>
+(function(){try{var t=localStorage.getItem('gb-theme');if(t!=='dark'&&t!=='light')t='light';document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{
+    --paper:#F5F6F8; --paper-raised:#FFFFFF; --ink:#12181F; --ink-soft:#4B5563; --ink-faint:#8B93A1; --line:#E2E5EA;
+    --accent:#0E7A82; --accent-soft:#E4F2F1; --accent-ink:#075258;
+    --good:#1E8E5A; --good-soft:#E4F5EC; --warn:#B4740E; --warn-soft:#FBF0DC; --bad:#C23B3B; --bad-soft:#FBE7E7; --chip-bg:#EDEFF3;
+    --shadow: 0 1px 2px rgba(18,24,31,0.04), 0 8px 24px -12px rgba(18,24,31,0.12);
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1013; --paper-raised:#141A1F; --ink:#E8ECEF; --ink-soft:#A7AFB9; --ink-faint:#6C7480;
+    --line:#232B31; --accent:#3FBFC2; --accent-soft:#132726; --accent-ink:#8FE0E2;
+    --good:#49C285; --good-soft:#132520; --warn:#E3A83B; --warn-soft:#2A2013; --bad:#E4685E; --bad-soft:#2A1717; --chip-bg:#1B2126;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box}
+  html,body{background:var(--paper)}
+  body{margin:0;color:var(--ink);font-family:'Source Sans 3',ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.5}
+  h1,h2{font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;margin:0}
+  a{color:var(--accent-ink)}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 24px 64px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .head p{margin:4px 0 0;color:var(--ink-soft)}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:24px;box-shadow:var(--shadow)}
+  .tile{background:var(--paper-raised);padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+  .tile .label{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:600}
+  .tile .value{font-size:24px;font-weight:700;font-family:'Manrope'}
+  .card{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .card-head h2{font-size:15px}
+  .sub{color:var(--ink-faint);font-size:12.5px}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  select,button{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+  button{cursor:pointer;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .table-scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;white-space:nowrap}
+  tr:last-child td{border-bottom:0}
+  .url{font-family:'JetBrains Mono',monospace;font-size:12.5px;word-break:break-all}
+  .score{display:inline-block;min-width:38px;text-align:center;padding:2px 8px;border-radius:6px;font-weight:700}
+  .s-good{background:var(--good-soft);color:var(--good)} .s-mid{background:var(--warn-soft);color:var(--warn)} .s-bad{background:var(--bad-soft);color:var(--bad)} .s-none{background:var(--chip-bg);color:var(--ink-faint)}
+  .badge{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11px;font-weight:700;margin:0 4px 2px 0;white-space:nowrap}
+  .b-critical{background:var(--bad-soft);color:var(--bad)} .b-high{background:var(--warn-soft);color:var(--warn)} .b-medium{background:var(--chip-bg);color:var(--ink-soft)}
+  .b-task{background:var(--accent-soft);color:var(--accent-ink)} .b-done{background:var(--good-soft);color:var(--good)}
+  .muted{color:var(--ink-faint)}
+  .notice{padding:14px 18px;border-radius:10px;background:var(--warn-soft);color:var(--ink);margin-bottom:20px;display:none}
+  .empty{padding:22px 18px;color:var(--ink-faint)}
+</style>
+<link rel="stylesheet" href="assets/site-nav.css">
 </head>
 <body>
-  <nav id="site-nav"></nav>
-  
-  <main>
-    <h1>Page Speed Index Dashboard</h1>
-    <p style="color: #666; margin-bottom: 2rem;">Track PSI scores and auto-assigned dev tasks for performance optimization.</p>
-    
-    <div class="psi-header">
-      <div class="kpi-tile good">
-        <div class="kpi-value" id="avg-mobile">—</div>
-        <div class="kpi-label">Avg Mobile Score</div>
-      </div>
-      <div class="kpi-tile good">
-        <div class="kpi-value" id="avg-desktop">—</div>
-        <div class="kpi-label">Avg Desktop Score</div>
-      </div>
-      <div class="kpi-tile critical">
-        <div class="kpi-value" id="critical-issues">—</div>
-        <div class="kpi-label">Critical Issues</div>
-      </div>
-      <div class="kpi-tile high">
-        <div class="kpi-value" id="high-issues">—</div>
-        <div class="kpi-label">High Issues</div>
-      </div>
-      <div class="kpi-tile">
-        <div class="kpi-value" id="pages-scanned">—</div>
-        <div class="kpi-label">Pages Scanned</div>
-      </div>
+<nav class="site-nav" aria-label="Site">
+  <div class="site-nav-inner">
+    <a class="site-nav-brand" href="index.html">
+      <span class="site-nav-mark">RT</span>
+      <span class="site-nav-name">Rytsense</span>
+    </a>
+    <div class="site-nav-links">
+      <a href="index.html" data-nav="board">Growth Board</a>
+      <a href="report.html" data-nav="report">Intelligence Report</a>
+      <a href="tasks.html" data-nav="tasks">Team Tasks</a>
+      <a href="psi.html" data-nav="psi">Page Speed</a>
+      <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="seo-work.html" data-nav="seo-work">SEO Work</a>
+      <a href="ops.html" data-nav="ops">SEO Ops</a>
+      <a href="ask.html" data-nav="ask">Ask</a>
+      <a href="login.html">Sign in</a>
     </div>
-    
-    <div class="controls">
-      <select id="filter-severity">
-        <option value="critical,high">Critical & High</option>
-        <option value="critical">Critical Only</option>
-        <option value="high">High Only</option>
-        <option value="critical,high,medium">All</option>
-      </select>
-      <select id="filter-category">
-        <option value="">All Categories</option>
-        <option value="performance">Performance</option>
-        <option value="accessibility">Accessibility</option>
-        <option value="best-practices">Best Practices</option>
-        <option value="seo">SEO</option>
-      </select>
-      <button style="padding: 0.5rem 1rem; border: none; background: #00a3e0; color: white; border-radius: 4px; cursor: pointer;" onclick="loadData()">
-        Refresh
-      </button>
+    <div class="site-nav-meta">
+      <span class="site-nav-updated" id="updated-text">Daily PageSpeed scan</span>
     </div>
-    
-    <div class="chart-container">
-      <div class="chart-title">PSI Scores by Page</div>
-      <table class="scores-table" id="scores-table">
-        <thead>
-          <tr>
-            <th>Page URL</th>
-            <th>Mobile Score</th>
-            <th>Desktop Score</th>
-            <th>Date</th>
-            <th>Issues</th>
-            <th>Task Status</th>
-          </tr>
-        </thead>
-        <tbody id="scores-body">
-          <tr><td colspan="6" class="loading">Loading...</td></tr>
-        </tbody>
+  </div>
+</nav>
+<script src="assets/site-nav.js" defer></script>
+<script src="assets/live-api.js"></script>
+
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>Page Speed</h1>
+      <p>Lighthouse performance for the top Search Console pages, scanned daily. Critical and high findings become Development tasks every Wednesday.</p>
+    </div>
+    <button type="button" id="refresh">Refresh</button>
+  </div>
+
+  <div class="notice" id="notice"></div>
+
+  <div class="tiles">
+    <div class="tile"><div class="label">Avg mobile</div><div class="value mono" id="avg-mobile">—</div></div>
+    <div class="tile"><div class="label">Avg desktop</div><div class="value mono" id="avg-desktop">—</div></div>
+    <div class="tile"><div class="label">Critical (open)</div><div class="value mono" id="critical-issues">—</div></div>
+    <div class="tile"><div class="label">High (open)</div><div class="value mono" id="high-issues">—</div></div>
+    <div class="tile"><div class="label">Pages scanned</div><div class="value mono" id="pages-scanned">—</div><div class="sub" id="last-scan"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Pages — latest scan</h2><span class="sub">LCP / CLS are mobile values</span></div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Page</th><th>Mobile</th><th>Desktop</th><th>LCP</th><th>CLS</th><th>Issues</th></tr></thead>
+        <tbody id="scores-body"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
       </table>
     </div>
-    
-    <div id="error-message" style="display: none;" class="error" style="padding: 1rem; background: #ffebee; border-radius: 4px;"></div>
-  </main>
-  
-  <script src="assets/site-nav.js"></script>
-  <script src="assets/live-api.js"></script>
-  <script>
-    async function loadData() {
-      const siteId = window.location.search.match(/site_id=([^&]+)/)?.[1];
-      if (!siteId) {
-        document.getElementById('error-message').textContent = 'Site not selected. Use ?site_id=...';
-        document.getElementById('error-message').style.display = 'block';
-        return;
-      }
-      
-      try {
-        const response = await fetch(`${window.GB_API_BASE || '/'}/api/psi/scores?site_id=${siteId}&days=28`, {
-          headers: { 'Authorization': `Bearer ${window.authToken}` },
-        });
-        
-        if (!response.ok) throw new Error(`API error: ${response.status}`);
-        
-        const data = await response.json();
-        const { summary, scores } = data;
-        
-        // Update KPIs
-        document.getElementById('avg-mobile').textContent = summary.avg_mobile_score || '—';
-        document.getElementById('avg-desktop').textContent = summary.avg_desktop_score || '—';
-        document.getElementById('critical-issues').textContent = summary.critical_issues || 0;
-        document.getElementById('high-issues').textContent = summary.high_issues || 0;
-        document.getElementById('pages-scanned').textContent = summary.pages_scanned || 0;
-        
-        // Update table
-        const tbody = document.getElementById('scores-body');
-        tbody.innerHTML = (scores || []).map((score) => {
-          const mobileClass = score.mobile_score >= 90 ? 'excellent' : score.mobile_score >= 50 ? 'good' : 'poor';
-          const desktopClass = score.desktop_score >= 90 ? 'excellent' : score.desktop_score >= 50 ? 'good' : 'poor';
-          
-          const issues = (score.psi_issues || []).map((issue) => {
-            return `<span class="issue-badge ${issue.severity}">${issue.severity}</span>`;
-          }).join('');
-          
-          return `
-            <tr>
-              <td><span class="page-url">${score.page_url}</span></td>
-              <td><span class="score ${mobileClass}">${score.mobile_score || '—'}</span></td>
-              <td><span class="score ${desktopClass}">${score.desktop_score || '—'}</span></td>
-              <td style="font-size: 0.875rem;">${new Date(score.metric_date).toLocaleDateString()}</td>
-              <td><div class="issues-list">${issues || 'None'}</div></td>
-              <td style="font-size: 0.875rem;">Pending</td>
-            </tr>
-          `;
-        }).join('');
-        
-        if (!scores || scores.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="loading">No data yet. Run daily sync to populate.</td></tr>';
-        }
-      } catch (err) {
-        console.error('Load error:', err);
-        document.getElementById('error-message').textContent = err.message;
-        document.getElementById('error-message').style.display = 'block';
-      }
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Issues</h2>
+      <div class="filters">
+        <select id="f-severity" aria-label="Severity">
+          <option value="critical,high">Critical &amp; high</option>
+          <option value="critical">Critical only</option>
+          <option value="high">High only</option>
+          <option value="critical,high,medium">Include medium</option>
+        </select>
+        <select id="f-strategy" aria-label="Device">
+          <option value="">Mobile &amp; desktop</option>
+          <option value="mobile">Mobile</option>
+          <option value="desktop">Desktop</option>
+        </select>
+        <select id="f-task" aria-label="Task">
+          <option value="">Any task status</option>
+          <option value="false">No task yet</option>
+          <option value="true">Has task</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Issue</th><th>Page</th><th>Device</th><th>Severity</th><th>Savings</th><th>Task</th></tr></thead>
+        <tbody id="issues-body"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var params = new URLSearchParams(location.search);
+  var siteId = params.get('site_id') || params.get('siteId') || '';
+
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function path(u){ try { var x = new URL(u); return x.pathname + x.search; } catch(e){ return u; } }
+  function scoreCls(s){ return s == null ? 's-none' : s >= 90 ? 's-good' : s >= 50 ? 's-mid' : 's-bad'; }
+  function scoreEl(s){ return '<span class="score mono '+scoreCls(s)+'">'+(s == null ? '—' : s)+'</span>'; }
+  function qs(extra){
+    var p = new URLSearchParams(extra || {});
+    if(siteId) p.set('site_id', siteId);
+    return p.toString();
+  }
+  function notice(msg){
+    var n = document.getElementById('notice');
+    n.innerHTML = msg; n.style.display = msg ? 'block' : 'none';
+  }
+  async function get(path){
+    var res = await window.GbLive.request(path);
+    if(res.status === 401) throw Object.assign(new Error('login'), { code: 401 });
+    if(!res.ok){ var body = {}; try { body = await res.json(); } catch(e){} throw new Error(body.error || ('HTTP ' + res.status)); }
+    return res.json();
+  }
+  function taskBadge(t){
+    if(!t) return '<span class="muted">—</span>';
+    var done = t.status === 'done';
+    return '<a class="badge '+(done?'b-done':'b-task')+'" href="tasks.html" title="'+esc(t.title||'')+'">'+esc(t.id)+' · '+esc(t.status)+(t.assignee?' · '+esc(t.assignee):'')+'</a>';
+  }
+
+  async function loadScores(){
+    var data = await get('/api/psi/scores?' + qs({ days: 28 }));
+    var s = data.summary || {};
+    document.getElementById('avg-mobile').textContent = s.avg_mobile_score != null ? s.avg_mobile_score : '—';
+    document.getElementById('avg-desktop').textContent = s.avg_desktop_score != null ? s.avg_desktop_score : '—';
+    document.getElementById('critical-issues').textContent = s.critical_issues || 0;
+    document.getElementById('high-issues').textContent = s.high_issues || 0;
+    document.getElementById('pages-scanned').textContent = s.pages_scanned || 0;
+    document.getElementById('last-scan').textContent = s.last_scan ? 'Last scan ' + s.last_scan : '';
+    document.getElementById('updated-text').textContent = (data.domain ? data.domain + ' · ' : '') + (s.last_scan ? 'scanned ' + s.last_scan : 'not scanned yet');
+
+    var rows = (data.scores || []).slice().sort(function(a,b){ return (a.mobile_score==null?101:a.mobile_score) - (b.mobile_score==null?101:b.mobile_score); });
+    var body = document.getElementById('scores-body');
+    if(!rows.length){ body.innerHTML = '<tr><td colspan="6" class="empty">No scans yet. The daily job (POST /api/jobs/psi-sync) fills this in.</td></tr>'; return; }
+    body.innerHTML = rows.map(function(r){
+      var counts = { critical:0, high:0, medium:0 };
+      (r.psi_issues || []).forEach(function(i){ if(counts[i.severity] != null) counts[i.severity]++; });
+      var badges = ['critical','high','medium'].filter(function(k){ return counts[k]; }).map(function(k){ return '<span class="badge b-'+k+'">'+counts[k]+' '+k+'</span>'; }).join('') || '<span class="muted">None</span>';
+      return '<tr>'+
+        '<td class="url"><a href="'+esc(r.page_url)+'" target="_blank" rel="noopener">'+esc(path(r.page_url))+'</a></td>'+
+        '<td>'+scoreEl(r.mobile_score)+'</td>'+
+        '<td>'+scoreEl(r.desktop_score)+'</td>'+
+        '<td class="mono">'+(r.lcp_mobile != null ? Number(r.lcp_mobile).toFixed(1)+'s' : '—')+'</td>'+
+        '<td class="mono">'+(r.cls_mobile != null ? Number(r.cls_mobile).toFixed(3) : '—')+'</td>'+
+        '<td>'+badges+'</td>'+
+      '</tr>';
+    }).join('');
+  }
+
+  async function loadIssues(){
+    var extra = { severity: document.getElementById('f-severity').value };
+    var st = document.getElementById('f-strategy').value; if(st) extra.strategy = st;
+    var tk = document.getElementById('f-task').value; if(tk) extra.has_task = tk;
+    var data = await get('/api/psi/issues?' + qs(extra));
+    var body = document.getElementById('issues-body');
+    var rows = data.issues || [];
+    if(!rows.length){ body.innerHTML = '<tr><td colspan="6" class="empty">No issues match these filters.</td></tr>'; return; }
+    body.innerHTML = rows.map(function(i){
+      var page = i.psi_scores && i.psi_scores.page_url;
+      return '<tr>'+
+        '<td>'+esc(i.title)+'</td>'+
+        '<td class="url">'+esc(path(page))+'</td>'+
+        '<td>'+esc(i.strategy)+'</td>'+
+        '<td><span class="badge b-'+esc(i.severity)+'">'+esc(i.severity)+'</span></td>'+
+        '<td class="muted">'+esc(i.estimated_savings || '')+'</td>'+
+        '<td>'+taskBadge(i.tasks)+'</td>'+
+      '</tr>';
+    }).join('');
+  }
+
+  async function load(){
+    if(!window.GbLive || !window.GbLive.base()){
+      notice('Page Speed reads from the live API. Set <code>gb-api-base</code> in localStorage (or <code>window.GB_API_BASE</code>) to the Growth Board API URL, then <a href="login.html">sign in</a>.');
+      document.getElementById('scores-body').innerHTML = document.getElementById('issues-body').innerHTML = '<tr><td colspan="6" class="empty">Live API not configured.</td></tr>';
+      return;
     }
-    
-    // Auto-load on page ready
-    document.addEventListener('DOMContentLoaded', loadData);
-  </script>
+    try {
+      notice('');
+      await Promise.all([loadScores(), loadIssues()]);
+    } catch(err){
+      if(err.code === 401) notice('Your session has expired. <a href="login.html">Sign in</a> to see Page Speed data.');
+      else notice('Could not load Page Speed data: ' + esc(err.message));
+    }
+  }
+
+  document.getElementById('refresh').addEventListener('click', load);
+  ['f-severity','f-strategy','f-task'].forEach(function(id){
+    document.getElementById(id).addEventListener('change', function(){ loadIssues().catch(function(err){ notice('Could not load issues: ' + esc(err.message)); }); });
+  });
+  load();
+})();
+</script>
 </body>
 </html>

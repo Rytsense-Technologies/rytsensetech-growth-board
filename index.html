@@ -247,6 +247,7 @@
       <a href="index.html" data-nav="board">Growth Board</a>
       <a href="report.html" data-nav="report">Intelligence Report</a>
       <a href="tasks.html" data-nav="tasks">Team Tasks</a>
+      <a href="psi.html" data-nav="psi">Page Speed</a>
       <a href="platform.html" data-nav="platform">Internal Platform</a>
       <a href="seo-work.html" data-nav="seo-work">SEO Work</a>
       <a href="ops.html" data-nav="ops">SEO Ops</a>
@@ -441,6 +442,17 @@
         value: fmtNum(crit),
         delta: overdue ? ('<span class="delta down">'+fmtNum(overdue)+' overdue</span>') : '<a href="tasks.html" style="font-size:12px;font-weight:600">Team Tasks →</a>',
         warn: crit>0
+      });
+    }
+    if(window.GbLive && window.GbLive.base()){
+      var psi = lastPsi;
+      var psiScore = psi && psi.avg_mobile_score != null ? psi.avg_mobile_score : null;
+      var psiCrit = psi ? (psi.critical_issues||0) : 0;
+      tiles.push({
+        label:'Page Speed (mobile)',
+        value: psiScore != null ? psiScore+'<span style="font-size:13px;color:var(--ink-faint)">/100</span>' : '—',
+        delta: '<a href="psi.html" style="font-size:12px;font-weight:600">'+(psi ? (fmtNum(psiCrit)+' critical · ') : (psiLoaded ? 'Not scanned yet · ' : ''))+'Page Speed →</a>',
+        warn: psiCrit>0 || (psiScore != null && psiScore < 50)
       });
     }
     document.getElementById('tiles').innerHTML = tiles.map(function(t){
@@ -896,7 +908,22 @@
 
   var lastUpdatedAt = null;
   var lastTaskKey = null;
+  var lastPsi = null;
+  var psiLoaded = false;
+  // PSI lives only in the live API (no static JSON fallback); tile is hidden without GB_API_BASE.
+  function loadPsi(){
+    if(!(window.GbLive && window.GbLive.base())) return;
+    window.GbLive.request('/api/psi/scores?days=7')
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        psiLoaded = true;
+        lastPsi = d && d.summary && d.summary.pages_scanned ? d.summary : null;
+        if(lastBoardData) renderTiles(lastBoardData.gsc, lastBoardData.ga4, lastTaskSummary);
+      })
+      .catch(function(){ /* keep last tile */ });
+  }
   function load(){
+    loadPsi();
     var overview = (window.GbLive && window.GbLive.base())
       ? window.GbLive.overview().catch(function () { return null; })
       : Promise.resolve(null);

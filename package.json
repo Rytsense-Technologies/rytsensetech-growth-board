@@ -10,7 +10,7 @@
     "import:gsc-issues": "python scripts/import-gsc-issues.py",
     "import:product": "node scripts/import-product.mjs",
     "api": "node server/src/index.js",
-    "test:product": "node --test server/test/scope.test.mjs"
+    "test:product": "node --test server/test/scope.test.mjs server/test/psi.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

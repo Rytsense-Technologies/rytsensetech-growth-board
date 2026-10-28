@@ -8,6 +8,9 @@ import {
   canWriteTask,
 } from './scope.js';
 import { answerAsk, runDailySync, runWeeklyReview } from './jobs.js';
+import { runPSISync } from './jobs/sync-psi.js';
+import { createPSITasks } from './jobs/create-psi-tasks.js';
+import { createPsiRouter } from './routes/psi.js';
 
 function json(res, data, status = 200) {
   res.set('access-control-allow-origin', process.env.PUBLIC_APP_URL || '*');
@@ -324,6 +327,48 @@ export function createApp() {
     res.redirect((process.env.PUBLIC_APP_URL || '/') + '?connected=1');
   });
 
+  // Page Speed Insights: read endpoints (/api/psi/scores, /api/psi/issues)
+  app.use('/api', createPsiRouter({
+    send: json,
+    authorize: async (req, res) => {
+      const actor = await actorFrom(req, req.db);
+      if (!requireActor(actor, res)) return null;
+      const siteId = req.query.site_id || req.query.siteId || null;
+      const site = await resolveSite({ db: req.db, query: { siteId }, body: {} }, actor);
+      if (site.error) {
+        json(res, { error: site.error }, site.status);
+        return null;
+      }
+      return site.row;
+    },
+  }));
+
+  // PSI cron jobs. Daily: POST /api/jobs/psi-sync. Weekly: POST /api/jobs/psi-tasks.
+  // Body (optional): { "siteId": "<uuid>" } to limit to one site; default is every active site.
+  app.post('/api/jobs/psi-sync', async (req, res) => {
+    if (!cronOk(req)) return json(res, { error: 'forbidden' }, 403);
+    const db = supabaseAdmin();
+    if (!db) return json(res, { error: 'database not configured' }, 503);
+    try {
+      json(res, { ok: true, result: await runPSISync(db, { siteId: (req.body && req.body.siteId) || null }) });
+    } catch (err) {
+      console.error('PSI sync job error:', err);
+      json(res, { error: err.message }, 500);
+    }
+  });
+
+  app.post('/api/jobs/psi-tasks', async (req, res) => {
+    if (!cronOk(req)) return json(res, { error: 'forbidden' }, 403);
+    const db = supabaseAdmin();
+    if (!db) return json(res, { error: 'database not configured' }, 503);
+    try {
+      json(res, { ok: true, result: await createPSITasks(db, { siteId: (req.body && req.body.siteId) || null }) });
+    } catch (err) {
+      console.error('PSI tasks job error:', err);
+      json(res, { error: err.message }, 500);
+    }
+  });
+
   app.post('/api/jobs/sync', async (req, res) => {
     if (!cronOk(req)) return json(res, { error: 'forbidden' }, 403);
     const db = supabaseAdmin();
@@ -340,7 +385,7 @@ export function createApp() {
     const db = supabaseAdmin();
     if (!db) return json(res, { error: 'database not configured' }, 503);
     try {
-      json(res, await runWeeklyReview(db, req.body.siteId || null));
+      json(res, await runWeeklyReview(db, (req.body && req.body.siteId) || null));
     } catch (err) {
       json(res, { error: err.message }, 500);
     }
@@ -365,7 +410,7 @@ export function createApp() {
   }
 
   async function resolveSite(req, actor) {
-    const requested = req.query.siteId || req.body.siteId || (actor.supportOrgId ? null : null);
+    const requested = req.query.siteId || (req.body && req.body.siteId) || null;
     let query = req.db.from('sites').select('id, organization_id, domain, name, organizations(status)');
     if (requested) query = query.eq('id', requested);
     else if (actor.supportOrgId && actor.isPlatformAdmin) query = query.eq('organization_id', actor.supportOrgId);

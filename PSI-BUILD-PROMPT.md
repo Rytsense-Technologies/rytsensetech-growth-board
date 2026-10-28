@@ -1,6 +1,19 @@
-# Growth Board: Page Speed Index (PSI) Integration — Full Build Prompt
+# SUPERSEDED — do not follow this prompt
 
-**Use this prompt with Claude Desktop or any AI assistant to implement the complete PSI feature.**
+The PSI feature is already wired in this repo. This file was a first-draft prompt. The live implementation is:
+
+- `POST /api/jobs/psi-sync` and `POST /api/jobs/psi-tasks` (cron secret, in `server/src/index.js`)
+- `GET /api/psi/scores` and `GET /api/psi/issues`
+- `.github/workflows/psi-jobs.yml` for schedule
+- `supabase/migrations/0002_psi.sql`
+
+Do not paste this prompt into Claude again. Apply the SQL, set `GOOGLE_PAGESPEED_API_KEY` on the API host, set GitHub secrets `GB_API_BASE` and `CRON_SECRET`, then run Actions → PSI jobs.
+
+---
+
+# Growth Board: Page Speed Index (PSI) Integration — Full Build Prompt (archive)
+
+**Archive only. The snippets below are outdated (GET jobs, no secret, wrong schema).**
 
 ---
 

@@ -1,156 +1,149 @@
-import { supabaseAdmin } from '../db.js';
-import { RYTSENSE_ORG, RYTSENSE_SITE } from '../scope.js';
+// Weekly: turn critical/high PSI issues from the latest scan into Development tasks.
+// One task per (page, audit); mobile + desktop findings for the same audit share it.
 
-async function notifySlack(channel, message) {
+const MAX_TASKS_PER_SITE = 25;
+const DEV_TEAM = 'Development'; // matches the team name used in data/tasks.json and tasks.html
+
+function pathOf(url) {
+  try { const u = new URL(url); return u.pathname + u.search; } catch { return url || 'unknown'; }
+}
+
+async function notifySlack(text, fetchImpl = fetch) {
   const webhook = process.env.SLACK_WEBHOOK_URL;
-  if (!webhook) return;
-  
+  if (!webhook) return false;
   try {
-    await fetch(webhook, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        text: message,
-        channel,
-      }),
-    });
+    const body = { text };
+    if (process.env.SLACK_DEV_CHANNEL) body.channel = process.env.SLACK_DEV_CHANNEL; // ignored by most app webhooks
+    const res = await fetchImpl(webhook, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    return res.ok;
   } catch (err) {
-    console.error('Slack notification failed:', err.message);
+    console.error('[PSI Tasks] Slack notification failed:', err.message);
+    return false;
   }
 }
 
-export async function createPSITasks(orgId = RYTSENSE_ORG, siteId = RYTSENSE_SITE) {
-  const db = supabaseAdmin();
-  if (!db) throw new Error('Database not configured');
-  
-  const startTime = Date.now();
-  let tasksCreated = 0;
-  
-  try {
-    console.log(`[PSI Tasks] Starting for org=${orgId}, site=${siteId}`);
-    
-    // Get site info
-    const { data: site, error: siteError } = await db
-      .from('sites')
-      .select('id, domain')
-      .eq('id', siteId)
-      .eq('organization_id', orgId)
-      .maybeSingle();
-    
-    if (siteError || !site) {
-      throw new Error(`Site not found: ${siteId}`);
-    }
-    
-    // Find critical/high issues without tasks, not yet reviewed
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    const { data: issues, error: issuesError } = await db
-      .from('psi_issues')
-      .select(
-        `
-        id, 
-        title, 
-        severity, 
-        impact_score, 
-        psi_scores(page_url),
-        task_id
-      `
-      )
-      .eq('organization_id', orgId)
-      .eq('site_id', siteId)
-      .in('severity', ['critical', 'high'])
-      .is('task_id', null)
-      .or(`reviewed_at.is.null,reviewed_at.gt.${oneWeekAgo.toISOString()}`)
-      .limit(50);
-    
-    if (issuesError) {
-      throw issuesError;
-    }
-    
-    console.log(`[PSI Tasks] Found ${issues?.length || 0} issues to convert to tasks`);
-    
-    for (const issue of issues || []) {
-      try {
-        const pageUrl = issue.psi_scores?.[0]?.page_url || 'unknown';
-        const priority = issue.severity === 'critical' ? 'critical' : 'high';
-        
-        const taskTitle = `[PSI] ${pageUrl}: ${issue.title}`;
-        const taskDescription = `Page Speed Issue detected:\n\n**${issue.title}**\n\nSeverity: ${issue.severity}\nImpact Score: ${issue.impact_score}/100\n\nReview and fix as part of performance optimization work.`;
-        
-        // Check if task already exists (duplicate prevention)
-        const { data: existingTask } = await db
-          .from('tasks')
-          .select('id')
-          .eq('organization_id', orgId)
-          .eq('site_id', siteId)
-          .eq('title', taskTitle)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
-        if (existingTask) {
-          console.log(`[PSI Tasks] Task already exists for: ${taskTitle}`);
-          // Link the issue to existing task
-          await db
-            .from('psi_issues')
-            .update({ task_id: existingTask.id, reviewed_at: new Date().toISOString() })
-            .eq('id', issue.id);
-          continue;
-        }
-        
-        // Create new task
-        const { data: task, error: taskError } = await db
-          .from('tasks')
-          .insert({
-            organization_id: orgId,
-            site_id: siteId,
-            title: taskTitle,
-            description: taskDescription,
-            status: 'open',
-            priority,
-            assigned_to_role: 'dev',
-            assignee_id: null, // Dev can self-assign or admin assigns
-          })
-          .select('id')
-          .single();
-        
-        if (taskError) {
-          console.error(`[PSI Tasks] Task creation failed:`, taskError);
-          continue;
-        }
-        
-        // Link task to issue
-        const { error: linkError } = await db
-          .from('psi_issues')
-          .update({
-            task_id: task.id,
-            reviewed_at: new Date().toISOString(),
-          })
-          .eq('id', issue.id);
-        
-        if (linkError) {
-          console.error(`[PSI Tasks] Issue link failed:`, linkError);
-        } else {
-          tasksCreated++;
-          
-          // Notify Slack
-          await notifySlack(
-            process.env.SLACK_DEV_CHANNEL || '#dev-alerts',
-            `:zap: PSI Task Created\n*${pageUrl}*\n${issue.title}\nSeverity: ${issue.severity}\nTask ID: ${task.id}`
-          );
-        }
-      } catch (err) {
-        console.error(`[PSI Tasks] Error processing issue ${issue.id}:`, err.message);
-      }
-    }
-    
-    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`[PSI Tasks] Complete: ${tasksCreated} tasks created in ${duration}s`);
-    
-    return { tasksCreated };
-  } catch (err) {
-    console.error('[PSI Tasks] Fatal error:', err);
-    throw err;
+export function groupIssues(issues) {
+  const groups = new Map();
+  for (const issue of issues || []) {
+    const page = issue.psi_scores && issue.psi_scores.page_url;
+    const key = `${page}::${issue.audit_id}`;
+    if (!groups.has(key)) groups.set(key, { page, auditId: issue.audit_id, title: issue.title, issues: [] });
+    groups.get(key).issues.push(issue);
   }
+  const rank = (g) => (g.issues.some((i) => i.severity === 'critical') ? 2 : 1) * 1000 + Math.max(...g.issues.map((i) => i.impact_score || 0));
+  return [...groups.values()].sort((a, b) => rank(b) - rank(a));
+}
+
+export function taskFor(group, site) {
+  const critical = group.issues.some((i) => i.severity === 'critical');
+  const lines = [...group.issues]
+    .sort((a, b) => a.strategy.localeCompare(b.strategy))
+    .map((i) => `- ${i.strategy}: ${i.severity}, impact ${i.impact_score}/100${i.estimated_savings ? ` (${i.estimated_savings})` : ''}`);
+  const description = (group.issues[0].description || '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  return {
+    title: `[PSI] ${pathOf(group.page)}: ${group.title}`.slice(0, 200),
+    details: [
+      `PageSpeed Insights flagged "${group.title}" on ${group.page}.`,
+      '',
+      ...lines,
+      '',
+      description,
+      '',
+      `Re-test: https://pagespeed.web.dev/analysis?url=${encodeURIComponent(group.page)}`,
+      `Lighthouse audit id: ${group.auditId} · site ${site.domain}`,
+    ].join('\n').trim(),
+    priority: critical ? 'critical' : 'high',
+  };
+}
+
+async function createForSite(db, site, fetchImpl) {
+  const out = { siteId: site.id, domain: site.domain, tasksCreated: 0, linkedExisting: 0, created: [] };
+
+  const { data: latest } = await db.from('psi_scores').select('metric_date').eq('site_id', site.id).order('metric_date', { ascending: false }).limit(1).maybeSingle();
+  if (!latest) return out;
+
+  // Only issues from the most recent scan, so already-fixed problems don't become tasks.
+  const { data: issues, error } = await db
+    .from('psi_issues')
+    .select('id, audit_id, strategy, title, description, severity, impact_score, estimated_savings, psi_scores!inner(page_url, metric_date)')
+    .eq('site_id', site.id)
+    .eq('psi_scores.metric_date', latest.metric_date)
+    .in('severity', ['critical', 'high'])
+    .is('task_id', null)
+    .limit(500);
+  if (error) throw new Error(`psi_issues: ${error.message}`);
+
+  for (const group of groupIssues(issues).slice(0, MAX_TASKS_PER_SITE)) {
+    const draft = taskFor(group, site);
+    const ids = group.issues.map((i) => i.id);
+    const now = new Date().toISOString();
+
+    // Reuse an open task with the same title; a done task means this is a regression, so make a new one.
+    const { data: existing } = await db
+      .from('tasks')
+      .select('id')
+      .eq('organization_id', site.organization_id)
+      .eq('site_id', site.id)
+      .eq('title', draft.title)
+      .neq('status', 'done')
+      .limit(1)
+      .maybeSingle();
+
+    let taskId = existing && existing.id;
+    if (!taskId) {
+      taskId = `T-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+      const { error: taskError } = await db.from('tasks').insert({
+        id: taskId,
+        organization_id: site.organization_id,
+        site_id: site.id,
+        title: draft.title,
+        details: draft.details,
+        status: 'todo',
+        priority: draft.priority,
+        assignee: null,
+        team: DEV_TEAM,
+        source: 'psi',
+      });
+      if (taskError) { console.error('[PSI Tasks] task insert failed:', taskError.message); continue; }
+      await db.from('task_events').insert({
+        task_id: taskId, organization_id: site.organization_id, actor: 'psi-bot', from_status: null, to_status: 'todo', note: 'created from PageSpeed Insights',
+      });
+      out.tasksCreated++;
+      out.created.push({ id: taskId, title: draft.title, priority: draft.priority });
+    } else {
+      out.linkedExisting++;
+    }
+
+    const { error: linkError } = await db.from('psi_issues').update({ task_id: taskId, reviewed_at: now }).in('id', ids);
+    if (linkError) console.error('[PSI Tasks] link failed:', linkError.message);
+  }
+
+  if (out.created.length) {
+    const appUrl = (process.env.PUBLIC_APP_URL || '').replace(/\/$/, '');
+    const list = out.created.slice(0, 10).map((t) => `• ${t.priority === 'critical' ? ':red_circle:' : ':large_orange_circle:'} ${t.title} (${t.id})`).join('\n');
+    const more = out.created.length > 10 ? `\n…and ${out.created.length - 10} more` : '';
+    out.slackNotified = await notifySlack(
+      `:zap: ${out.created.length} new PageSpeed task${out.created.length === 1 ? '' : 's'} for ${site.domain} (Development)\n${list}${more}${appUrl ? `\n${appUrl}/tasks.html` : ''}`,
+      fetchImpl
+    );
+  }
+  return out;
+}
+
+export async function createPSITasks(db, { siteId = null, fetchImpl = fetch } = {}) {
+  if (!db) throw new Error('database not configured');
+  let query = db.from('sites').select('id, organization_id, domain, organizations!inner(status)').eq('organizations.status', 'active');
+  if (siteId) query = query.eq('id', siteId);
+  const { data: sites, error } = await query;
+  if (error) throw new Error(`sites: ${error.message}`);
+
+  const perSite = [];
+  for (const site of sites || []) perSite.push(await createForSite(db, site, fetchImpl));
+  const result = {
+    tasksCreated: perSite.reduce((a, s) => a + s.tasksCreated, 0),
+    linkedExisting: perSite.reduce((a, s) => a + s.linkedExisting, 0),
+    sites: perSite,
+  };
+  console.log(`[PSI Tasks] done: ${result.tasksCreated} created, ${result.linkedExisting} linked to existing`);
+  return result;
 }

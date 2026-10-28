@@ -62,7 +62,8 @@
       leaf === 'tasks' ||
       leaf === 'platform' ||
       leaf === 'ops' ||
-      leaf === 'seo-work'
+      leaf === 'seo-work' ||
+      leaf === 'psi'
     ) {
       return leaf;
     }
