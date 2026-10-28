@@ -12,7 +12,7 @@
     "start": "node server/src/index.js",
     "api": "node server/src/index.js",
     "psi:weekly": "node scripts/psi-weekly.mjs",
-    "test:product": "node --test server/test/scope.test.mjs server/test/psi.test.mjs server/test/jobs-model.test.mjs"
+    "test:product": "node --test server/test/scope.test.mjs server/test/psi.test.mjs server/test/jobs-model.test.mjs server/test/team-auth.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

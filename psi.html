@@ -235,7 +235,7 @@
       notice('');
       await Promise.all([loadScores(), loadIssues()]);
     } catch(err){
-      if(err.code === 401) notice('Your session has expired. <a href="login.html?next=psi.html">Sign in</a> to see Page Speed data.');
+      if(err.code === 401) notice('Your session has expired. <a href="login.html?next=psi.html">Sign in</a> with the team username and password.');
       else notice('Could not load Page Speed data: ' + esc(err.message));
     }
   }

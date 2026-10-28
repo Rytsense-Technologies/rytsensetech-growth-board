@@ -1,5 +1,9 @@
-/* Shared top site navigation — Growth Board family (teal operating pages)
-   Also works above .rts-report with CSS-variable fallbacks. */
+/* Left module rail for the Growth Board app. */
+
+:root {
+  --site-nav-h: 0px;
+  --site-nav-w: 240px;
+}
 
 .site-nav {
   --sn-bg: var(--paper-raised, #ffffff);
@@ -13,17 +17,20 @@
   --sn-chip: var(--chip-bg, #edeff3);
   --sn-ground: var(--paper, #f5f6f8);
 
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 100;
-  background: color-mix(in srgb, var(--sn-bg) 92%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--sn-line);
+  left: 0;
+  bottom: 0;
+  width: var(--site-nav-w, 240px);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  background: var(--sn-bg);
+  border-right: 1px solid var(--sn-line);
 }
 
 @media (prefers-color-scheme: dark) {
-  /* Intentionally empty: theme is explicit via data-theme (default light). */
+  /* Theme is explicit via data-theme (default light). */
 }
 
 :root[data-theme="dark"] .site-nav,
@@ -40,37 +47,20 @@ html[data-theme="dark"] .site-nav {
   --sn-ground: #0b1013;
 }
 
-.site-nav-theme {
-  appearance: none;
-  border: 1px solid var(--sn-line);
-  background: var(--sn-bg);
-  color: var(--sn-ink);
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  padding: 0;
-}
-.site-nav-theme:hover {
-  border-color: var(--sn-accent);
-  background: var(--sn-accent-soft);
-  color: var(--sn-accent-ink);
+html.gb-app body {
+  padding-left: var(--site-nav-w, 240px);
 }
 
 .site-nav-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 10px 20px;
+  max-width: none;
+  margin: 0;
+  padding: 16px 12px 12px;
   display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
 }
 
 .site-nav-brand {
@@ -80,7 +70,7 @@ html[data-theme="dark"] .site-nav {
   text-decoration: none;
   color: var(--sn-ink);
   flex: none;
-  margin-right: 4px;
+  padding: 4px 8px 8px;
 }
 
 .site-nav-mark {
@@ -106,19 +96,21 @@ html[data-theme="dark"] .site-nav {
 
 .site-nav-links {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: center;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 2px;
+  align-items: stretch;
   flex: 1;
-  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .site-nav-links a {
   text-decoration: none;
   color: var(--sn-soft);
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 6px 11px;
+  padding: 9px 12px;
   border-radius: 8px;
   white-space: nowrap;
   transition: background 0.12s, color 0.12s;
@@ -132,14 +124,15 @@ html[data-theme="dark"] .site-nav {
 .site-nav-links a[aria-current="page"] {
   background: var(--sn-accent-soft);
   color: var(--sn-accent-ink);
+  box-shadow: inset 3px 0 0 var(--sn-accent);
 }
 
 .site-nav-meta {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
-  flex-wrap: wrap;
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .site-nav-chip {
@@ -150,6 +143,7 @@ html[data-theme="dark"] .site-nav {
   padding: 4px 9px;
   border-radius: 999px;
   white-space: nowrap;
+  width: fit-content;
 }
 
 .site-nav-source {
@@ -162,6 +156,7 @@ html[data-theme="dark"] .site-nav {
   border-radius: 6px;
   border: 1px solid var(--sn-line);
   background: var(--sn-bg);
+  width: fit-content;
 }
 
 .site-nav-source:hover {
@@ -175,37 +170,77 @@ html[data-theme="dark"] .site-nav {
   color: var(--sn-faint);
 }
 
-@media (max-width: 720px) {
-  .site-nav-inner {
-    padding: 10px 14px;
-    gap: 10px;
-  }
-  .site-nav-name {
-    display: none;
-  }
-  .site-nav-meta {
-    width: 100%;
-    margin-left: 0;
-  }
-  .site-nav-links {
-    width: 100%;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    padding-bottom: 2px;
-    -webkit-overflow-scrolling: touch;
-  }
+.site-nav-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--sn-line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .site-nav-links a {
-    transition: none;
-  }
+.site-nav-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
 }
 
-/* —— Sticky module sidebars (ops / platform / tasks) ——
-   Keeps the left nav visible while main content scrolls to #anchors. */
-:root {
-  --site-nav-h: 56px;
+.site-nav-user-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sn-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-nav-theme {
+  appearance: none;
+  border: 1px solid var(--sn-line);
+  background: var(--sn-bg);
+  color: var(--sn-ink);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0;
+}
+.site-nav-theme:hover {
+  border-color: var(--sn-accent);
+  background: var(--sn-accent-soft);
+  color: var(--sn-accent-ink);
+}
+
+.site-nav-signout {
+  appearance: none;
+  width: 100%;
+  border: 1px solid var(--sn-line);
+  background: var(--sn-ground);
+  color: var(--sn-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.site-nav-signout:hover {
+  border-color: var(--sn-accent);
+  background: var(--sn-accent-soft);
+  color: var(--sn-accent-ink);
+}
+
+.gb-menu-btn {
+  display: none;
 }
 
 .shell > .sidebar,
@@ -229,7 +264,37 @@ html[data-theme="dark"] .site-nav {
   scroll-margin-top: calc(var(--site-nav-h) + 16px);
 }
 
-@media (max-width: 960px) {
+@media (max-width: 900px) {
+  html.gb-app body {
+    padding-left: 0;
+    padding-top: 52px;
+  }
+  .gb-menu-btn {
+    display: inline-flex;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 220;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--sn-line, #e2e5ea);
+    background: var(--sn-bg, #fff);
+    color: var(--sn-ink, #12181f);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .site-nav {
+    width: min(280px, 86vw);
+    transform: translateX(-105%);
+    transition: transform 0.18s ease;
+    box-shadow: none;
+  }
+  html.gb-nav-open .site-nav {
+    transform: translateX(0);
+    box-shadow: 8px 0 24px rgba(18, 24, 31, 0.18);
+  }
   .shell > .sidebar,
   .shell > aside.sidebar {
     position: relative;
@@ -237,5 +302,12 @@ html[data-theme="dark"] .site-nav {
     height: auto;
     max-height: none;
     overflow: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav-links a,
+  .site-nav {
+    transition: none;
   }
 }

@@ -14,6 +14,13 @@ import { answerAsk, runDailySync, runWeeklyReview } from './jobs.js';
 import { runPSISync } from './jobs/sync-psi.js';
 import { createPSITasks } from './jobs/create-psi-tasks.js';
 import { createPsiRouter } from './routes/psi.js';
+import {
+  checkTeamLogin,
+  signTeamToken,
+  teamActor,
+  teamUserId,
+  verifyTeamToken,
+} from './team-auth.js';
 
 const envFile = join(dirname(fileURLToPath(import.meta.url)), '..', '.env');
 if (existsSync(envFile)) {
@@ -44,6 +51,9 @@ async function actorFrom(req, db) {
   const header = req.get('authorization') || '';
   const token = header.toLowerCase().startsWith('bearer ') ? header.slice(7) : '';
   if (!token) return null;
+  const team = verifyTeamToken(token);
+  if (team) return teamActor(req, team);
+  if (!db) return null;
   const { data, error } = await db.auth.getUser(token);
   if (error || !data.user) return null;
   const userId = data.user.id;
@@ -120,10 +130,20 @@ export function createApp() {
   }
 
   app.post('/api/auth/login', async (req, res) => {
-    const email = String((req.body && req.body.email) || '').trim();
+    const username = String((req.body && (req.body.username || req.body.email)) || '').trim();
     const password = String((req.body && req.body.password) || '');
-    if (!email || !password) return json(res, { error: 'email and password required' }, 400);
-    const result = await supabaseToken('password', { email, password });
+    if (!username || !password) return json(res, { error: 'username and password required' }, 400);
+    if (checkTeamLogin(username, password)) {
+      const token = signTeamToken();
+      return json(res, {
+        access_token: token,
+        refresh_token: token,
+        expires_in: 30 * 24 * 60 * 60,
+        user: { id: teamUserId(), email: username },
+      });
+    }
+    if (!username.includes('@')) return json(res, { error: 'Invalid username or password' }, 401);
+    const result = await supabaseToken('password', { email: username, password });
     if (!result.ok || !result.data.access_token) {
       return json(res, { error: result.data.error_description || result.data.error || result.data.msg || 'Sign-in failed' }, result.status === 503 ? 503 : 401);
     }
@@ -133,6 +153,16 @@ export function createApp() {
   app.post('/api/auth/refresh', async (req, res) => {
     const refresh = String((req.body && req.body.refresh_token) || '');
     if (!refresh) return json(res, { error: 'refresh token required' }, 400);
+    const team = verifyTeamToken(refresh);
+    if (team) {
+      const token = signTeamToken({ sub: team.sub, username: team.username });
+      return json(res, {
+        access_token: token,
+        refresh_token: token,
+        expires_in: 30 * 24 * 60 * 60,
+        user: { id: team.sub || teamUserId(), email: team.username },
+      });
+    }
     const result = await supabaseToken('refresh_token', { refresh_token: refresh });
     if (!result.ok || !result.data.access_token) {
       return json(res, { error: result.data.error_description || result.data.error || result.data.msg || 'Session expired' }, 401);

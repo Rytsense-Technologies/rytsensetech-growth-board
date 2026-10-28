@@ -1,6 +1,42 @@
-/* Site nav: active tab + shared light/dark theme (default: light). */
+/* Site nav: left module rail, auth gate, light/dark theme. */
 (function () {
   var THEME_KEY = 'gb-theme';
+  var MODULES = [
+    { key: 'board', href: 'index.html', label: 'Growth Board' },
+    { key: 'report', href: 'report.html', label: 'Intelligence Report' },
+    { key: 'tasks', href: 'tasks.html', label: 'Team Tasks' },
+    { key: 'psi', href: 'psi.html', label: 'Page Speed' },
+    { key: 'platform', href: 'platform.html', label: 'Internal Platform' },
+    { key: 'seo-work', href: 'seo-work.html', label: 'SEO Work' },
+    { key: 'ops', href: 'ops.html', label: 'SEO Ops' },
+    { key: 'ask', href: 'ask.html', label: 'Ask' },
+  ];
+
+  function pageLeaf() {
+    var raw = (location.pathname || '/').replace(/\/+$/, '');
+    var leaf = (raw.split('/').pop() || '').toLowerCase();
+    if (!leaf || leaf === 'index') return 'index.html';
+    return leaf.indexOf('.html') >= 0 ? leaf : leaf + '.html';
+  }
+
+  function isLoginPage() {
+    return pageLeaf() === 'login.html';
+  }
+
+  function signedIn() {
+    try {
+      return !!(localStorage.getItem('gb-access-token') || localStorage.getItem('gb-refresh-token'));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function requireAuth() {
+    if (isLoginPage() || signedIn()) return true;
+    var next = pageLeaf() + location.search;
+    location.replace('login.html?next=' + encodeURIComponent(next));
+    return false;
+  }
 
   function readTheme() {
     try {
@@ -34,58 +70,110 @@
     applyTheme(cur === 'dark' ? 'light' : 'dark');
   }
 
-  function ensureThemeButton() {
-    var meta = document.querySelector('.site-nav-meta');
-    if (!meta) return;
-    var existing = document.getElementById('gb-theme-btn');
-    if (existing) {
-      existing.onclick = toggleTheme;
-      return existing;
+  function currentKey() {
+    var leaf = pageLeaf().replace(/\.html$/, '');
+    if (!leaf || leaf === 'index') return 'board';
+    if (leaf === 'admin') return 'admin';
+    return leaf;
+  }
+
+  function signOut() {
+    try {
+      localStorage.removeItem('gb-access-token');
+      localStorage.removeItem('gb-refresh-token');
+    } catch (e) {}
+    location.href = 'login.html';
+  }
+
+  function ensureNav() {
+    var nav = document.querySelector('.site-nav');
+    if (nav) return nav;
+    nav = document.createElement('nav');
+    nav.className = 'site-nav';
+    nav.setAttribute('aria-label', 'Site');
+    nav.innerHTML =
+      '<div class="site-nav-inner">' +
+        '<a class="site-nav-brand" href="index.html"><span class="site-nav-mark">RT</span><span class="site-nav-name">Rytsense</span></a>' +
+        '<div class="site-nav-links"></div>' +
+        '<div class="site-nav-meta"></div>' +
+      '</div>';
+    document.body.insertBefore(nav, document.body.firstChild);
+    return nav;
+  }
+
+  function fillModules(nav) {
+    var links = nav.querySelector('.site-nav-links');
+    if (!links) return;
+    var key = currentKey();
+    links.innerHTML = MODULES.map(function (m) {
+      var current = m.key === key ? ' aria-current="page"' : '';
+      return '<a href="' + m.href + '" data-nav="' + m.key + '"' + current + '>' + m.label + '</a>';
+    }).join('');
+  }
+
+  function ensureFooter(nav) {
+    var inner = nav.querySelector('.site-nav-inner') || nav;
+    var footer = nav.querySelector('.site-nav-footer');
+    if (!footer) {
+      footer = document.createElement('div');
+      footer.className = 'site-nav-footer';
+      inner.appendChild(footer);
     }
+    var meta = nav.querySelector('.site-nav-meta');
+    if (meta && meta.parentNode !== footer) footer.insertBefore(meta, footer.firstChild);
+    var userRow = footer.querySelector('.site-nav-user');
+    if (!userRow) {
+      userRow = document.createElement('div');
+      userRow.className = 'site-nav-user';
+      var name = document.createElement('span');
+      name.className = 'site-nav-user-name';
+      try { name.textContent = localStorage.getItem('gb-email') || 'rytsensetech'; } catch (e) { name.textContent = 'rytsensetech'; }
+      var theme = document.createElement('button');
+      theme.type = 'button';
+      theme.id = 'gb-theme-btn';
+      theme.className = 'site-nav-theme';
+      theme.onclick = toggleTheme;
+      userRow.appendChild(name);
+      userRow.appendChild(theme);
+      footer.appendChild(userRow);
+    }
+    var out = footer.querySelector('.site-nav-signout');
+    if (!out) {
+      out = document.createElement('button');
+      out.type = 'button';
+      out.className = 'site-nav-signout';
+      out.textContent = 'Sign out';
+      out.addEventListener('click', signOut);
+      footer.appendChild(out);
+    }
+    return footer;
+  }
+
+  function ensureMenuButton() {
+    var existing = document.getElementById('gb-menu-btn');
+    if (existing) return existing;
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.id = 'gb-theme-btn';
-    btn.className = 'site-nav-theme';
-    btn.onclick = toggleTheme;
-    meta.insertBefore(btn, meta.firstChild);
+    btn.id = 'gb-menu-btn';
+    btn.className = 'gb-menu-btn';
+    btn.setAttribute('aria-label', 'Open modules');
+    btn.textContent = '☰';
+    btn.addEventListener('click', function () {
+      document.documentElement.classList.toggle('gb-nav-open');
+    });
+    document.body.appendChild(btn);
+    document.addEventListener('click', function (ev) {
+      if (!document.documentElement.classList.contains('gb-nav-open')) return;
+      if (ev.target.closest('.site-nav, #gb-menu-btn')) return;
+      document.documentElement.classList.remove('gb-nav-open');
+    });
     return btn;
   }
 
-  function currentKey() {
-    var raw = (location.pathname || '/').replace(/\/+$/, '');
-    var leaf = raw.split('/').pop() || '';
-    leaf = leaf.toLowerCase().replace(/\.html$/, '');
-    if (!leaf || leaf === 'index') return 'board';
-    if (
-      leaf === 'board' ||
-      leaf === 'report' ||
-      leaf === 'tasks' ||
-      leaf === 'platform' ||
-      leaf === 'ops' ||
-      leaf === 'seo-work' ||
-      leaf === 'psi'
-    ) {
-      return leaf;
-    }
-    return 'board';
-  }
-
-  function applyActive() {
-    var key = currentKey();
-    document.querySelectorAll('.site-nav-links a[data-nav]').forEach(function (a) {
-      if (a.getAttribute('data-nav') === key) {
-        a.setAttribute('aria-current', 'page');
-      } else {
-        a.removeAttribute('aria-current');
-      }
-    });
-  }
-
   function measureNav() {
-    var nav = document.querySelector('.site-nav');
-    if (!nav) return;
-    var h = Math.ceil(nav.getBoundingClientRect().height) || 56;
-    document.documentElement.style.setProperty('--site-nav-h', h + 'px');
+    var mobile = window.matchMedia('(max-width: 900px)').matches;
+    document.documentElement.style.setProperty('--site-nav-h', mobile ? '52px' : '0px');
+    document.documentElement.style.setProperty('--site-nav-w', mobile ? '0px' : '240px');
   }
 
   function syncSideHash() {
@@ -105,42 +193,27 @@
     });
   }
 
-  // Apply as early as this script runs (also called from head boot on each page)
   applyTheme(readTheme());
 
   function boot() {
-    ensureThemeButton();
+    if (isLoginPage()) {
+      applyTheme(readTheme());
+      return;
+    }
+    if (!requireAuth()) return;
+    document.documentElement.classList.add('gb-app');
+    var nav = ensureNav();
+    fillModules(nav);
+    ensureFooter(nav);
+    ensureMenuButton();
     applyTheme(readTheme());
-    applyActive();
     measureNav();
     syncSideHash();
     window.addEventListener('resize', measureNav);
     window.addEventListener('hashchange', syncSideHash);
-
-    // Hide legacy page-local theme buttons (nav owns theme now)
     ['theme-btn', 'btn-theme'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.hidden = true;
-    });
-
-    document.querySelectorAll('.site-nav-links a[href="login.html"], .site-nav-links a[href^="login.html?"]').forEach(function (a) {
-      var here = (location.pathname.split('/').pop() || 'index.html') + location.search;
-      if (!/\.html(\?|$)/.test(here)) here = 'index.html';
-      a.setAttribute('href', 'login.html?next=' + encodeURIComponent(here));
-      var signedIn = false;
-      try {
-        signedIn = !!(localStorage.getItem('gb-access-token') || localStorage.getItem('gb-refresh-token'));
-      } catch (e) {}
-      if (!signedIn) return;
-      a.textContent = 'Sign out';
-      a.addEventListener('click', function (ev) {
-        ev.preventDefault();
-        try {
-          localStorage.removeItem('gb-access-token');
-          localStorage.removeItem('gb-refresh-token');
-        } catch (e) {}
-        location.href = 'login.html?next=' + encodeURIComponent(here);
-      });
     });
   }
 
