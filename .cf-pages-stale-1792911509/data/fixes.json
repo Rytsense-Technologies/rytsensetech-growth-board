@@ -1,0 +1,269 @@
+{
+  "updatedAt": "2026-09-18T13:27:49.726Z",
+  "items": [
+    {
+      "id": "W1",
+      "title": "Fix the canonical pointing at www.rytsense.com",
+      "type": "easy_win",
+      "effort": "30m",
+      "owner": "Dev",
+      "location": "/freight-broker-roi-calculator/",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W2",
+      "title": "Remove placeholder zero values from server-rendered HTML",
+      "type": "easy_win",
+      "effort": "1h",
+      "owner": "Dev",
+      "location": "2 US money pages (server HTML)",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W3",
+      "title": "Strip fabricated AggregateRating / review schema",
+      "type": "easy_win",
+      "effort": "1h",
+      "owner": "Dev",
+      "location": "US service templates",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W4",
+      "title": "Publish a single source-of-truth entity facts block (headcount, projects, cities)",
+      "type": "easy_win",
+      "effort": "2h",
+      "owner": "Content",
+      "location": "About / US landing templates",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W5",
+      "title": "Add hub links from top blog posts into primary /us/ service pages",
+      "type": "easy_win",
+      "effort": "4h",
+      "owner": "SEO",
+      "location": "118 orphaned posts → money pages",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W6",
+      "title": "Create /us/security-and-compliance/ (or equivalent) trust page",
+      "type": "easy_win",
+      "effort": "3h",
+      "owner": "Content",
+      "location": "/us/",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W7",
+      "title": "Fix US self-declared location claims that 404",
+      "type": "easy_win",
+      "effort": "1h",
+      "owner": "Dev",
+      "location": "US tree nav/footer",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W8",
+      "title": "Align global vs /us/ title/H1 intent to reduce cannibalization",
+      "type": "easy_win",
+      "effort": "3h",
+      "owner": "SEO",
+      "location": "12 US service pages + global twins",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W9",
+      "title": "Add named client logos/case studies on US service pages",
+      "type": "easy_win",
+      "effort": "4h",
+      "owner": "Content",
+      "location": "/us/* service URLs",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W10",
+      "title": "Correct brand SERP assets (GBP/LinkedIn/Crunchbase consistency)",
+      "type": "easy_win",
+      "effort": "2h",
+      "owner": "Marketing",
+      "location": "Off-site profiles",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W11",
+      "title": "Add FAQ answer blocks with extractable first sentences on top 5 US pages",
+      "type": "easy_win",
+      "effort": "3h",
+      "owner": "Content",
+      "location": "/us/ai-*, /us/*-services/",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W12",
+      "title": "Wire Organization sameAs to verified profiles only",
+      "type": "easy_win",
+      "effort": "1h",
+      "owner": "Dev",
+      "location": "Sitewide JSON-LD",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W13",
+      "title": "301 map legacy rytsense.com paths still linked internally",
+      "type": "easy_win",
+      "effort": "2h",
+      "owner": "Dev",
+      "location": "Internal link graph",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W14",
+      "title": "Add breadcrumb + Service schema only where visible content matches",
+      "type": "easy_win",
+      "effort": "2h",
+      "owner": "Dev",
+      "location": "US service templates",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "W15",
+      "title": "Add named engineers to Meet the Experts",
+      "type": "easy_win",
+      "effort": "3h",
+      "owner": "Content",
+      "location": "/us/ai-integration-services/",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "C1",
+      "title": "Placeholder zeros in server HTML",
+      "type": "critical",
+      "effort": null,
+      "owner": "Dev",
+      "location": "sitewide",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "C2",
+      "title": "Broken canonical to www.rytsense.com",
+      "type": "critical",
+      "effort": null,
+      "owner": "Dev",
+      "location": "US",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "C3",
+      "title": "Fabricated review schema",
+      "type": "critical",
+      "effort": null,
+      "owner": "Dev",
+      "location": "US",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "C4",
+      "title": "No security / compliance page",
+      "type": "critical",
+      "effort": null,
+      "owner": "Dev",
+      "location": "US",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "C5",
+      "title": "118 blog posts with zero money-page links",
+      "type": "critical",
+      "effort": null,
+      "owner": "Dev",
+      "location": "sitewide",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "H1",
+      "title": "Five conflicting headcounts",
+      "type": "high",
+      "effort": null,
+      "owner": "SEO",
+      "location": "sitewide",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "H2",
+      "title": "US self-declared pages that 404",
+      "type": "high",
+      "effort": null,
+      "owner": "SEO",
+      "location": "sitewide",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "H3",
+      "title": "Brand SERP resolves to job-review sites",
+      "type": "high",
+      "effort": null,
+      "owner": "SEO",
+      "location": "sitewide",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    },
+    {
+      "id": "H4",
+      "title": "31 case studies with zero named clients",
+      "type": "high",
+      "effort": null,
+      "owner": "SEO",
+      "location": "sitewide",
+      "done": false,
+      "doneAt": null,
+      "doneBy": null
+    }
+  ]
+}

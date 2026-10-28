@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Speed Index · Growth Board</title>
+  <link rel="stylesheet" href="assets/rts-report.css">
+  <link rel="stylesheet" href="assets/site-nav.css">
+  <style>
+    main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    
+    .psi-header {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .kpi-tile {
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 1.5rem;
+      border-left: 4px solid #00a3e0;
+    }
+    
+    .kpi-tile.critical { border-left-color: #d32f2f; }
+    .kpi-tile.high { border-left-color: #f57c00; }
+    .kpi-tile.good { border-left-color: #388e3c; }
+    
+    .kpi-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1;
+    }
+    
+    .kpi-label {
+      font-size: 0.875rem;
+      color: #666;
+      margin-top: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .controls select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      background: white;
+      cursor: pointer;
+    }
+    
+    .scores-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .scores-table th {
+      background: #f5f5f5;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #666;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .scores-table td {
+      padding: 1rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .scores-table tr:hover {
+      background: #fafafa;
+    }
+    
+    .page-url {
+      font-family: monospace;
+      font-size: 0.875rem;
+      color: #00a3e0;
+    }
+    
+    .score {
+      font-weight: 600;
+      font-size: 1.125rem;
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      display: inline-block;
+      min-width: 3rem;
+      text-align: center;
+    }
+    
+    .score.excellent { background: #e8f5e9; color: #2e7d32; }
+    .score.good { background: #fff3e0; color: #e65100; }
+    .score.poor { background: #ffebee; color: #c62828; }
+    
+    .issues-list {
+      font-size: 0.75rem;
+      color: #999;
+    }
+    
+    .issue-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      margin: 0.25rem 0.25rem 0.25rem 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .issue-badge.critical { background: #ffcdd2; color: #d32f2f; }
+    .issue-badge.high { background: #ffe0b2; color: #f57c00; }
+    .issue-badge.medium { background: #fff9c4; color: #f9a825; }
+    
+    .chart-container {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .chart-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+    }
+    
+    .loading { color: #666; font-style: italic; }
+    .error { color: #d32f2f; }
+  </style>
+</head>
+<body>
+  <nav id="site-nav"></nav>
+  
+  <main>
+    <h1>Page Speed Index Dashboard</h1>
+    <p style="color: #666; margin-bottom: 2rem;">Track PSI scores and auto-assigned dev tasks for performance optimization.</p>
+    
+    <div class="psi-header">
+      <div class="kpi-tile good">
+        <div class="kpi-value" id="avg-mobile">—</div>
+        <div class="kpi-label">Avg Mobile Score</div>
+      </div>
+      <div class="kpi-tile good">
+        <div class="kpi-value" id="avg-desktop">—</div>
+        <div class="kpi-label">Avg Desktop Score</div>
+      </div>
+      <div class="kpi-tile critical">
+        <div class="kpi-value" id="critical-issues">—</div>
+        <div class="kpi-label">Critical Issues</div>
+      </div>
+      <div class="kpi-tile high">
+        <div class="kpi-value" id="high-issues">—</div>
+        <div class="kpi-label">High Issues</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-value" id="pages-scanned">—</div>
+        <div class="kpi-label">Pages Scanned</div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <select id="filter-severity">
+        <option value="critical,high">Critical & High</option>
+        <option value="critical">Critical Only</option>
+        <option value="high">High Only</option>
+        <option value="critical,high,medium">All</option>
+      </select>
+      <select id="filter-category">
+        <option value="">All Categories</option>
+        <option value="performance">Performance</option>
+        <option value="accessibility">Accessibility</option>
+        <option value="best-practices">Best Practices</option>
+        <option value="seo">SEO</option>
+      </select>
+      <button style="padding: 0.5rem 1rem; border: none; background: #00a3e0; color: white; border-radius: 4px; cursor: pointer;" onclick="loadData()">
+        Refresh
+      </button>
+    </div>
+    
+    <div class="chart-container">
+      <div class="chart-title">PSI Scores by Page</div>
+      <table class="scores-table" id="scores-table">
+        <thead>
+          <tr>
+            <th>Page URL</th>
+            <th>Mobile Score</th>
+            <th>Desktop Score</th>
+            <th>Date</th>
+            <th>Issues</th>
+            <th>Task Status</th>
+          </tr>
+        </thead>
+        <tbody id="scores-body">
+          <tr><td colspan="6" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="error-message" style="display: none;" class="error" style="padding: 1rem; background: #ffebee; border-radius: 4px;"></div>
+  </main>
+  
+  <script src="assets/site-nav.js"></script>
+  <script src="assets/live-api.js"></script>
+  <script>
+    async function loadData() {
+      const siteId = window.location.search.match(/site_id=([^&]+)/)?.[1];
+      if (!siteId) {
+        document.getElementById('error-message').textContent = 'Site not selected. Use ?site_id=...';
+        document.getElementById('error-message').style.display = 'block';
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${window.GB_API_BASE || '/'}/api/psi/scores?site_id=${siteId}&days=28`, {
+          headers: { 'Authorization': `Bearer ${window.authToken}` },
+        });
+        
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        
+        const data = await response.json();
+        const { summary, scores } = data;
+        
+        // Update KPIs
+        document.getElementById('avg-mobile').textContent = summary.avg_mobile_score || '—';
+        document.getElementById('avg-desktop').textContent = summary.avg_desktop_score || '—';
+        document.getElementById('critical-issues').textContent = summary.critical_issues || 0;
+        document.getElementById('high-issues').textContent = summary.high_issues || 0;
+        document.getElementById('pages-scanned').textContent = summary.pages_scanned || 0;
+        
+        // Update table
+        const tbody = document.getElementById('scores-body');
+        tbody.innerHTML = (scores || []).map((score) => {
+          const mobileClass = score.mobile_score >= 90 ? 'excellent' : score.mobile_score >= 50 ? 'good' : 'poor';
+          const desktopClass = score.desktop_score >= 90 ? 'excellent' : score.desktop_score >= 50 ? 'good' : 'poor';
+          
+          const issues = (score.psi_issues || []).map((issue) => {
+            return `<span class="issue-badge ${issue.severity}">${issue.severity}</span>`;
+          }).join('');
+          
+          return `
+            <tr>
+              <td><span class="page-url">${score.page_url}</span></td>
+              <td><span class="score ${mobileClass}">${score.mobile_score || '—'}</span></td>
+              <td><span class="score ${desktopClass}">${score.desktop_score || '—'}</span></td>
+              <td style="font-size: 0.875rem;">${new Date(score.metric_date).toLocaleDateString()}</td>
+              <td><div class="issues-list">${issues || 'None'}</div></td>
+              <td style="font-size: 0.875rem;">Pending</td>
+            </tr>
+          `;
+        }).join('');
+        
+        if (!scores || scores.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="loading">No data yet. Run daily sync to populate.</td></tr>';
+        }
+      } catch (err) {
+        console.error('Load error:', err);
+        document.getElementById('error-message').textContent = err.message;
+        document.getElementById('error-message').style.display = 'block';
+      }
+    }
+    
+    // Auto-load on page ready
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>

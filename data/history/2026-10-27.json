@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-27",
+  "updatedAt": "2026-10-27T05:38:15Z",
+  "gsc": {
+    "current": {
+      "clicks": 882,
+      "impressions": 86461,
+      "ctr": 1.02,
+      "position": 30.0
+    },
+    "change": {
+      "clicks": -193,
+      "clicksPercent": -17.95,
+      "impressions": -20378,
+      "impressionsPercent": -19.07,
+      "ctr": 0.01,
+      "position": 3.6
+    }
+  },
+  "ga4": {
+    "sessions": 3676,
+    "activeUsers": 2801,
+    "engagementRate": 0.4954,
+    "pageViews": 7436
+  },
+  "clarityStatus": "unavailable",
+  "githubStatus": "ok"
+}

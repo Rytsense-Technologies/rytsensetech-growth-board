@@ -1,0 +1,7 @@
+{
+  "updatedAt": "2026-09-22T18:00:00.000Z",
+  "members": [
+    { "id": "m-sri", "name": "Srivishwa", "team": "Development", "color": "#0d9488" },
+    { "id": "m-rama", "name": "Rama", "team": "Development", "color": "#0369a1" }
+  ]
+}

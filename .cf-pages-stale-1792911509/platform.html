@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rytsense Internal SEO Platform</title>
+<script>
+(function(){try{var t=localStorage.getItem('gb-theme');if(t!=='dark'&&t!=='light'){t='light';localStorage.setItem('gb-theme',t);try{localStorage.setItem('tt-theme',t);localStorage.setItem('rts-theme',t)}catch(x){}}document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{
+    --paper:#F5F6F8;--paper-raised:#FFFFFF;--ink:#12181F;--ink-soft:#4B5563;--ink-faint:#8B93A1;
+    --line:#E2E5EA;--accent:#0E7A82;--accent-soft:#E4F2F1;--accent-ink:#075258;
+    --good:#1E8E5A;--good-soft:#E4F5EC;--warn:#B4740E;--warn-soft:#FBF0DC;
+    --bad:#C23B3B;--bad-soft:#FBE7E7;--chip-bg:#EDEFF3;
+    --shadow:0 1px 2px rgba(18,24,31,.04),0 8px 24px -12px rgba(18,24,31,.12);
+    --sidebar:240px;--site-nav-h:56px;color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    /* Theme is explicit via data-theme; default remains light. */
+  }
+  :root[data-theme="dark"],
+  html[data-theme="dark"]{
+    --paper:#0B1013;--paper-raised:#141A1F;--ink:#E8ECEF;--ink-soft:#A7AFB9;--ink-faint:#6C7480;
+    --line:#232B31;--accent:#3FBFC2;--accent-soft:#132726;--accent-ink:#8FE0E2;
+    --good:#49C285;--good-soft:#132520;--warn:#E3A83B;--warn-soft:#2A2013;
+    --bad:#E4685E;--bad-soft:#2A1717;--chip-bg:#1B2126;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.5}
+  h1,h2,h3{font-family:'Manrope',system-ui,sans-serif;margin:0}
+  .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+  a{color:var(--accent-ink)}
+  .shell{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:calc(100vh - var(--site-nav-h))}
+  @media(max-width:960px){.shell{grid-template-columns:1fr}.sidebar{position:sticky;top:var(--site-nav-h);z-index:5;border-bottom:1px solid var(--line);max-height:none}}
+  .sidebar{background:var(--paper-raised);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:14px;position:sticky;top:var(--site-nav-h);align-self:start;max-height:calc(100vh - var(--site-nav-h));overflow:auto}
+  .brand{display:flex;gap:10px;align-items:center;padding:0 6px}
+  .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--accent),var(--accent-ink));display:flex;align-items:center;justify-content:center;color:#fff;font-family:Manrope;font-weight:800;font-size:12px}
+  .brand strong{font-size:13px;display:block}
+  .brand span{font-size:11px;color:var(--ink-faint)}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav .group{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);font-weight:700;padding:10px 10px 4px}
+  .nav a{text-decoration:none;color:var(--ink-soft);font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px}
+  .nav a:hover,.nav a.active{background:var(--accent-soft);color:var(--accent-ink)}
+  .nav a.active{box-shadow:inset 3px 0 0 var(--accent)}
+  .side-foot{margin-top:auto;padding:8px 6px;font-size:11.5px;color:var(--ink-faint)}
+  .main{padding:24px 28px 72px;max-width:1200px}
+  .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+  .topbar h1{font-size:20px;font-weight:800}
+  .topbar p{margin:4px 0 0;color:var(--ink-soft);font-size:12.5px}
+  section{scroll-margin-top:calc(var(--site-nav-h) + 16px);margin-bottom:22px}
+  .card{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+  .card-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px}
+  .card-head h2{font-size:15px;font-weight:700}
+  .sub{font-size:12px;color:var(--ink-faint)}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .tile{background:var(--paper-raised);padding:12px 14px}
+  .tile .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:600}
+  .tile .value{font-size:20px;font-weight:700;font-family:Manrope;margin-top:4px}
+  .tile .hint{font-size:11.5px;color:var(--ink-faint);margin-top:4px}
+  .badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:700}
+  .badge.live{background:var(--good-soft);color:var(--good)}
+  .badge.pending{background:var(--warn-soft);color:var(--warn)}
+  .badge.off{background:var(--chip-bg);color:var(--ink-faint)}
+  .badge.blocked{background:var(--bad-soft);color:var(--bad)}
+  .empty{padding:10px 2px;color:var(--ink-soft);font-size:12.5px}
+  .table-wrap{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);font-weight:700;padding:8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper-raised);z-index:1}
+  td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .num{text-align:right;white-space:nowrap}
+  .warn-card{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 35%,var(--line));border-radius:10px;padding:12px;margin-bottom:12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:800px){.grid2{grid-template-columns:1fr}}
+  form.row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-top:10px}
+  @media(max-width:800px){form.row{grid-template-columns:1fr}}
+  input,select,textarea{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font:inherit}
+  button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-family:Manrope}
+  button.secondary{background:var(--chip-bg);color:var(--ink)}
+  .delta.up{color:var(--good)} .delta.down{color:var(--bad)} .delta.flat{color:var(--ink-faint)}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .filters input,.filters select{min-width:120px}
+  .filters .metric{width:100px;min-width:90px}
+  th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+  th.sortable:hover{color:var(--accent-ink)}
+  th.sortable.sorted{color:var(--accent-ink)}
+  .gb-dr{margin:0 0 16px}
+  .gb-dr-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .gb-dr-chip{border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+  .gb-dr-chip:hover{border-color:var(--accent);color:var(--accent-ink)}
+  .gb-dr-chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+  .gb-dr-sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+  .gb-dr-label{font-size:11.5px;color:var(--ink-faint);margin-left:4px}
+  .gb-dr-note{margin:8px 0 0;font-size:12px;color:var(--ink-faint)}
+  .gb-dr-modal{position:fixed;inset:0;background:rgba(18,24,31,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+  .gb-dr-modal[hidden]{display:none!important}
+  .gb-dr-panel{width:min(380px,100%);background:var(--paper-raised);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+  .gb-dr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .gb-dr-x{border:0;background:transparent;font-size:22px;cursor:pointer;color:var(--ink-soft);line-height:1}
+  .gb-dr-presets{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+  .gb-dr-radio{font-size:13px;color:var(--ink);display:flex;gap:8px;align-items:center}
+  .gb-dr-custom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .gb-dr-custom label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--ink-faint);font-weight:600}
+  .gb-dr-custom input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+  .gb-dr-actions{display:flex;justify-content:flex-end;gap:8px}
+  .gb-dr-cancel{border:0;background:transparent;color:var(--ink-soft);font:inherit;font-weight:600;cursor:pointer;padding:8px 12px}
+  .gb-dr-apply{border:0;background:var(--accent);color:#fff;font:inherit;font-weight:700;cursor:pointer;padding:8px 16px;border-radius:999px}
+</style>
+<link rel="stylesheet" href="assets/site-nav.css">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site">
+  <div class="site-nav-inner">
+    <a class="site-nav-brand" href="index.html">
+      <span class="site-nav-mark">RT</span>
+      <span class="site-nav-name">Rytsense</span>
+    </a>
+    <div class="site-nav-links">
+      <a href="index.html" data-nav="board">Growth Board</a>
+      <a href="report.html" data-nav="report">Intelligence Report</a>
+      <a href="tasks.html" data-nav="tasks">Team Tasks</a>
+      <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="seo-work.html" data-nav="seo-work">SEO Work</a>
+      <a href="ops.html" data-nav="ops">SEO Ops</a>
+    </div>
+    <div class="site-nav-meta">
+      <span class="site-nav-chip">Refreshes on schedule</span>
+      <a class="site-nav-source" href="data/latest.json">latest.json</a>
+    </div>
+  </div>
+</nav>
+<script src="assets/site-nav.js" defer></script>
+<script src="assets/table-sort.js" defer></script>
+<script src="assets/date-range.js" defer></script>
+<script src="assets/live-api.js" defer></script>
+<script src="assets/platform.js" defer></script>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">RT</div>
+      <div><strong>Internal Platform</strong><span>SEO · AEO · Ops · 1–22</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="group">Live pulse</div>
+      <a href="#exec" class="active">1 Executive</a>
+      <a href="#geo">2 Global &amp; US</a>
+      <a href="#page">3 Page Performance</a>
+      <a href="#kw">4 Keywords</a>
+      <a href="#opp">5 Opportunities</a>
+      <a href="#cann">6 Cannibalization</a>
+      <div class="group">Technical &amp; authority</div>
+      <a href="#tech">7 Technical SEO</a>
+      <a href="#indexation">8 Indexation</a>
+      <a href="#cwv">9 Core Web Vitals</a>
+      <a href="#links">10 Internal Linking</a>
+      <a href="#backlinks">11 Backlinks</a>
+      <div class="group">Acquisition &amp; content</div>
+      <a href="#acquisition">12 Traffic &amp; Acquisition</a>
+      <a href="#ai">13 AI / GEO</a>
+      <a href="#content">14 Content</a>
+      <a href="#decay">15 Content Decay</a>
+      <a href="#leads">16 Leads &amp; Conversion</a>
+      <div class="group">Operating system</div>
+      <a href="#activity">17 Activity Tracker</a>
+      <a href="#goals">18 Goals &amp; Targets</a>
+      <a href="#alerts">19 Alerts</a>
+      <a href="#reports">20 Reporting</a>
+      <a href="#filters">21 Filters</a>
+      <a href="#sources">22 Data Sources</a>
+      <a href="#fixes">Fixes Tracker</a>
+      <a href="#agents">Agent Engagements</a>
+      <a href="#audit">Audit Snapshot</a>
+      <a href="#blocked">Phase 4 gated</a>
+      <div class="group">SEO Work (separate)</div>
+      <a href="seo-work.html#issues">GSC Issues</a>
+      <a href="seo-work.html#links">Internal Links</a>
+      <a href="seo-work.html#ideas">Content Ideas</a>
+      <a href="seo-work.html#trends">Topic Trends</a>
+    </nav>
+    <div class="side-foot">JSON: data/latest.json · audit.json · seo-work/*.json</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>Rytsense internal SEO platform</h1>
+        <p id="sync">Loading…</p>
+      </div>
+      <div id="pills"></div>
+    </div>
+    <div id="date-range-host"></div>
+
+    <section id="exec"><div class="card" data-mod="exec"></div></section>
+    <section id="geo"><div class="card" data-mod="geo"></div></section>
+    <section id="page"><div class="card" data-mod="page"></div></section>
+    <section id="kw"><div class="card" data-mod="kw"></div></section>
+    <section id="opp"><div class="card" data-mod="opp"></div></section>
+    <section id="cann"><div class="card" data-mod="cann"></div></section>
+    <section id="tech"><div class="card" data-mod="tech"></div></section>
+    <section id="indexation"><div class="card" data-mod="indexation"></div></section>
+    <section id="cwv"><div class="card" data-mod="cwv"></div></section>
+    <section id="links"><div class="card" data-mod="links"></div></section>
+    <section id="backlinks"><div class="card" data-mod="backlinks"></div></section>
+    <section id="acquisition"><div class="card" data-mod="acquisition"></div></section>
+    <section id="ai"><div class="card" data-mod="ai"></div></section>
+    <section id="content"><div class="card" data-mod="content"></div></section>
+    <section id="decay"><div class="card" data-mod="decay"></div></section>
+    <section id="leads"><div class="card" data-mod="leads"></div></section>
+    <section id="activity"><div class="card" data-mod="activity"></div></section>
+    <section id="goals"><div class="card" data-mod="goals"></div></section>
+    <section id="alerts"><div class="card" data-mod="alerts"></div></section>
+    <section id="reports"><div class="card" data-mod="reports"></div></section>
+    <section id="filters"><div class="card" data-mod="filters"></div></section>
+    <section id="sources"><div class="card" data-mod="sources"></div></section>
+    <section id="fixes"><div class="card" data-mod="fixes"></div></section>
+    <section id="agents"><div class="card" data-mod="agents"></div></section>
+    <section id="audit"><div class="card" data-mod="audit"></div></section>
+    <section id="blocked"><div class="card" data-mod="blocked"></div></section>
+  </div>
+</div>
+</body>
+</html>

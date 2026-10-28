@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Companies — Growth Board</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #f5f6f8; }
+  main { max-width: 720px; margin: 32px auto; background: #fff; border: 1px solid #e2e5ea; border-radius: 12px; padding: 18px; }
+  form, ul { margin: 0; padding: 0; list-style: none; }
+  label { display: block; font-size: 12px; margin-top: 8px; }
+  input { width: 100%; box-sizing: border-box; padding: 8px; }
+  button { margin-top: 12px; background: #0e7a82; color: #fff; border: 0; padding: 8px 12px; border-radius: 8px; }
+  li { padding: 8px 0; border-bottom: 1px solid #eee; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Companies</h1>
+  <p>Superadmin only.</p>
+  <ul id="list"></ul>
+  <form id="create">
+    <label>Company name<input name="name" required></label>
+    <label>Domain<input name="domain" required placeholder="example.com"></label>
+    <label>Admin email<input name="adminEmail" type="email" required></label>
+    <button type="submit">Create company</button>
+  </form>
+  <p id="msg"></p>
+</main>
+<script src="assets/live-api.js"></script>
+<script>
+  const msg = document.getElementById('msg');
+  async function load() {
+    const res = await GbLive.request('/api/admin/companies');
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.error || 'Could not load companies'; return; }
+    document.getElementById('list').innerHTML = (data.companies || []).map(function (c) {
+      return '<li>' + c.name + ' · ' + c.status + '</li>';
+    }).join('');
+  }
+  document.getElementById('create').onsubmit = async function (ev) {
+    ev.preventDefault();
+    const body = Object.fromEntries(new FormData(ev.target).entries());
+    const res = await GbLive.request('/api/admin/companies', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    msg.textContent = res.ok ? 'Created ' + data.organizationId : (data.error || 'Failed');
+    if (res.ok) load();
+  };
+  load();
+</script>
+</body>
+</html>

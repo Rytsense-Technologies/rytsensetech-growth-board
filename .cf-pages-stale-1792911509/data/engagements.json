@@ -1,0 +1,168 @@
+{
+  "updatedAt": "2026-09-21T10:40:55.707Z",
+  "engagements": [
+    {
+      "id": "eng-2026-09-18-audit",
+      "domain": "rytsensetech.com",
+      "run": "2026-09-17/2026-09-18",
+      "command": "/seo-360",
+      "startedAt": "2026-09-18T00:00:00.000Z",
+      "finishedAt": "2026-09-18T00:00:00.000Z",
+      "agentsUsed": [
+        "seo-orchestrator",
+        "seo-director",
+        "seo-qa-auditor"
+      ],
+      "summary": "US tree is technically reachable but commercially weak: broken canonicals, fabricated review schema, entity fact contradictions, and 118 blog posts with zero links into money pages. Five critical and four high findings block trustworthy AI citation and SERP conversion.",
+      "verdict": {
+        "market": "US",
+        "criticalCount": 5,
+        "highCount": 4,
+        "easyWins": 15
+      },
+      "findings": [
+        {
+          "id": "C1",
+          "severity": "critical",
+          "title": "Placeholder zeros in server HTML",
+          "agent": "seo-qa-auditor",
+          "url": null
+        },
+        {
+          "id": "C2",
+          "severity": "critical",
+          "title": "Broken canonical to www.rytsense.com",
+          "agent": "seo-qa-auditor",
+          "url": null
+        },
+        {
+          "id": "C3",
+          "severity": "critical",
+          "title": "Fabricated review schema",
+          "agent": "seo-qa-auditor",
+          "url": null
+        },
+        {
+          "id": "C4",
+          "severity": "critical",
+          "title": "No security / compliance page",
+          "agent": "seo-qa-auditor",
+          "url": null
+        },
+        {
+          "id": "C5",
+          "severity": "critical",
+          "title": "118 blog posts with zero money-page links",
+          "agent": "seo-qa-auditor",
+          "url": null
+        },
+        {
+          "id": "H1",
+          "severity": "high",
+          "title": "Five conflicting headcounts",
+          "agent": "seo-director",
+          "url": null
+        },
+        {
+          "id": "H2",
+          "severity": "high",
+          "title": "US self-declared pages that 404",
+          "agent": "seo-director",
+          "url": null
+        },
+        {
+          "id": "H3",
+          "severity": "high",
+          "title": "Brand SERP resolves to job-review sites",
+          "agent": "seo-director",
+          "url": null
+        },
+        {
+          "id": "H4",
+          "severity": "high",
+          "title": "31 case studies with zero named clients",
+          "agent": "seo-director",
+          "url": null
+        }
+      ],
+      "deliverables": [
+        "data/audit.json",
+        "report.html"
+      ],
+      "source": "publish-tool",
+      "publishedAt": "2026-09-21T10:40:55.703Z"
+    },
+    {
+      "id": "eng-2026-09-17-seo360",
+      "domain": "rytsensetech.com",
+      "run": "sep-17-18-intelligence",
+      "command": "/seo-360",
+      "startedAt": "2026-09-17T00:00:00.000Z",
+      "finishedAt": "2026-09-18T00:00:00.000Z",
+      "agentsUsed": [
+        "seo-orchestrator",
+        "seo-recon",
+        "serp-landscape-analyst",
+        "competitor-analyst",
+        "technical-seo-engineer",
+        "schema-engineer",
+        "entity-grounding-specialist",
+        "internal-linking-engineer",
+        "aeo-strategist",
+        "ai-brand-monitor",
+        "seo-director",
+        "seo-qa-auditor"
+      ],
+      "summary": "US tree is technically reachable but commercially weak: broken canonicals, fabricated review schema, entity fact contradictions, and 118 blog posts with zero links into money pages.",
+      "verdict": {
+        "market": "US",
+        "criticalCount": 5,
+        "highCount": 4,
+        "easyWins": 15
+      },
+      "findings": [
+        {
+          "id": "C1",
+          "severity": "critical",
+          "title": "Placeholder zeros in server HTML",
+          "agent": "technical-seo-engineer",
+          "url": null
+        },
+        {
+          "id": "C2",
+          "severity": "critical",
+          "title": "Broken canonical to www.rytsense.com",
+          "agent": "technical-seo-engineer",
+          "url": "/freight-broker-roi-calculator/"
+        },
+        {
+          "id": "C3",
+          "severity": "critical",
+          "title": "Fabricated review schema",
+          "agent": "schema-engineer",
+          "url": null
+        },
+        {
+          "id": "C4",
+          "severity": "critical",
+          "title": "No security / compliance page",
+          "agent": "eeat-specialist",
+          "url": "/us/"
+        },
+        {
+          "id": "C5",
+          "severity": "critical",
+          "title": "118 blog posts with zero money-page links",
+          "agent": "internal-linking-engineer",
+          "url": null
+        }
+      ],
+      "deliverables": [
+        "data/audit.json",
+        "data/fixes.json",
+        "report.html Intelligence Report"
+      ],
+      "source": "seed"
+    }
+  ]
+}

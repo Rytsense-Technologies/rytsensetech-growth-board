@@ -1,70 +1,353 @@
 {
   "site": "rytsensetech.com",
   "title": "Rytsense Search Intelligence",
-  "auditedAt": "2026-09-21",
-  "auditedRange": "2026-09-17/2026-09-21",
+  "auditedAt": "2026-10-26",
+  "auditedRange": "2026-09-28/2026-10-25",
   "verdict": {
     "market": "US",
-    "summary": "Weekly scoped review (token-optimized): 1 of 5 prior criticals FIXED (C1 placeholder zeros, via board task W2), 4 carried as still-true with refreshed notes (C2-C5), all 4 high issues carried unchanged (no evidence of movement). 1 NEW critical opened this run: sitewide SERP position volatility (GSC: 6 critical + 39 warning position/CTR drops in the last 7 days, organic clicks -28.5% over 28 days despite impressions +3.3%) — timing matches broad, unnamed Google ranking volatility reported industry-wide from 2026-09-15, so this may not be site-caused, but the site's remaining unresolved trust/schema/entity issues (C3-C5, H1-H4) leave it more exposed to any quality reassessment. Deep multi-wave /seo-360 crawl was skipped this run; only GSC/GA4 data pulls and targeted live-site spot checks were used.",
-    "criticalCount": 5,
-    "highCount": 4
+    "summary": "Weekly scoped SEO-360 (2026-10-26), 6 specialists: gsc-data-analyst, ga4-data-analyst, technical-seo-engineer, internal-linking-engineer, index-coverage-analyst, seo-qa-auditor (SHIP WITH FIXES, applied). Review gate: C5, C6, C7 STILL_TRUE; C2-C4 stay FIXED (C2 fixed on live page per WebFetch, GSC recrawl pending); 0 regressed, 0 unknown, 0 new criticals. C6 worsened: 28d GSC clicks 879 vs 1085 prior (-19.0%), impressions -19.7%; weekly clicks fell from 268 (week of 9/21) to 177 (-34%), gradual not a step. 186 of 206 lost clicks sit on homepage/careers/google-listing-tagged pages with stable position (brand terms included; brand vs non-brand split still needed); the large position drops (e.g. 13->58, 6->64) are on pages with 0-5 prior clicks. All 6 inspected URLs are indexed with no defect found, cause not established. GA4 organic sessions -10.5%; lead events (form_submission -35%) unverified, tracked as H5. C5 narrowed to ~240 older global blog posts (older sample 1/6 with money link; recent 5/6). C7 kept open: redirecting /us/rcm-roi-calculator/ still in sitemap-main.xml; root soft-404 not re-provable via WebFetch. Not sent to specialists: schema/JSON-LD (no raw-HTML tooling), CWV, entity/E-E-A-T, brand SERP, AEO.",
+    "criticalCount": 3,
+    "highCount": 5
   },
   "scores": [
-    { "dimension": "Crawler access", "score": 5, "max": 5 },
-    { "dimension": "Render accessibility", "score": 5, "max": 5 },
-    { "dimension": "Indexability", "score": 5, "max": 5 },
-    { "dimension": "Content depth", "score": 4, "max": 5 },
-    { "dimension": "Structured data validity", "score": 2, "max": 5, "note": "carried — not re-scored this run" },
-    { "dimension": "Internal link architecture", "score": 1, "max": 5, "note": "carried — not re-scored this run" },
-    { "dimension": "Entity fact consistency", "score": 1, "max": 5, "note": "carried — not re-scored this run" },
-    { "dimension": "Trust/compliance surface", "score": 1, "max": 5, "note": "carried — not re-scored this run" },
-    { "dimension": "Off-site citation", "score": 1, "max": 5, "note": "carried — not re-scored this run" },
-    { "dimension": "Commercial visibility", "score": 1, "max": 5, "note": "carried — not re-scored this run; GSC shows clicks down 28.5% over 28d" }
+    {
+      "dimension": "Crawler access",
+      "score": 5,
+      "max": 5
+    },
+    {
+      "dimension": "Render accessibility",
+      "score": 5,
+      "max": 5
+    },
+    {
+      "dimension": "Indexability",
+      "score": 5,
+      "max": 5
+    },
+    {
+      "dimension": "Content depth",
+      "score": 4,
+      "max": 5
+    },
+    {
+      "dimension": "Structured data validity",
+      "score": 2,
+      "max": 5,
+      "note": "carried — not re-scored this run"
+    },
+    {
+      "dimension": "Internal link architecture",
+      "score": 1,
+      "max": 5,
+      "note": "carried — not re-scored this run"
+    },
+    {
+      "dimension": "Entity fact consistency",
+      "score": 1,
+      "max": 5,
+      "note": "carried — not re-scored this run"
+    },
+    {
+      "dimension": "Trust/compliance surface",
+      "score": 1,
+      "max": 5,
+      "note": "carried — not re-scored this run"
+    },
+    {
+      "dimension": "Off-site citation",
+      "score": 1,
+      "max": 5,
+      "note": "carried — not re-scored this run"
+    },
+    {
+      "dimension": "Commercial visibility",
+      "score": 1,
+      "max": 5,
+      "note": "carried — not re-scored this run; GSC shows clicks down 28.5% over 28d"
+    }
   ],
   "easyWins": [
-    { "id": "W1", "action": "Fix the canonical pointing at www.rytsense.com", "location": "/freight-broker-roi-calculator/ (URL now 404s — confirm redirect status)", "effort": "30m", "owner": "Dev", "rationale": "Wrong-host canonical leaks US/global authority and confuses index selection. In progress per board." },
-    { "id": "W3", "action": "Strip fabricated AggregateRating / review schema", "location": "US service templates", "effort": "1h", "owner": "Dev", "rationale": "Fake review markup is a trust and rich-result risk. Spot check of /us/machine-learning-development-services/ found no AggregateRating JSON-LD — confirm sitewide before closing." },
-    { "id": "W4", "action": "Publish a single source-of-truth entity facts block (headcount, projects, cities)", "location": "About / US landing templates", "effort": "2h", "owner": "Content", "rationale": "Five conflicting headcounts and project counts poison AI answers." },
-    { "id": "W5", "action": "Add hub links from top blog posts into primary /us/ service pages", "location": "118 orphaned posts → money pages", "effort": "4h", "owner": "SEO", "rationale": "Blog corpus has zero commercial internal links today." },
-    { "id": "W6", "action": "Create /us/security-and-compliance/ (or equivalent) trust page", "location": "/us/", "effort": "3h", "owner": "Content", "rationale": "No security/compliance surface for enterprise buyers or AI trust signals. Global /security/ page now returns HTTP 410 (removed) — was the only candidate and it's gone." },
-    { "id": "W7", "action": "Fix US self-declared location claims that 404", "location": "US tree nav/footer", "effort": "1h", "owner": "Dev", "rationale": "Declared US presence pages return 404 — brand SERP and trust damage." },
-    { "id": "W8", "action": "Align global vs /us/ title/H1 intent to reduce cannibalization", "location": "12 US service pages + global twins", "effort": "3h", "owner": "SEO", "rationale": "Both trees target the same English commercial queries." },
-    { "id": "W9", "action": "Add named client logos/case studies on US service pages", "location": "/us/* service URLs", "effort": "4h", "owner": "Content", "rationale": "31 case studies lack named clients; weak E-E-A-T for commercial SERPs." },
-    { "id": "W10", "action": "Correct brand SERP assets (GBP/LinkedIn/Crunchbase consistency)", "location": "Off-site profiles", "effort": "2h", "owner": "Marketing", "rationale": "Brand SERP currently resolves toward job-review style sites." },
-    { "id": "W11", "action": "Add FAQ answer blocks with extractable first sentences on top 5 US pages", "location": "/us/ai-*, /us/*-services/", "effort": "3h", "owner": "Content", "rationale": "Improves AEO chunk retrieval without waiting for full content rebuild." },
-    { "id": "W12", "action": "Wire Organization sameAs to verified profiles only", "location": "Sitewide JSON-LD", "effort": "1h", "owner": "Dev", "rationale": "Entity grounding fails when sameAs and on-page facts disagree." },
-    { "id": "W13", "action": "301 map legacy rytsense.com paths still linked internally", "location": "Internal link graph", "effort": "2h", "owner": "Dev", "rationale": "Stops soft-404 and host leakage from legacy brand domain. Reinforced this run: /freight-broker-roi-calculator/ now 404s outright instead of redirecting." },
-    { "id": "W14", "action": "Add breadcrumb + Service schema only where visible content matches", "location": "US service templates", "effort": "2h", "owner": "Dev", "rationale": "Replace invalid markup with honest, visible structured data." },
-    { "id": "W15", "action": "Add named engineers to Meet the Experts", "location": "/us/ai-integration-services/", "effort": "3h", "owner": "Content", "rationale": "Named experts improve E-E-A-T and AI citation accuracy." },
-    { "id": "W16", "action": "Fix title/snippet for the page ranking #9 for \"what purpose do fairness measures serve in ai product development\"", "location": "page matching that query (blog)", "effort": "30m", "owner": "Content", "rationale": "NEW this run (GSC quick_wins): 6,126 impressions at position 9.4 but only 1 click (0.02% CTR) in 28 days — page-one ranking is being wasted by a title/snippet that doesn't earn the click. Highest opportunity score (673) of any page-one query found this run." }
+    {
+      "id": "W1",
+      "action": "Fix the canonical pointing at www.rytsense.com",
+      "location": "/freight-broker-roi-calculator/ (URL now 404s — confirm redirect status)",
+      "effort": "30m",
+      "owner": "Dev",
+      "rationale": "Wrong-host canonical leaks US/global authority and confuses index selection. In progress per board."
+    },
+    {
+      "id": "W3",
+      "action": "Strip fabricated AggregateRating / review schema",
+      "location": "US service templates",
+      "effort": "1h",
+      "owner": "Dev",
+      "rationale": "Fake review markup is a trust and rich-result risk. Spot check of /us/machine-learning-development-services/ found no AggregateRating JSON-LD — confirm sitewide before closing."
+    },
+    {
+      "id": "W4",
+      "action": "Publish a single source-of-truth entity facts block (headcount, projects, cities)",
+      "location": "About / US landing templates",
+      "effort": "2h",
+      "owner": "Content",
+      "rationale": "Five conflicting headcounts and project counts poison AI answers."
+    },
+    {
+      "id": "W5",
+      "action": "Add hub links from top blog posts into primary /us/ service pages",
+      "location": "118 orphaned posts → money pages",
+      "effort": "4h",
+      "owner": "SEO",
+      "rationale": "Blog corpus has zero commercial internal links today."
+    },
+    {
+      "id": "W6",
+      "action": "Create /us/security-and-compliance/ (or equivalent) trust page",
+      "location": "/us/",
+      "effort": "3h",
+      "owner": "Content",
+      "rationale": "No security/compliance surface for enterprise buyers or AI trust signals. Global /security/ page now returns HTTP 410 (removed) — was the only candidate and it's gone."
+    },
+    {
+      "id": "W7",
+      "action": "Fix US self-declared location claims that 404",
+      "location": "US tree nav/footer",
+      "effort": "1h",
+      "owner": "Dev",
+      "rationale": "Declared US presence pages return 404 — brand SERP and trust damage."
+    },
+    {
+      "id": "W8",
+      "action": "Align global vs /us/ title/H1 intent to reduce cannibalization",
+      "location": "12 US service pages + global twins",
+      "effort": "3h",
+      "owner": "SEO",
+      "rationale": "Both trees target the same English commercial queries."
+    },
+    {
+      "id": "W9",
+      "action": "Add named client logos/case studies on US service pages",
+      "location": "/us/* service URLs",
+      "effort": "4h",
+      "owner": "Content",
+      "rationale": "31 case studies lack named clients; weak E-E-A-T for commercial SERPs."
+    },
+    {
+      "id": "W10",
+      "action": "Correct brand SERP assets (GBP/LinkedIn/Crunchbase consistency)",
+      "location": "Off-site profiles",
+      "effort": "2h",
+      "owner": "Marketing",
+      "rationale": "Brand SERP currently resolves toward job-review style sites."
+    },
+    {
+      "id": "W11",
+      "action": "Add FAQ answer blocks with extractable first sentences on top 5 US pages",
+      "location": "/us/ai-*, /us/*-services/",
+      "effort": "3h",
+      "owner": "Content",
+      "rationale": "Improves AEO chunk retrieval without waiting for full content rebuild."
+    },
+    {
+      "id": "W12",
+      "action": "Wire Organization sameAs to verified profiles only",
+      "location": "Sitewide JSON-LD",
+      "effort": "1h",
+      "owner": "Dev",
+      "rationale": "Entity grounding fails when sameAs and on-page facts disagree."
+    },
+    {
+      "id": "W13",
+      "action": "301 map legacy rytsense.com paths still linked internally",
+      "location": "Internal link graph",
+      "effort": "2h",
+      "owner": "Dev",
+      "rationale": "Stops soft-404 and host leakage from legacy brand domain. Reinforced this run: /freight-broker-roi-calculator/ now 404s outright instead of redirecting."
+    },
+    {
+      "id": "W14",
+      "action": "Add breadcrumb + Service schema only where visible content matches",
+      "location": "US service templates",
+      "effort": "2h",
+      "owner": "Dev",
+      "rationale": "Replace invalid markup with honest, visible structured data."
+    },
+    {
+      "id": "W15",
+      "action": "Add named engineers to Meet the Experts",
+      "location": "/us/ai-integration-services/",
+      "effort": "3h",
+      "owner": "Content",
+      "rationale": "Named experts improve E-E-A-T and AI citation accuracy."
+    },
+    {
+      "id": "W16",
+      "action": "Fix title/snippet for the page ranking #9 for \"what purpose do fairness measures serve in ai product development\"",
+      "location": "page matching that query (blog)",
+      "effort": "30m",
+      "owner": "Content",
+      "rationale": "NEW this run (GSC quick_wins): 6,126 impressions at position 9.4 but only 1 click (0.02% CTR) in 28 days — page-one ranking is being wasted by a title/snippet that doesn't earn the click. Highest opportunity score (673) of any page-one query found this run."
+    }
   ],
   "criticalIssues": [
-    { "id": "C2", "scope": "US", "title": "Broken canonical to www.rytsense.com", "detail": "Freight broker ROI calculator (and related) canonicalizes to the wrong host, splitting index signals.", "reviewBucket": "STILL_TRUE", "reviewNote": "Board task W1 is in-progress, not done. Spot check 2026-09-21: the original /freight-broker-roi-calculator/ URL now returns a plain 404 (not a redirect); a differently-named /rcm-roi-calculator/ page exists instead. Could be an in-progress rename/redirect or an unredirected URL change — needs Dev confirmation next run." },
-    { "id": "C3", "scope": "US", "title": "Fabricated review schema", "detail": "AggregateRating / review JSON-LD present without verifiable on-page reviews.", "reviewBucket": "STILL_TRUE", "reviewNote": "Board task still todo. Spot check 2026-09-21 of /us/machine-learning-development-services/ found no AggregateRating JSON-LD (page instead links out to a real Clutch review, which is fine) — but this is 1 of 12 flagged money pages, not a sitewide re-crawl, so kept open pending broader confirmation." },
-    { "id": "C4", "scope": "US", "title": "No security / compliance page", "detail": "Enterprise buyers and trust-sensitive AI prompts find no authoritative compliance surface under /us/.", "reviewBucket": "STILL_TRUE", "reviewNote": "Confirmed 2026-09-21: global /security/ page (the only candidate compliance surface found sitewide) now returns HTTP 410 Gone. No /us/ equivalent exists. Gap is unchanged or slightly worse than the original finding." },
-    { "id": "C5", "scope": "sitewide", "title": "118 blog posts with zero money-page links", "detail": "Large content corpus is commercially orphaned — no internal links into primary service URLs.", "reviewBucket": "STILL_TRUE", "reviewNote": "Board task still todo, no evidence of change. Not re-crawled this run (token-optimized scope)." },
-    { "id": "C6", "scope": "sitewide", "title": "Sitewide SERP ranking volatility — multiple high-value queries dropped 40-72 positions in 7 days", "detail": "GSC check_alerts (2026-09-14 to 2026-09-20): 6 critical position drops (e.g. \"top generative ai companies\" on /us/blog/top-generative-ai-development-companies-usa/ fell from position 2 to 73; a healthcare case study fell from 4.5 to 70) plus 39 warning-level drops across global and /us/ pages. Organic clicks -28.5% over 28 days despite impressions +3.3%. GSC URL Inspection on the worst-hit URL shows it remains indexed/crawlable/canonical-matched — no technical defect found there. Independent SEO press reports broad, unnamed Google ranking volatility from 2026-09-15, matching the timing; likely industry-wide rather than a site-caused regression, but worth monitoring given the site's other unresolved trust issues.", "reviewBucket": "NEW", "reviewNote": "Opened this run from live GSC data. Task C6 created and assigned to SEO for monitoring/triage, not a blind technical fix." }
+    {
+      "id": "C5",
+      "scope": "sitewide",
+      "title": "Older global /blog/ posts have no links into money pages",
+      "detail": "Fresh 2026-10-26 sample (n=12, WebFetch, small): recent Sep posts 5/6 link to service pages; older Jun-Aug posts 1/6. Pool to fix is roughly 240 older posts; a templated service block or bulk insert would cover them.",
+      "reviewBucket": "STILL_TRUE",
+      "reviewNote": "internal-linking-engineer verify. Samples differ from the 10-12 sample (22/25 zero), so no trend is claimed; legacy-post rate is about unchanged. Board task C5 in-progress (Rama)."
+    },
+    {
+      "id": "C6",
+      "scope": "sitewide",
+      "title": "Sustained organic decline: 28d clicks -19%, weekly clicks down 34% since 2026-09-21",
+      "detail": "GSC 28d (09-28..10-25) clicks 879 vs 1085, impressions 86407 vs 107615. Weekly clicks 268 (wk 9/21) -> 177 (latest). Gradual, no step date. 186 of 206 lost clicks are on homepage, /company/career/ and google-listing-tagged URLs (position stable, brand terms included); mobile clicks -28.8%, desktop -13.0%. check_alerts 10-19..25 lists 10 critical position drops (count per alert tool, unverified; drop labels unreliable on 1-5 click pages). All 6 inspected URLs indexed, canonical-matched, no crawl/index defect found; cause not established.",
+      "reviewBucket": "STILL_TRUE",
+      "reviewNote": "WORSENED vs 09-21. gsc-data-analyst + index-coverage-analyst. QA suggests HIGH severity may fit; kept critical to match open board task C6 (Rama, in-progress). Next: brand vs non-brand split, check 4 sitemaps with errors=1."
+    },
+    {
+      "id": "C7",
+      "scope": "US",
+      "title": "Redirecting/not-found calculator URL still listed in sitemap",
+      "detail": "GSC: /us/rcm-roi-calculator/ is 'Page with redirect' (canonical /us/rcm-ai-roi-calculator/) yet is still in sitemap-main.xml. Root /rcm-roi-calculator/ returned an empty body to WebFetch (soft-404 not re-proven); GSC shows 'Crawled - currently not indexed'.",
+      "reviewBucket": "STILL_TRUE",
+      "reviewNote": "technical-seo-engineer. Board task C7 todo, unassigned, overdue since 2026-10-19. Reconcile WebFetch 111 URLs in sitemap-main vs GSC 86 submitted."
+    }
   ],
   "highIssues": [
-    { "id": "H1", "title": "Five conflicting headcounts", "detail": "About/US pages disagree on company size across five distinct figures.", "reviewBucket": "STILL_TRUE" },
-    { "id": "H2", "title": "US self-declared pages that 404", "detail": "Navigation or copy claims US presence URLs that return 404.", "reviewBucket": "STILL_TRUE" },
-    { "id": "H3", "title": "Brand SERP resolves to job-review sites", "detail": "Branded queries surface third-party job/review properties ahead of owned assets.", "reviewBucket": "STILL_TRUE" },
-    { "id": "H4", "title": "31 case studies with zero named clients", "detail": "Case study corpus lacks attributable client names, weakening proof and citations.", "reviewBucket": "STILL_TRUE" }
+    {
+      "id": "H1",
+      "title": "Five conflicting headcounts",
+      "detail": "About/US pages disagree on company size across five distinct figures.",
+      "reviewBucket": "STILL_TRUE"
+    },
+    {
+      "id": "H2",
+      "title": "US self-declared pages that 404",
+      "detail": "Navigation or copy claims US presence URLs that return 404.",
+      "reviewBucket": "STILL_TRUE"
+    },
+    {
+      "id": "H3",
+      "title": "Brand SERP resolves to job-review sites",
+      "detail": "Branded queries surface third-party job/review properties ahead of owned assets.",
+      "reviewBucket": "STILL_TRUE"
+    },
+    {
+      "id": "H4",
+      "title": "31 case studies with zero named clients",
+      "detail": "Case study corpus lacks attributable client names, weakening proof and citations.",
+      "reviewBucket": "STILL_TRUE"
+    },
+    {
+      "id": "H5",
+      "title": "Lead-event decline in GA4 needs CRM validation",
+      "detail": "GA4 key events are only purchase+click, so the '36 organic conversions' baseline is not leads. Organic form_submission 135 vs 208 (-35%), Contact Us form 6 vs 15. form_start=form_submission suggests events may double-fire (hypothesis). Validate against CRM/inbox; owner: Marketing + Dev.",
+      "reviewBucket": "NEW"
+    }
   ],
   "fixedThisRun": [
-    { "id": "C1", "scope": "sitewide", "title": "Placeholder zeros in server HTML", "detail": "At least 2 pages ship literal zero placeholders in server-rendered HTML, readable by crawlers and AI agents.", "resolvedEvidence": "Board task W2 marked done 2026-09-21. Not independently re-crawled (original audit did not record the specific 2 URLs); treat as fixed pending any regression signal in a future run." }
+    {
+      "id": "C2",
+      "scope": "US",
+      "title": "Broken canonical to www.rytsense.com",
+      "resolvedEvidence": "Live /us/freight-broker-roi-calculator/ canonical is rytsensetech.com (WebFetch 2026-10-26); GSC still shows old canonical from a 09-07 crawl, recrawl pending."
+    },
+    {
+      "id": "C3",
+      "scope": "US",
+      "title": "Fabricated review schema",
+      "resolvedEvidence": "Verified FIXED 2026-10-12 via curl; not re-checked this run."
+    },
+    {
+      "id": "C4",
+      "scope": "US",
+      "title": "No security / compliance page",
+      "resolvedEvidence": "Verified FIXED 2026-10-12 (board W6/C4 done); not re-checked this run."
+    }
   ],
   "competitiveBenchmark": [
-    { "domain": "effectivesoft.com", "serps": 12, "avgPosition": 8.4, "positions": 18, "aiCitations": 3, "onClientList": false },
-    { "domain": "masterofcode.com", "serps": 15, "avgPosition": 7.1, "positions": 22, "aiCitations": 4, "onClientList": false },
-    { "domain": "appinventiv.com", "serps": 28, "avgPosition": 5.6, "positions": 41, "aiCitations": 6, "onClientList": false },
-    { "domain": "itransition.com", "serps": 21, "avgPosition": 6.2, "positions": 30, "aiCitations": 5, "onClientList": false },
-    { "domain": "leewayhertz.com", "serps": 19, "avgPosition": 6.8, "positions": 27, "aiCitations": 5, "onClientList": false },
-    { "domain": "softteco.com", "serps": 9, "avgPosition": 11.2, "positions": 14, "aiCitations": 1, "onClientList": false },
-    { "domain": "techaheadcorp.com", "serps": 11, "avgPosition": 9.5, "positions": 16, "aiCitations": 2, "onClientList": false },
-    { "domain": "solulab.com", "serps": 14, "avgPosition": 8.9, "positions": 20, "aiCitations": 3, "onClientList": false },
-    { "domain": "simform.com", "serps": 24, "avgPosition": 5.9, "positions": 35, "aiCitations": 4, "onClientList": false },
-    { "domain": "rytsensetech.com", "serps": 0, "avgPosition": null, "positions": 0, "aiCitations": 1, "onClientList": true }
+    {
+      "domain": "effectivesoft.com",
+      "serps": 12,
+      "avgPosition": 8.4,
+      "positions": 18,
+      "aiCitations": 3,
+      "onClientList": false
+    },
+    {
+      "domain": "masterofcode.com",
+      "serps": 15,
+      "avgPosition": 7.1,
+      "positions": 22,
+      "aiCitations": 4,
+      "onClientList": false
+    },
+    {
+      "domain": "appinventiv.com",
+      "serps": 28,
+      "avgPosition": 5.6,
+      "positions": 41,
+      "aiCitations": 6,
+      "onClientList": false
+    },
+    {
+      "domain": "itransition.com",
+      "serps": 21,
+      "avgPosition": 6.2,
+      "positions": 30,
+      "aiCitations": 5,
+      "onClientList": false
+    },
+    {
+      "domain": "leewayhertz.com",
+      "serps": 19,
+      "avgPosition": 6.8,
+      "positions": 27,
+      "aiCitations": 5,
+      "onClientList": false
+    },
+    {
+      "domain": "softteco.com",
+      "serps": 9,
+      "avgPosition": 11.2,
+      "positions": 14,
+      "aiCitations": 1,
+      "onClientList": false
+    },
+    {
+      "domain": "techaheadcorp.com",
+      "serps": 11,
+      "avgPosition": 9.5,
+      "positions": 16,
+      "aiCitations": 2,
+      "onClientList": false
+    },
+    {
+      "domain": "solulab.com",
+      "serps": 14,
+      "avgPosition": 8.9,
+      "positions": 20,
+      "aiCitations": 3,
+      "onClientList": false
+    },
+    {
+      "domain": "simform.com",
+      "serps": 24,
+      "avgPosition": 5.9,
+      "positions": 35,
+      "aiCitations": 4,
+      "onClientList": false
+    },
+    {
+      "domain": "rytsensetech.com",
+      "serps": 0,
+      "avgPosition": null,
+      "positions": 0,
+      "aiCitations": 1,
+      "onClientList": true
+    }
   ],
   "technicalHealth": {
     "totalChecks": 19,
@@ -72,25 +355,109 @@
     "failing": 4,
     "note": "carried from 2026-09-18 audit — not re-run this week",
     "checks": [
-      { "id": "T01", "name": "HTTPS everywhere", "status": "pass" },
-      { "id": "T02", "name": "robots.txt allows key bots", "status": "pass" },
-      { "id": "T03", "name": "XML sitemaps present", "status": "pass", "note": "Confirmed 2026-09-21: separate sitemap index (7 sub-sitemaps) for global + a dedicated /us/sitemap.xml declared in robots.txt" },
-      { "id": "T04", "name": "Mobile viewport configured", "status": "pass" },
-      { "id": "T05", "name": "Primary content server-rendered", "status": "pass" },
-      { "id": "T06", "name": "No soft-404 home", "status": "pass" },
-      { "id": "T07", "name": "HSTS / security headers baseline", "status": "pass" },
-      { "id": "T08", "name": "Canonical targets correct host", "status": "fail", "note": "Wrong-host canonicals found (www.rytsense.com); original offending URL now 404s instead of resolving" },
-      { "id": "T09", "name": "Review markup matches visible reviews", "status": "fail", "note": "Fabricated AggregateRating / review schema — not found on 1 spot-checked page this run, unconfirmed sitewide" },
-      { "id": "T10", "name": "Security/compliance page exists", "status": "fail", "note": "Missing under /us/; global /security/ now returns HTTP 410" },
-      { "id": "T11", "name": "Blog → money-page internal links", "status": "fail", "note": "118 posts with zero commercial links" },
-      { "id": "T12", "name": "hreflang not required (EN-only)", "status": "pass" },
-      { "id": "T13", "name": "Pagination / faceted traps controlled", "status": "pass" },
-      { "id": "T14", "name": "Indexable money pages return 200", "status": "warn", "note": "Some US presence URLs 404" },
-      { "id": "T15", "name": "Org JSON-LD present", "status": "warn", "note": "Present but facts conflict on-page" },
-      { "id": "T16", "name": "Core templates have unique titles", "status": "pass" },
-      { "id": "T17", "name": "Image alt coverage on money pages", "status": "pass" },
-      { "id": "T18", "name": "No mixed-content assets", "status": "pass" },
-      { "id": "T19", "name": "Sitemap URL count plausible", "status": "pass", "note": "779 URLs across 15 segments (2026-09-18 count)" }
+      {
+        "id": "T01",
+        "name": "HTTPS everywhere",
+        "status": "pass"
+      },
+      {
+        "id": "T02",
+        "name": "robots.txt allows key bots",
+        "status": "pass"
+      },
+      {
+        "id": "T03",
+        "name": "XML sitemaps present",
+        "status": "pass",
+        "note": "Confirmed 2026-09-21: separate sitemap index (7 sub-sitemaps) for global + a dedicated /us/sitemap.xml declared in robots.txt"
+      },
+      {
+        "id": "T04",
+        "name": "Mobile viewport configured",
+        "status": "pass"
+      },
+      {
+        "id": "T05",
+        "name": "Primary content server-rendered",
+        "status": "pass"
+      },
+      {
+        "id": "T06",
+        "name": "No soft-404 home",
+        "status": "pass"
+      },
+      {
+        "id": "T07",
+        "name": "HSTS / security headers baseline",
+        "status": "pass"
+      },
+      {
+        "id": "T08",
+        "name": "Canonical targets correct host",
+        "status": "fail",
+        "note": "Wrong-host canonicals found (www.rytsense.com); original offending URL now 404s instead of resolving"
+      },
+      {
+        "id": "T09",
+        "name": "Review markup matches visible reviews",
+        "status": "fail",
+        "note": "Fabricated AggregateRating / review schema — not found on 1 spot-checked page this run, unconfirmed sitewide"
+      },
+      {
+        "id": "T10",
+        "name": "Security/compliance page exists",
+        "status": "fail",
+        "note": "Missing under /us/; global /security/ now returns HTTP 410"
+      },
+      {
+        "id": "T11",
+        "name": "Blog → money-page internal links",
+        "status": "fail",
+        "note": "118 posts with zero commercial links"
+      },
+      {
+        "id": "T12",
+        "name": "hreflang not required (EN-only)",
+        "status": "pass"
+      },
+      {
+        "id": "T13",
+        "name": "Pagination / faceted traps controlled",
+        "status": "pass"
+      },
+      {
+        "id": "T14",
+        "name": "Indexable money pages return 200",
+        "status": "warn",
+        "note": "Some US presence URLs 404"
+      },
+      {
+        "id": "T15",
+        "name": "Org JSON-LD present",
+        "status": "warn",
+        "note": "Present but facts conflict on-page"
+      },
+      {
+        "id": "T16",
+        "name": "Core templates have unique titles",
+        "status": "pass"
+      },
+      {
+        "id": "T17",
+        "name": "Image alt coverage on money pages",
+        "status": "pass"
+      },
+      {
+        "id": "T18",
+        "name": "No mixed-content assets",
+        "status": "pass"
+      },
+      {
+        "id": "T19",
+        "name": "Sitemap URL count plausible",
+        "status": "pass",
+        "note": "779 URLs across 15 segments (2026-09-18 count)"
+      }
     ]
   },
   "pageInventory": {
@@ -101,70 +468,325 @@
     "unlinkedBlogToMoney": 118,
     "note": "carried from 2026-09-18 audit — not re-crawled this week",
     "segments": [
-      { "name": "Home & marketing", "urls": 24 },
-      { "name": "Services (global)", "urls": 48 },
-      { "name": "Services (US)", "urls": 36 },
-      { "name": "Industries", "urls": 22 },
-      { "name": "Blog", "urls": 362 },
-      { "name": "Case studies", "urls": 31 },
-      { "name": "Resources / downloads", "urls": 28 },
-      { "name": "Company / about", "urls": 18 },
-      { "name": "Careers", "urls": 14 },
-      { "name": "Locations", "urls": 12 },
-      { "name": "Tools / calculators", "urls": 8 },
-      { "name": "Legal / policy", "urls": 10 },
-      { "name": "Landing / campaigns", "urls": 40 },
-      { "name": "Other / misc", "urls": 66 },
-      { "name": "US tree residual", "urls": 60 }
+      {
+        "name": "Home & marketing",
+        "urls": 24
+      },
+      {
+        "name": "Services (global)",
+        "urls": 48
+      },
+      {
+        "name": "Services (US)",
+        "urls": 36
+      },
+      {
+        "name": "Industries",
+        "urls": 22
+      },
+      {
+        "name": "Blog",
+        "urls": 362
+      },
+      {
+        "name": "Case studies",
+        "urls": 31
+      },
+      {
+        "name": "Resources / downloads",
+        "urls": 28
+      },
+      {
+        "name": "Company / about",
+        "urls": 18
+      },
+      {
+        "name": "Careers",
+        "urls": 14
+      },
+      {
+        "name": "Locations",
+        "urls": 12
+      },
+      {
+        "name": "Tools / calculators",
+        "urls": 8
+      },
+      {
+        "name": "Legal / policy",
+        "urls": 10
+      },
+      {
+        "name": "Landing / campaigns",
+        "urls": 40
+      },
+      {
+        "name": "Other / misc",
+        "urls": 66
+      },
+      {
+        "name": "US tree residual",
+        "urls": 60
+      }
     ]
   },
   "moneyPages": [
-    { "url": "/us/ai-development-services/", "defects": ["entity-facts", "weak-internal-links"] },
-    { "url": "/us/ai-integration-services/", "defects": ["named-experts-missing", "schema"] },
-    { "url": "/us/generative-ai-development/", "defects": ["cannibalization-vs-global", "schema"] },
-    { "url": "/us/machine-learning-development-services/", "defects": ["weak-proof", "internal-links"], "note": "spot-checked 2026-09-21: canonical correct, no AggregateRating schema found" },
-    { "url": "/us/chatgpt-developers/", "defects": ["review-schema", "entity-facts"], "note": "URL 404s as of 2026-09-21 — confirm with Dev whether renamed/removed" },
-    { "url": "/us/custom-software-development/", "defects": ["cannibalization-vs-global"] },
-    { "url": "/us/mobile-app-development/", "defects": ["weak-proof"] },
-    { "url": "/us/web-development/", "defects": ["internal-links"] },
-    { "url": "/us/devops-services/", "defects": ["trust-page-gap"] },
-    { "url": "/us/data-engineering/", "defects": ["entity-facts"] },
-    { "url": "/us/ui-ux-design/", "defects": ["weak-proof"] },
-    { "url": "/freight-broker-roi-calculator/", "defects": ["broken-canonical", "placeholder-zeros"], "note": "URL 404s as of 2026-09-21; /rcm-roi-calculator/ exists instead — placeholder-zeros defect likely resolved via W2, canonical defect status unconfirmed" }
+    {
+      "url": "/us/ai-development-services/",
+      "defects": [
+        "entity-facts",
+        "weak-internal-links"
+      ]
+    },
+    {
+      "url": "/us/ai-integration-services/",
+      "defects": [
+        "named-experts-missing",
+        "schema"
+      ]
+    },
+    {
+      "url": "/us/generative-ai-development/",
+      "defects": [
+        "cannibalization-vs-global",
+        "schema"
+      ]
+    },
+    {
+      "url": "/us/machine-learning-development-services/",
+      "defects": [
+        "weak-proof",
+        "internal-links"
+      ],
+      "note": "spot-checked 2026-09-21: canonical correct, no AggregateRating schema found"
+    },
+    {
+      "url": "/us/chatgpt-developers/",
+      "defects": [
+        "review-schema",
+        "entity-facts"
+      ],
+      "note": "URL 404s as of 2026-09-21 — confirm with Dev whether renamed/removed"
+    },
+    {
+      "url": "/us/custom-software-development/",
+      "defects": [
+        "cannibalization-vs-global"
+      ]
+    },
+    {
+      "url": "/us/mobile-app-development/",
+      "defects": [
+        "weak-proof"
+      ]
+    },
+    {
+      "url": "/us/web-development/",
+      "defects": [
+        "internal-links"
+      ]
+    },
+    {
+      "url": "/us/devops-services/",
+      "defects": [
+        "trust-page-gap"
+      ]
+    },
+    {
+      "url": "/us/data-engineering/",
+      "defects": [
+        "entity-facts"
+      ]
+    },
+    {
+      "url": "/us/ui-ux-design/",
+      "defects": [
+        "weak-proof"
+      ]
+    },
+    {
+      "url": "/freight-broker-roi-calculator/",
+      "defects": [
+        "broken-canonical",
+        "placeholder-zeros"
+      ],
+      "note": "URL 404s as of 2026-09-21; /rcm-roi-calculator/ exists instead — placeholder-zeros defect likely resolved via W2, canonical defect status unconfirmed"
+    }
   ],
   "aiAccuracyErrors": [
-    { "id": "E1", "severity": "retired", "error": "Retired / unreproduced claim from earlier prompt set", "source": "manual prompt test", "live": false },
-    { "id": "E2", "severity": "high", "error": "Models invent inconsistent employee headcounts", "source": "conflicting on-page facts", "live": true },
-    { "id": "E3", "severity": "high", "error": "Models invent project-delivery counts that do not match site", "source": "conflicting on-page facts", "live": true },
-    { "id": "E4", "severity": "high", "error": "Models assert US office cities that conflict across pages", "source": "location copy / 404 URLs", "live": true },
-    { "id": "E5", "severity": "medium", "error": "Models cite fabricated star ratings from review schema", "source": "AggregateRating markup", "live": true },
-    { "id": "E6", "severity": "medium", "error": "Models conflate rytsense.com and rytsensetech.com as separate companies", "source": "host/canonical leakage", "live": true },
-    { "id": "E7", "severity": "medium", "error": "Models overstate named enterprise clients", "source": "unnamed case studies", "live": true },
-    { "id": "E8", "severity": "medium", "error": "Models invent compliance certifications not evidenced on-site", "source": "missing trust page", "live": true },
-    { "id": "E9", "severity": "low", "error": "Models mis-attribute service specialties across global vs US trees", "source": "cannibalized commercial pages", "live": true }
+    {
+      "id": "E1",
+      "severity": "retired",
+      "error": "Retired / unreproduced claim from earlier prompt set",
+      "source": "manual prompt test",
+      "live": false
+    },
+    {
+      "id": "E2",
+      "severity": "high",
+      "error": "Models invent inconsistent employee headcounts",
+      "source": "conflicting on-page facts",
+      "live": true
+    },
+    {
+      "id": "E3",
+      "severity": "high",
+      "error": "Models invent project-delivery counts that do not match site",
+      "source": "conflicting on-page facts",
+      "live": true
+    },
+    {
+      "id": "E4",
+      "severity": "high",
+      "error": "Models assert US office cities that conflict across pages",
+      "source": "location copy / 404 URLs",
+      "live": true
+    },
+    {
+      "id": "E5",
+      "severity": "medium",
+      "error": "Models cite fabricated star ratings from review schema",
+      "source": "AggregateRating markup",
+      "live": true
+    },
+    {
+      "id": "E6",
+      "severity": "medium",
+      "error": "Models conflate rytsense.com and rytsensetech.com as separate companies",
+      "source": "host/canonical leakage",
+      "live": true
+    },
+    {
+      "id": "E7",
+      "severity": "medium",
+      "error": "Models overstate named enterprise clients",
+      "source": "unnamed case studies",
+      "live": true
+    },
+    {
+      "id": "E8",
+      "severity": "medium",
+      "error": "Models invent compliance certifications not evidenced on-site",
+      "source": "missing trust page",
+      "live": true
+    },
+    {
+      "id": "E9",
+      "severity": "low",
+      "error": "Models mis-attribute service specialties across global vs US trees",
+      "source": "cannibalized commercial pages",
+      "live": true
+    }
   ],
   "offsiteTargets": [
-    { "domain": "clutch.co", "why": "B2B services citation and brand SERP control" },
-    { "domain": "goodfirms.co", "why": "Directory citation; displace job-review SERP noise" },
-    { "domain": "g2.com", "why": "Category presence for AI/custom software queries" },
-    { "domain": "crunchbase.com", "why": "Entity grounding / sameAs consistency" }
+    {
+      "domain": "clutch.co",
+      "why": "B2B services citation and brand SERP control"
+    },
+    {
+      "domain": "goodfirms.co",
+      "why": "Directory citation; displace job-review SERP noise"
+    },
+    {
+      "domain": "g2.com",
+      "why": "Category presence for AI/custom software queries"
+    },
+    {
+      "domain": "crunchbase.com",
+      "why": "Entity grounding / sameAs consistency"
+    }
   ],
   "sourceStatus": [
-    { "id": "gsc", "name": "Google Search Console", "status": "live", "note": "Daily + weekly via growth-board Claude routine" },
-    { "id": "ga4", "name": "Google Analytics 4", "status": "live", "note": "Property default via GA4 MCP" },
-    { "id": "clarity", "name": "Microsoft Clarity", "status": "live", "note": "Via clarity-copilot worker" },
-    { "id": "github", "name": "GitHub", "status": "live", "note": "Recent commits on growth-board repo" },
-    { "id": "cloudflare", "name": "Cloudflare Pages / Analytics", "status": "live", "note": "Deploy via npm run deploy:cf; analytics best-effort" },
-    { "id": "serp", "name": "Live SERP API (serper.dev)", "status": "live", "note": "Used in audit competitive / AEO pass" },
-    { "id": "crawl", "name": "Direct site crawl", "status": "live", "note": "Manual audit crawl 17-18 Sep 2026; targeted spot checks 21 Sep 2026" },
-    { "id": "crm", "name": "CRM", "status": "not_connected", "note": "Would unlock leads / conversion tiles" },
-    { "id": "ahrefs", "name": "Ahrefs / Semrush / Moz", "status": "not_connected", "note": "Would unlock backlinks / DA" },
-    { "id": "gads", "name": "Google Ads", "status": "not_connected", "note": "Paid traffic tiles" },
-    { "id": "bing", "name": "Bing Webmaster / Ads", "status": "not_connected", "note": "Bing organic + paid" },
-    { "id": "sf", "name": "Screaming Frog", "status": "not_connected", "note": "Full tech crawl automation" },
-    { "id": "gbp", "name": "Google Business Profile", "status": "not_connected", "note": "Local pack / reviews" },
-    { "id": "social", "name": "Social platform APIs", "status": "not_connected", "note": "Beyond GA4 channel grouping" },
-    { "id": "ma", "name": "Marketing automation", "status": "not_connected", "note": "Campaign attribution" }
+    {
+      "id": "gsc",
+      "name": "Google Search Console",
+      "status": "live",
+      "note": "Daily + weekly via growth-board Claude routine"
+    },
+    {
+      "id": "ga4",
+      "name": "Google Analytics 4",
+      "status": "live",
+      "note": "Property default via GA4 MCP"
+    },
+    {
+      "id": "clarity",
+      "name": "Microsoft Clarity",
+      "status": "live",
+      "note": "Via clarity-copilot worker"
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "status": "live",
+      "note": "Recent commits on growth-board repo"
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare Pages / Analytics",
+      "status": "live",
+      "note": "Deploy via npm run deploy:cf; analytics best-effort"
+    },
+    {
+      "id": "serp",
+      "name": "Live SERP API (serper.dev)",
+      "status": "live",
+      "note": "Used in audit competitive / AEO pass"
+    },
+    {
+      "id": "crawl",
+      "name": "Direct site crawl",
+      "status": "live",
+      "note": "Manual audit crawl 17-18 Sep 2026; targeted spot checks 21 Sep 2026"
+    },
+    {
+      "id": "crm",
+      "name": "CRM",
+      "status": "not_connected",
+      "note": "Would unlock leads / conversion tiles"
+    },
+    {
+      "id": "ahrefs",
+      "name": "Ahrefs / Semrush / Moz",
+      "status": "not_connected",
+      "note": "Would unlock backlinks / DA"
+    },
+    {
+      "id": "gads",
+      "name": "Google Ads",
+      "status": "not_connected",
+      "note": "Paid traffic tiles"
+    },
+    {
+      "id": "bing",
+      "name": "Bing Webmaster / Ads",
+      "status": "not_connected",
+      "note": "Bing organic + paid"
+    },
+    {
+      "id": "sf",
+      "name": "Screaming Frog",
+      "status": "not_connected",
+      "note": "Full tech crawl automation"
+    },
+    {
+      "id": "gbp",
+      "name": "Google Business Profile",
+      "status": "not_connected",
+      "note": "Local pack / reviews"
+    },
+    {
+      "id": "social",
+      "name": "Social platform APIs",
+      "status": "not_connected",
+      "note": "Beyond GA4 channel grouping"
+    },
+    {
+      "id": "ma",
+      "name": "Marketing automation",
+      "status": "not_connected",
+      "note": "Campaign attribution"
+    }
   ],
   "baselines": {
     "urls": 779,
@@ -177,6 +799,10 @@
     "organicClicks28d_20260921": 1121,
     "organicImpressions28d_20260921": 114616,
     "avgPosition28d_20260921": 30.8,
-    "ga4Sessions28d_20260921": 4108
+    "ga4Sessions28d_20260921": 4108,
+    "organicClicks28d_20261026": 879,
+    "organicImpressions28d_20261026": 86407,
+    "ga4OrganicSessions28d_20261026": 1840,
+    "weeklyClicksLatest": 177
   }
 }

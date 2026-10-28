@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask — Growth Board</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #f5f6f8; }
+  main { max-width: 720px; margin: 24px auto; background: #fff; border: 1px solid #e2e5ea; border-radius: 12px; padding: 16px; }
+  #log { min-height: 220px; white-space: pre-wrap; }
+  form { display: flex; gap: 8px; }
+  input { flex: 1; padding: 8px; }
+  button { background: #0e7a82; color: #fff; border: 0; border-radius: 8px; padding: 8px 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ask</h1>
+  <p>Questions use this company's Search Console, issues, and tasks. Viewers cannot ask.</p>
+  <div id="log"></div>
+  <form id="ask">
+    <input name="message" required placeholder="Why did clicks drop?">
+    <button type="submit">Ask</button>
+  </form>
+</main>
+<script src="assets/live-api.js"></script>
+<script>
+  let threadId = null;
+  const log = document.getElementById('log');
+  document.getElementById('ask').onsubmit = async function (ev) {
+    ev.preventDefault();
+    const message = new FormData(ev.target).get('message');
+    log.textContent += '\nYou: ' + message + '\n';
+    ev.target.reset();
+    const res = await GbLive.request('/api/ask', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ message: message, threadId: threadId }),
+    });
+    const data = await res.json();
+    if (!res.ok) { log.textContent += (data.error || 'Failed') + '\n'; return; }
+    threadId = data.threadId;
+    log.textContent += 'Board: ' + data.answer + '\n';
+  };
+</script>
+</body>
+</html>

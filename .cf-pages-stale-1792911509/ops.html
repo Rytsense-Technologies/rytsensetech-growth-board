@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rytsense SEO Ops — Live Modules</title>
+<script>
+(function(){try{var t=localStorage.getItem('gb-theme');if(t!=='dark'&&t!=='light'){t='light';localStorage.setItem('gb-theme',t);try{localStorage.setItem('tt-theme',t);localStorage.setItem('rts-theme',t)}catch(x){}}document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{
+    --paper:#F5F6F8; --paper-raised:#FFFFFF; --ink:#12181F; --ink-soft:#4B5563; --ink-faint:#8B93A1;
+    --line:#E2E5EA; --accent:#0E7A82; --accent-soft:#E4F2F1; --accent-ink:#075258;
+    --good:#1E8E5A; --good-soft:#E4F5EC; --warn:#B4740E; --warn-soft:#FBF0DC;
+    --bad:#C23B3B; --bad-soft:#FBE7E7; --chip-bg:#EDEFF3;
+    --shadow: 0 1px 2px rgba(18,24,31,0.04), 0 8px 24px -12px rgba(18,24,31,0.12);
+    --sidebar:220px; color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    /* Theme is explicit via data-theme; default remains light. */
+  }
+  :root[data-theme="dark"],
+  html[data-theme="dark"]{
+    --paper:#0B1013; --paper-raised:#141A1F; --ink:#E8ECEF; --ink-soft:#A7AFB9; --ink-faint:#6C7480;
+    --line:#232B31; --accent:#3FBFC2; --accent-soft:#132726; --accent-ink:#8FE0E2;
+    --good:#49C285; --good-soft:#132520; --warn:#E3A83B; --warn-soft:#2A2013;
+    --bad:#E4685E; --bad-soft:#2A1717; --chip-bg:#1B2126;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.5;}
+  h1,h2,h3{font-family:'Manrope',system-ui,sans-serif;margin:0;}
+  .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;}
+  a{color:var(--accent-ink);}
+  .shell{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh;}
+  @media (max-width:900px){.shell{grid-template-columns:1fr;}}
+  .sidebar{background:var(--paper-raised);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:16px;}
+  .brand-row{display:flex;align-items:center;gap:10px;padding:0 6px;}
+  .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--accent),var(--accent-ink));display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Manrope';font-weight:800;font-size:12px;}
+  .brand-row strong{font-size:13px;font-family:'Manrope';}
+  .brand-row span{display:block;font-size:11px;color:var(--ink-faint);}
+  .nav{display:flex;flex-direction:column;gap:2px;}
+  .nav a{text-decoration:none;color:var(--ink-soft);font-size:12.5px;font-weight:600;padding:8px 10px;border-radius:8px;}
+  .nav a:hover,.nav a.active{background:var(--accent-soft);color:var(--accent-ink);}
+  .nav a.active{box-shadow:inset 3px 0 0 var(--accent);}
+  .side-foot{margin-top:auto;padding:8px 6px;font-size:11.5px;color:var(--ink-faint);}
+  .main{padding:28px 28px 64px;max-width:1100px;}
+  .topbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;margin-bottom:22px;border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:20px;font-weight:800;}
+  .topbar p{margin:4px 0 0;color:var(--ink-soft);font-size:12.5px;}
+  section{scroll-margin-top:calc(var(--site-nav-h, 56px) + 16px);margin-bottom:24px;}
+  .card{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow);}
+  .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+  .card-head h2{font-size:15px;font-weight:700;}
+  .card-head .sub{font-size:12px;color:var(--ink-faint);}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:8px;}
+  .tile{background:var(--paper-raised);padding:14px 16px;}
+  .tile .label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-faint);font-weight:600;}
+  .tile .value{font-size:22px;font-weight:700;font-family:'Manrope';margin-top:4px;}
+  .tile .delta{font-size:12px;font-weight:600;margin-top:4px;}
+  .delta.up{color:var(--good);} .delta.down{color:var(--bad);} .delta.flat{color:var(--ink-faint);}
+  .badge{display:inline-block;padding:2px 7px;border-radius:5px;font-weight:700;font-size:11px;}
+  .badge.live{background:var(--good-soft);color:var(--good);}
+  .badge.pending{background:var(--warn-soft);color:var(--warn);}
+  .badge.off{background:var(--chip-bg);color:var(--ink-faint);}
+  .badge.blocked{background:var(--bad-soft);color:var(--bad);}
+  .empty{padding:14px 4px;color:var(--ink-soft);font-size:12.5px;}
+  .empty .badge{margin-bottom:8px;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);font-weight:700;padding:8px;border-bottom:1px solid var(--line);}
+  td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;}
+  .num{text-align:right;white-space:nowrap;}
+  th.sortable{cursor:pointer;user-select:none;white-space:nowrap;}
+  th.sortable:hover,th.sortable.sorted{color:var(--accent-ink);}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center;}
+  .filters input,.filters select{min-width:110px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:var(--ink);font:inherit;font-size:12.5px;}
+  .filters .metric{width:96px;min-width:88px;}
+  .filters .hint{font-size:11.5px;color:var(--ink-faint);}
+  .table-wrap{overflow-x:auto;max-height:480px;border:1px solid var(--line);border-radius:10px;}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-faint);font-weight:700;padding:0 8px 8px 0;border-bottom:1px solid var(--line);}
+  td{padding:8px 8px 8px 0;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right;white-space:nowrap;}
+  .channels{display:flex;flex-direction:column;gap:8px;}
+  .channel-row{display:grid;grid-template-columns:120px 1fr 56px;gap:10px;align-items:center;}
+  .channel-row .name{font-size:12.5px;font-weight:600;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .track{height:8px;border-radius:5px;background:var(--chip-bg);overflow:hidden;}
+  .fill{height:100%;border-radius:5px;background:var(--accent);}
+  .warn-card{border-color:color-mix(in srgb, var(--warn) 40%, var(--line));background:var(--warn-soft);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:800px){.grid2{grid-template-columns:1fr;}}
+</style>
+<link rel="stylesheet" href="assets/site-nav.css">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site">
+  <div class="site-nav-inner">
+    <a class="site-nav-brand" href="index.html">
+      <span class="site-nav-mark">RT</span>
+      <span class="site-nav-name">Rytsense</span>
+    </a>
+    <div class="site-nav-links">
+      <a href="index.html" data-nav="board">Growth Board</a>
+      <a href="report.html" data-nav="report">Intelligence Report</a>
+      <a href="tasks.html" data-nav="tasks">Team Tasks</a>
+      <a href="platform.html" data-nav="platform">Internal Platform</a>
+      <a href="seo-work.html" data-nav="seo-work">SEO Work</a>
+      <a href="ops.html" data-nav="ops">SEO Ops</a>
+    </div>
+    <div class="site-nav-meta">
+      <span class="site-nav-chip">Refreshes on schedule</span>
+      <a class="site-nav-source" href="data/latest.json">latest.json</a>
+    </div>
+  </div>
+</nav>
+<script src="assets/site-nav.js" defer></script>
+<script src="assets/live-api.js"></script>
+<script src="assets/table-sort.js"></script>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand-row">
+      <div class="mark">RT</div>
+      <div><strong>SEO Ops</strong><span>Live modules · Phase 1</span></div>
+    </div>
+    <nav class="nav">
+      <a href="#exec" class="active">Executive KPIs</a>
+      <a href="#geo">Global vs US</a>
+      <a href="#page">Page Performance</a>
+      <a href="#kw">Keyword Performance</a>
+      <a href="#opp">SEO Opportunities</a>
+      <a href="#cann">Cannibalization</a>
+      <a href="#content">Content Performance</a>
+      <a href="#sources">Data Sources</a>
+    </nav>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>Live SEO / AEO modules</h1>
+        <p id="sync">Connecting…</p>
+      </div>
+      <div id="sync-pill"></div>
+    </div>
+
+    <section id="exec"><div class="card" id="m-exec"></div></section>
+    <section id="geo"><div class="card" id="m-geo"></div></section>
+    <section id="page"><div class="card" id="m-page"></div></section>
+    <section id="kw"><div class="card" id="m-kw"></div></section>
+    <section id="opp"><div class="card" id="m-opp"></div></section>
+    <section id="cann"><div class="card" id="m-cann"></div></section>
+    <section id="content"><div class="card" id="m-content"></div></section>
+    <section id="sources"><div class="card" id="m-sources"></div></section>
+  </div>
+</div>
+<script>
+(function(){
+  var fmt = new Intl.NumberFormat('en-US');
+  var liveCache = null, auditCache = null, sortBound = false;
+  var state = {
+    filters: {},
+    sort: {
+      page:{key:'impressions',dir:-1},
+      kw:{key:'impressions',dir:-1},
+      opp:{key:'opportunity',dir:-1},
+      cann:{key:'impressionSum',dir:-1},
+      content:{key:'impressions',dir:-1},
+      sources:{key:'name',dir:1}
+    }
+  };
+  function emptyFilters(){ return { q:'', type:'', bucket:'', geo:'', minImpr:'', minClicks:'', maxPos:'' }; }
+  function filtersFor(board){
+    if(!state.filters[board]) state.filters[board]=emptyFilters();
+    return state.filters[board];
+  }
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function num(n){if(n==null||isNaN(n))return '–'; return fmt.format(Math.round(n));}
+  function pct(n){if(n==null||isNaN(n))return '–'; return Number(n).toFixed(1)+'%';}
+  function delta(pctVal){
+    if(pctVal==null||isNaN(pctVal)) return '';
+    var flat = Math.abs(pctVal)<0.1;
+    var cls = flat?'flat':(pctVal>0?'up':'down');
+    var arrow = flat?'→':(pctVal>0?'↑':'↓');
+    return '<div class="delta '+cls+'">'+arrow+' '+Math.abs(pctVal).toFixed(1)+'% vs prior</div>';
+  }
+  function head(title, sub, badgeHtml){
+    return '<div class="card-head"><h2>'+title+'</h2><span class="sub">'+(badgeHtml||'')+' '+(sub||'')+'</span></div>';
+  }
+  function pending(msg){
+    return '<div class="empty"><span class="badge pending">pending next refresh</span><p style="margin:8px 0 0;">'+esc(msg)+'</p></div>';
+  }
+  function blocked(msg){
+    return '<div class="empty"><span class="badge blocked">not connected</span><p style="margin:8px 0 0;">'+esc(msg)+'</p></div>';
+  }
+  function pageType(path){
+    var p = String(path||'');
+    if(/^\/us\//i.test(p)) return 'US';
+    if(/\/blog\//i.test(p)) return 'Blog';
+    if(/case-stud/i.test(p)) return 'Case study';
+    if(/resource/i.test(p)) return 'Resource';
+    if(/\/(ai|software|mobile|web|devops|data|design)/i.test(p)) return 'Service';
+    return 'Other';
+  }
+  function bucketPos(pos){
+    if(pos<=1) return '1';
+    if(pos<=3) return '2-3';
+    if(pos<=5) return '4-5';
+    if(pos<=10) return '6-10';
+    if(pos<=20) return '11-20';
+    if(pos<=50) return '21-50';
+    return '51-100';
+  }
+  function T(){ return window.GbTable || null; }
+  function th(label, key, sortId, isNum){
+    var g = T();
+    if(!g) return '<th class="'+(isNum?'num':'')+'">'+label+'</th>';
+    return g.th(label, key, state.sort[sortId], {num:!!isNum});
+  }
+  function applySort(rows, sortId){
+    var g = T(), s = state.sort[sortId] || {key:'impressions',dir:-1};
+    if(!g) return rows;
+    return g.sortRows(rows, s.key, s.dir);
+  }
+  function metricOk(board, impr, clicks, pos){
+    var f = filtersFor(board);
+    var mi = f.minImpr===''?null:+f.minImpr;
+    var mc = f.minClicks===''?null:+f.minClicks;
+    var mp = f.maxPos===''?null:+f.maxPos;
+    if(mi!=null && !isNaN(mi) && (impr||0)<mi) return false;
+    if(mc!=null && !isNaN(mc) && (clicks||0)<mc) return false;
+    if(mp!=null && !isNaN(mp) && (pos==null || pos>mp)) return false;
+    return true;
+  }
+  function matchGeo(board, path){
+    var f = filtersFor(board);
+    var p = String(path||'');
+    if(f.geo==='us') return /^\/us\//i.test(p);
+    if(f.geo==='global') return !/^\/us\//i.test(p);
+    return true;
+  }
+  function matchQ(board, text){
+    var f = filtersFor(board);
+    if(!f.q) return true;
+    return String(text||'').toLowerCase().indexOf(f.q.toLowerCase())!==-1;
+  }
+  function filterBar(board, opts){
+    opts = opts||{};
+    var f = filtersFor(board);
+    var html = '<div class="filters" data-filter-board="'+esc(board)+'">'+
+      '<input type="search" data-f="q" placeholder="'+esc(opts.qPlaceholder||'Filter…')+'" value="'+esc(f.q)+'">';
+    if(opts.type!==false){
+      html += '<select data-f="type"><option value="">All page types</option>'+
+        ['Homepage','US','Blog','Case study','Resource','Service','Other'].map(function(t){
+          return '<option value="'+t+'"'+(f.type===t?' selected':'')+'>'+t+'</option>';
+        }).join('')+'</select>';
+    }
+    if(opts.bucket!==false){
+      html += '<select data-f="bucket"><option value="">All positions</option>'+
+        ['1','2-3','4-5','6-10','11-20','21-50','51-100'].map(function(b){
+          return '<option value="'+b+'"'+(f.bucket===b?' selected':'')+'>Pos '+b+'</option>';
+        }).join('')+'</select>';
+    }
+    if(opts.geo!==false){
+      html += '<select data-f="geo"><option value="">Global + US</option><option value="us"'+(f.geo==='us'?' selected':'')+'>US only (/us/)</option><option value="global"'+(f.geo==='global'?' selected':'')+'>Global (non-/us/)</option></select>';
+    }
+    if(opts.metrics!==false){
+      html += '<input class="metric" type="number" data-f="minImpr" placeholder="Min impr" value="'+esc(f.minImpr)+'">'+
+        '<input class="metric" type="number" data-f="minClicks" placeholder="Min clicks" value="'+esc(f.minClicks)+'">'+
+        '<input class="metric" type="number" data-f="maxPos" placeholder="Max pos" value="'+esc(f.maxPos)+'">';
+    }
+    html += '<span class="hint">This board only</span></div>';
+    return html;
+  }
+
+  function renderExec(live){
+    var el = document.getElementById('m-exec');
+    var g = live.gsc, a = live.ga4;
+    if(!g||!g.current){ el.innerHTML = head('Executive KPIs','')+pending('Waiting for GSC totals in latest.json'); return; }
+    var ch = (a&&a.channels)||[];
+    var find = function(name){ var x=ch.find(function(c){return c.channel===name;}); return x?x.sessions:null; };
+    el.innerHTML = head('Executive KPIs','Organic + traffic mix','<span class="badge live">live</span>')+
+      '<div class="tiles">'+
+        '<div class="tile"><div class="label">Organic clicks</div><div class="value mono">'+num(g.current.clicks)+'</div>'+delta(g.change&&g.change.clicksPercent)+'</div>'+
+        '<div class="tile"><div class="label">Impressions</div><div class="value mono">'+num(g.current.impressions)+'</div>'+delta(g.change&&g.change.impressionsPercent)+'</div>'+
+        '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.current.ctr)+'</div></div>'+
+        '<div class="tile"><div class="label">Avg position</div><div class="value mono">'+(g.current.position!=null?Number(g.current.position).toFixed(1):'–')+'</div></div>'+
+        '<div class="tile"><div class="label">Sessions</div><div class="value mono">'+num(a&&a.totals&&a.totals.sessions)+'</div></div>'+
+        '<div class="tile"><div class="label">Organic search</div><div class="value mono">'+num(find('Organic Search'))+'</div></div>'+
+        '<div class="tile"><div class="label">Direct</div><div class="value mono">'+num(find('Direct'))+'</div></div>'+
+        '<div class="tile"><div class="label">Organic social</div><div class="value mono">'+num(find('Organic Social'))+'</div></div>'+
+      '</div>'+
+      blocked('Leads / qualified leads / conversion rate need CRM (Phase 4). AI traffic needs referrer segmentation (Phase 3). Backlinks need Ahrefs/Semrush (Phase 4).');
+  }
+
+  function renderGeo(live){
+    var el = document.getElementById('m-geo');
+    var g = live.gscByCountry, a = live.ga4ByCountry;
+    if((!g||g.status!=='ok')&&(!a||a.status!=='ok')){
+      el.innerHTML = head('Global vs US','')+pending('Scheduler will add gscByCountry + ga4ByCountry (GSC/GA4 country dimensions). See scripts/phase1-scheduler-fields.txt');
+      return;
+    }
+    var html = head('Global vs US','Country rollups','<span class="badge live">live</span>');
+    if(g&&g.status==='ok'){
+      html += '<div class="grid2"><div><div class="sub" style="font-size:11.5px;color:var(--ink-faint);margin-bottom:6px;">GSC · US</div><div class="tiles">'+
+        '<div class="tile"><div class="label">Clicks</div><div class="value mono">'+num(g.us&&g.us.clicks)+'</div></div>'+
+        '<div class="tile"><div class="label">Impr.</div><div class="value mono">'+num(g.us&&g.us.impressions)+'</div></div>'+
+        '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.us&&g.us.ctr)+'</div></div>'+
+        '<div class="tile"><div class="label">Pos.</div><div class="value mono">'+(g.us&&g.us.position!=null?Number(g.us.position).toFixed(1):'–')+'</div></div></div></div>'+
+        '<div><div class="sub" style="font-size:11.5px;color:var(--ink-faint);margin-bottom:6px;">GSC · Rest of world</div><div class="tiles">'+
+        '<div class="tile"><div class="label">Clicks</div><div class="value mono">'+num(g.global&&g.global.clicks)+'</div></div>'+
+        '<div class="tile"><div class="label">Impr.</div><div class="value mono">'+num(g.global&&g.global.impressions)+'</div></div>'+
+        '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.global&&g.global.ctr)+'</div></div>'+
+        '<div class="tile"><div class="label">Pos.</div><div class="value mono">'+(g.global&&g.global.position!=null?Number(g.global.position).toFixed(1):'–')+'</div></div></div></div></div>';
+    }
+    if(a&&a.status==='ok'){
+      html += '<div class="tiles" style="margin-top:12px;">'+
+        '<div class="tile"><div class="label">GA4 US sessions</div><div class="value mono">'+num(a.us&&a.us.sessions)+'</div></div>'+
+        '<div class="tile"><div class="label">GA4 rest sessions</div><div class="value mono">'+num(a.rest&&a.rest.sessions)+'</div></div></div>';
+    }
+    el.innerHTML = html;
+  }
+
+  function renderPage(){
+    var live = liveCache, el = document.getElementById('m-page');
+    var f = filtersFor('page');
+    var pages = live.gscByPage && live.gscByPage.status==='ok' ? (live.gscByPage.rows||[]) : null;
+    var ga = {};
+    if(live.ga4ByPage&&live.ga4ByPage.status==='ok'){
+      (live.ga4ByPage.rows||[]).forEach(function(r){ ga[r.pagePath]=r; });
+    }
+    if(!pages){
+      el.innerHTML = head('Page Performance','')+pending('Needs gscByPage (+ optional ga4ByPage) from next scheduler run.');
+      return;
+    }
+    var rows = pages.filter(function(r){
+      if(!matchQ('page', r.page)) return false;
+      if(!matchGeo('page', r.page)) return false;
+      if(f.type && pageType(r.page)!==f.type) return false;
+      if(f.bucket && bucketPos(r.position||99)!==f.bucket) return false;
+      if(!metricOk('page', r.impressions, r.clicks, r.position)) return false;
+      return true;
+    }).map(function(r){
+      var g = ga[r.page]||{};
+      return Object.assign({}, r, {type:pageType(r.page), sessions:g.sessions||0});
+    });
+    rows = applySort(rows, 'page');
+    el.innerHTML = head('Page Performance', rows.length+' rows · this board only','<span class="badge live">live</span>')+
+      filterBar('page')+
+      '<div class="table-wrap"><table data-sort-id="page"><thead><tr>'+
+        th('URL','page','page')+th('Type','type','page')+th('Impr.','impressions','page',1)+th('Clicks','clicks','page',1)+
+        th('CTR','ctr','page',1)+th('Pos.','position','page',1)+th('Sessions','sessions','page',1)+
+      '</tr></thead><tbody>'+
+      rows.map(function(r){
+        return '<tr><td class="mono" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;">'+esc(r.page)+'</td><td>'+esc(r.type)+'</td>'+
+          '<td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td>'+
+          '<td class="num mono">'+num(r.sessions)+'</td></tr>';
+      }).join('')+'</tbody></table></div>'+
+      blocked('Leads columns blocked until CRM is connected.');
+  }
+
+  function renderKw(){
+    var live = liveCache, el = document.getElementById('m-kw');
+    var f = filtersFor('kw');
+    var full = live.gscByQuery && live.gscByQuery.status==='ok';
+    var rows = full ? (live.gscByQuery.rows||[]) : ((live.gsc&&live.gsc.quickWins)||[]);
+    var buckets = full && live.gscByQuery.buckets ? live.gscByQuery.buckets : null;
+    if(!buckets){
+      buckets = {'1':0,'2-3':0,'4-5':0,'6-10':0,'11-20':0,'21-50':0,'51-100':0};
+      rows.forEach(function(r){ var b=bucketPos(r.position||99); buckets[b]=(buckets[b]||0)+1; });
+    }
+    var filtered = rows.filter(function(r){
+      if(!matchQ('kw', r.query)) return false;
+      if(f.bucket && bucketPos(r.position||99)!==f.bucket) return false;
+      if(!metricOk('kw', r.impressions, r.clicks, r.position)) return false;
+      return true;
+    });
+    filtered = applySort(filtered, 'kw');
+    var badge = full ? '<span class="badge live">live</span>' : '<span class="badge pending">partial · quickWins only</span>';
+    var order = ['1','2-3','4-5','6-10','11-20','21-50','51-100'];
+    el.innerHTML = head('Keyword Performance', filtered.length+' queries · this board only', badge)+
+      '<div class="tiles">'+order.map(function(k){
+        return '<div class="tile"><div class="label">Pos '+k+'</div><div class="value mono" style="font-size:18px;">'+num(buckets[k])+'</div></div>';
+      }).join('')+'</div>'+
+      filterBar('kw', {type:false, geo:false, qPlaceholder:'Filter keyword…'})+
+      '<div class="table-wrap" style="margin-top:4px;"><table data-sort-id="kw"><thead><tr>'+
+        th('Query','query','kw')+th('Impr.','impressions','kw',1)+th('Clicks','clicks','kw',1)+th('CTR','ctr','kw',1)+th('Pos.','position','kw',1)+
+      '</tr></thead><tbody>'+
+      filtered.map(function(r){
+        return '<tr><td>'+esc(r.query||'')+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+  }
+
+  function renderOpp(){
+    var live = liveCache, el = document.getElementById('m-opp');
+    var qw = ((live.gsc&&live.gsc.quickWins)||[]).filter(function(r){
+      if(!matchQ('opp', r.query)) return false;
+      if(!metricOk('opp', r.impressions, r.clicks, r.position)) return false;
+      return true;
+    });
+    qw = applySort(qw, 'opp');
+    var zeroClick = qw.filter(function(r){return (r.clicks||0)===0 && (r.impressions||0)>=100;});
+    el.innerHTML = head('SEO Opportunities', qw.length+' opportunities · this board only','<span class="badge live">live</span>')+
+      '<p style="margin:0 0 10px;color:var(--ink-soft);font-size:12.5px;">Core rule: position 4–15, impressions ≥ 100, opportunity-scored.</p>'+
+      filterBar('opp', {type:false, geo:false, qPlaceholder:'Filter query…'})+
+      '<div class="table-wrap"><table data-sort-id="opp"><thead><tr>'+
+        th('Query','query','opp')+th('Impr.','impressions','opp',1)+th('Clicks','clicks','opp',1)+th('Pos.','position','opp',1)+th('Opp.','opportunity','opp',1)+
+      '</tr></thead><tbody>'+
+      qw.map(function(r){
+        return '<tr><td>'+esc(r.query)+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td><td class="num mono">'+num(r.opportunity)+'</td></tr>';
+      }).join('')+'</tbody></table></div>'+
+      (zeroClick.length?('<p style="margin:12px 0 0;font-size:12.5px;color:var(--ink-soft);"><strong>'+zeroClick.length+'</strong> high-impression / zero-click queries in this slice.</p>'):'')+
+      pending('Declining-keyword list needs Phase 2 history (or prior-period query diff in scheduler).');
+  }
+
+  function renderCann(){
+    var live = liveCache, el = document.getElementById('m-cann');
+    var warn = (live.gscCannibalization&&live.gscCannibalization.warning) ||
+      'Global tree and /us/ tree both target the same English commercial intent — structural cannibalization risk from the Sep 2026 audit.';
+    var rows = live.gscCannibalization&&live.gscCannibalization.status==='ok' ? (live.gscCannibalization.rows||[]) : null;
+    var html = head('Cannibalization','Query × page overlap · this board only','<span class="badge '+(rows?'live':'pending')+'">'+(rows?'live':'audit warning')+'</span>')+
+      '<div class="card warn-card" style="box-shadow:none;margin-bottom:12px;"><strong>Standing warning</strong><p style="margin:6px 0 0;font-size:12.5px;">'+esc(warn)+'</p></div>';
+    if(!rows){
+      html += pending('Full cannibalization table needs GSC dimensions [query,page] → gscCannibalization in the next refresh.');
+    } else {
+      var filtered = rows.filter(function(r){
+        if(!matchQ('cann', r.query+(r.pages||[]).join(' '))) return false;
+        if(!metricOk('cann', r.impressionSum, null, null)) return false;
+        return true;
+      });
+      filtered = applySort(filtered, 'cann');
+      html += filterBar('cann', {type:false, bucket:false, geo:false, qPlaceholder:'Filter keyword / URL…'})+
+        '<div class="table-wrap"><table data-sort-id="cann"><thead><tr>'+
+          th('Query','query','cann')+th('Pages','pages','cann')+th('Impr.','impressionSum','cann',1)+th('Pos σ','positionVariance','cann',1)+
+        '</tr></thead><tbody>'+
+        filtered.map(function(r){
+          return '<tr><td>'+esc(r.query)+'</td><td class="mono" style="font-size:11.5px;">'+esc((r.pages||[]).join(', '))+'</td><td class="num mono">'+num(r.impressionSum)+'</td><td class="num mono">'+(r.positionVariance!=null?Number(r.positionVariance).toFixed(2):'–')+'</td></tr>';
+        }).join('')+'</tbody></table></div>';
+    }
+    el.innerHTML = html;
+  }
+
+  function renderContent(){
+    var live = liveCache, audit = auditCache, el = document.getElementById('m-content');
+    var f = filtersFor('content');
+    var inv = audit&&audit.pageInventory;
+    var pages = live.gscByPage&&live.gscByPage.status==='ok' ? (live.gscByPage.rows||[]) : null;
+    var blogCount = inv ? inv.blogPostCount : null;
+    var unlinked = inv ? inv.unlinkedBlogToMoney : null;
+    if(!pages){
+      el.innerHTML = head('Content Performance','Blog / case studies / resources')+
+        (inv?('<div class="tiles"><div class="tile"><div class="label">Blog posts (audit)</div><div class="value mono">'+num(blogCount)+'</div></div>'+
+          '<div class="tile"><div class="label">Unlinked to money pages</div><div class="value mono">'+num(unlinked)+'</div></div></div>'):'')+
+        pending('Join gscByPage filtered to /blog/, /case-studies/, /resources/ once page report lands.');
+      return;
+    }
+    var content = pages.filter(function(r){
+      if(!/\/(blog|case-stud|resource)/i.test(r.page||'')) return false;
+      if(!matchQ('content', r.page)) return false;
+      if(!matchGeo('content', r.page)) return false;
+      if(f.bucket && bucketPos(r.position||99)!==f.bucket) return false;
+      if(!metricOk('content', r.impressions, r.clicks, r.position)) return false;
+      return true;
+    });
+    content = applySort(content, 'content');
+    var withImpr = content.filter(function(r){return (r.impressions||0)>0;}).length;
+    el.innerHTML = head('Content Performance', content.length+' URLs · this board only','<span class="badge live">live</span>')+
+      '<div class="tiles"><div class="tile"><div class="label">Content URLs shown</div><div class="value mono">'+num(content.length)+'</div></div>'+
+      '<div class="tile"><div class="label">With impressions</div><div class="value mono">'+num(withImpr)+'</div></div>'+
+      '<div class="tile"><div class="label">Audit blog corpus</div><div class="value mono">'+num(blogCount)+'</div></div>'+
+      '<div class="tile"><div class="label">Unlinked posts</div><div class="value mono">'+num(unlinked)+'</div></div></div>'+
+      filterBar('content', {type:false, qPlaceholder:'Filter content URL…'})+
+      '<div class="table-wrap" style="margin-top:4px;"><table data-sort-id="content"><thead><tr>'+
+        th('URL','page','content')+th('Impr.','impressions','content',1)+th('Clicks','clicks','content',1)+th('Pos.','position','content',1)+
+      '</tr></thead><tbody>'+
+      content.map(function(r){
+        return '<tr><td class="mono">'+esc(r.page)+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+  }
+
+  function renderSources(){
+    var audit = auditCache, el = document.getElementById('m-sources');
+    var rows = applySort(
+      ((audit&&audit.sourceStatus)||[]).filter(function(s){
+        return matchQ('sources', s.name) || matchQ('sources', s.note) || matchQ('sources', s.status);
+      }),
+      'sources'
+    );
+    el.innerHTML = head('Data Sources & Integrations','This board only','<span class="badge live">live</span>')+
+      filterBar('sources', {type:false, bucket:false, geo:false, metrics:false, qPlaceholder:'Filter source…'})+
+      '<div class="table-wrap"><table data-sort-id="sources"><thead><tr>'+
+        th('Source','name','sources')+th('Status','status','sources')+th('Note','note','sources')+
+      '</tr></thead><tbody>'+
+      rows.map(function(s){
+        var b = s.status==='live'?'live':(s.status==='not_connected'?'off':'pending');
+        return '<tr><td>'+esc(s.name)+'</td><td><span class="badge '+b+'">'+esc(s.status)+'</span></td><td style="color:var(--ink-soft)">'+esc(s.note||'')+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+  }
+
+  var FILTER_RENDERERS = {
+    page: renderPage, kw: renderKw, opp: renderOpp, cann: renderCann, content: renderContent, sources: renderSources
+  };
+  function onFilter(ev){
+    var node = ev && ev.target;
+    if(!node || !node.getAttribute) return;
+    var k = node.getAttribute('data-f');
+    if(!k) return;
+    var bar = node.closest('[data-filter-board]');
+    if(!bar) return;
+    var board = bar.getAttribute('data-filter-board');
+    if(!board) return;
+    filtersFor(board)[k] = node.value;
+    if(FILTER_RENDERERS[board]) FILTER_RENDERERS[board]();
+  }
+  function bindUi(){
+    var main = document.querySelector('.main')||document.body;
+    if(!main._gbFilterBound){
+      main._gbFilterBound = true;
+      main.addEventListener('input', onFilter);
+      main.addEventListener('change', onFilter);
+    }
+    var g = T();
+    if(g && !sortBound){
+      sortBound = true;
+      g.bindDelegated(main, function(sortId, key){
+        if(!state.sort[sortId]) state.sort[sortId] = {key:key,dir:-1};
+        state.sort[sortId] = g.toggle(state.sort[sortId], key, -1);
+        if(FILTER_RENDERERS[sortId]) FILTER_RENDERERS[sortId]();
+      });
+    }
+  }
+
+  Promise.all([
+    ((window.GbLive && window.GbLive.base())
+      ? window.GbLive.overview()
+      : fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.json();})
+    ).catch(function(){ return fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.json();}); }),
+    fetch('data/audit.json',{cache:'no-store'}).then(function(r){return r.json();})
+  ]).then(function(pair){
+    liveCache = pair[0]; auditCache = pair[1];
+    document.getElementById('sync').textContent = 'Last synced '+(liveCache.updatedAt?new Date(liveCache.updatedAt).toLocaleString():'—')+' · Audit '+((auditCache&&auditCache.auditedRange)||'');
+    document.getElementById('sync-pill').innerHTML = '<span class="badge live">GSC/GA4 connected</span>';
+    renderExec(liveCache);
+    renderGeo(liveCache);
+    renderPage();
+    renderKw();
+    renderOpp();
+    renderCann();
+    renderContent();
+    renderSources();
+    bindUi();
+  }).catch(function(err){
+    document.getElementById('sync').textContent = 'Failed to load: '+err.message;
+  });
+})();
+</script>
+</body>
+</html>
