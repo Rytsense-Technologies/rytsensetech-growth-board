@@ -26,11 +26,18 @@
   <input id="email" type="email">
   <label for="password">Password</label>
   <input id="password" type="password">
+  <label for="apibase">Growth Board API URL</label>
+  <input id="apibase" autocomplete="off" placeholder="http://localhost:8787 or https://your-api.onrender.com">
   <button id="go" type="button">Sign in</button>
   <p id="msg"></p>
 </main>
 <script type="module">
   const msg = document.getElementById('msg');
+  try {
+    const savedBase = localStorage.getItem('gb-api-base') || '';
+    if (savedBase) document.getElementById('apibase').value = savedBase;
+    else if (location.origin.includes('localhost')) document.getElementById('apibase').value = 'http://localhost:8787';
+  } catch (e) {}
   document.getElementById('go').onclick = async () => {
     const url = document.getElementById('url').value.trim();
     const anon = document.getElementById('anon').value.trim();
@@ -44,8 +51,11 @@
     const data = await res.json();
     if (!res.ok) { msg.textContent = data.error_description || data.msg || 'Sign-in failed'; return; }
     localStorage.setItem('gb-access-token', data.access_token);
-    localStorage.setItem('gb-api-base', location.origin.includes('localhost') ? 'http://localhost:8787' : localStorage.getItem('gb-api-base') || '');
-    msg.textContent = 'Signed in. Open the Growth Board.';
+    var apiBase = document.getElementById('apibase').value.trim().replace(/\/$/, '');
+    if (!apiBase) apiBase = location.origin.includes('localhost') ? 'http://localhost:8787' : (localStorage.getItem('gb-api-base') || '');
+    if (apiBase) localStorage.setItem('gb-api-base', apiBase);
+    msg.textContent = 'Signed in. Open Page Speed.';
+    location.href = 'psi.html';
   };
 </script>
 </body>

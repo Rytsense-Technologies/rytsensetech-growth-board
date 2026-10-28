@@ -13,6 +13,50 @@ function specialistExcerpt() {
   return readFileSync(SPECIALIST, 'utf8').slice(0, 2500);
 }
 
+export function isAutoModel(value) {
+  const v = String(value || '').trim().toLowerCase();
+  return !v || v === 'auto' || v === 'latest';
+}
+
+// Anthropic has no model id named "auto". Prefer current frontier aliases, then whatever the API lists.
+export function pickAutoModel(ids) {
+  const preferred = [
+    'claude-opus-5-5',
+    'claude-fable-5-1',
+    'claude-opus-5',
+    'claude-sonnet-5-5',
+    'claude-haiku-5-5',
+  ];
+  return preferred.find((id) => ids.includes(id)) || ids[0] || 'claude-opus-5-5';
+}
+
+let resolvedModel = '';
+
+async function anthropicModel(key) {
+  if (resolvedModel) return resolvedModel;
+  const pinned = (process.env.ANTHROPIC_MODEL || '').trim();
+  if (!isAutoModel(pinned)) {
+    resolvedModel = pinned;
+    return resolvedModel;
+  }
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/models', {
+      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+    });
+    if (res.ok) {
+      const body = await res.json();
+      const ids = (body.data || []).map((m) => m.id).filter(Boolean);
+      resolvedModel = pickAutoModel(ids);
+      console.log('[anthropic] auto model:', resolvedModel);
+      return resolvedModel;
+    }
+  } catch (err) {
+    console.warn('[anthropic] model list failed:', err.message);
+  }
+  resolvedModel = pickAutoModel([]);
+  return resolvedModel;
+}
+
 async function claude(messages, tools) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
@@ -20,6 +64,7 @@ async function claude(messages, tools) {
     err.status = 503;
     throw err;
   }
+  const model = await anthropicModel(key);
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -28,7 +73,7 @@ async function claude(messages, tools) {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5',
+      model,
       max_tokens: 1200,
       system: specialistExcerpt(),
       messages,

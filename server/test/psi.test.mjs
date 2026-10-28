@@ -81,6 +81,18 @@ test('pickPages keeps own-host URLs from GSC, dedupes, falls back to homepage', 
   assert.deepEqual(pickPages([], 'rytsensetech.com'), ['https://rytsensetech.com/']);
 });
 
+test('pickPages turns GSC paths into site URLs and drops utm params', () => {
+  const rows = [
+    { page: '/?utm_source=google-listing' },
+    { page: '/us/blog/carc-codes-medical-billing/' },
+    { page: '/' },
+  ];
+  assert.deepEqual(pickPages(rows, 'rytsensetech.com'), [
+    'https://rytsensetech.com/',
+    'https://rytsensetech.com/us/blog/carc-codes-medical-billing/',
+  ]);
+});
+
 test('summary uses the latest row per page and ignores issues whose task is done', () => {
   const rows = [
     { page_url: 'a', metric_date: '2026-10-28', mobile_score: 40, desktop_score: 80, psi_issues: [{ severity: 'critical' }, { severity: 'high', tasks: { status: 'done' } }] },

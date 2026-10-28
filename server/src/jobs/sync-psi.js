@@ -1,4 +1,4 @@
-// Daily Page Speed Insights sync.
+// Weekly Page Speed Insights sync (Monday). Stores scores until the next run.
 // For each active site: take the top pages by GSC impressions, run Lighthouse via
 // the PageSpeed Insights API (mobile + desktop), store one psi_scores row per page
 // per day and one psi_issues row per failing performance audit per strategy.
@@ -81,16 +81,23 @@ export function extractIssues(data, strategy) {
   return issues;
 }
 
-// GSC stores full URLs. Keep only URLs on the site's own host, without fragments.
+// GSC in this board stores paths ("/us/blog/...") as well as full URLs.
 export function pickPages(rows, domain, limit = TOP_PAGES) {
   const host = String(domain || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '').toLowerCase();
   const seen = new Set();
   const out = [];
   for (const row of rows || []) {
+    let raw = String(row.page || '').trim();
+    if (!raw) continue;
+    if (raw.startsWith('/')) raw = `https://${host}${raw}`;
+    else if (!/^https?:\/\//i.test(raw)) continue;
     let u;
-    try { u = new URL(row.page); } catch { continue; }
+    try { u = new URL(raw); } catch { continue; }
     if (u.hostname.replace(/^www\./, '').toLowerCase() !== host) continue;
     u.hash = '';
+    for (const key of [...u.searchParams.keys()]) {
+      if (/^utm_/i.test(key) || key === 'gclid' || key === 'fbclid') u.searchParams.delete(key);
+    }
     const href = u.toString();
     if (seen.has(href)) continue;
     seen.add(href);

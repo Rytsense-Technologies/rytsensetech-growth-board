@@ -913,7 +913,7 @@
   // PSI lives only in the live API (no static JSON fallback); tile is hidden without GB_API_BASE.
   function loadPsi(){
     if(!(window.GbLive && window.GbLive.base())) return;
-    window.GbLive.request('/api/psi/scores?days=7')
+    window.GbLive.request('/api/psi/scores?days=28')
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(d){
         psiLoaded = true;

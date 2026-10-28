@@ -1,24 +1,28 @@
-# Page Speed Insights jobs for the Growth Board API.
-#   Daily  02:00 UTC (07:30 IST): POST /api/jobs/psi-sync  — scan top GSC pages
-#   Weekly Wed 08:00 UTC (13:30 IST): POST /api/jobs/psi-tasks — create Development tasks
+# Page Speed Insights — once a week on Monday.
+#   Monday 03:00 UTC (08:30 IST): POST /api/jobs/psi-weekly
+#     1) scan top GSC pages  2) create Development tasks from critical/high issues
+# Scores stay in Postgres until the next Monday. The board reads that stored scan.
 #
 # One-time setup in GitHub repo Settings → Secrets and variables → Actions:
-#   GB_API_BASE  — public URL of the Express API, e.g. https://api.example.com (no trailing slash)
-#   CRON_SECRET  — same value as CRON_SECRET in the API's environment
+#   GB_API_BASE  — public HTTPS URL of the Express API (no trailing slash)
+#   CRON_SECRET  — same value as CRON_SECRET on the API host
+#
+# Until Express is hosted, run locally instead:
+#   npm run api   (leave it running)
+#   npm run psi:weekly
 
 name: PSI jobs
 
 on:
   schedule:
-    - cron: '0 2 * * *'
-    - cron: '0 8 * * 3'
+    - cron: '0 3 * * 1'
   workflow_dispatch:
     inputs:
       job:
         description: Which job to run
         type: choice
-        options: [psi-sync, psi-tasks]
-        default: psi-sync
+        options: [psi-weekly, psi-sync, psi-tasks]
+        default: psi-weekly
 
 concurrency:
   group: psi-jobs
@@ -29,29 +33,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Pick job
-        id: pick
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "job=${{ inputs.job }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "0 8 * * 3" ]; then
-            echo "job=psi-tasks" >> "$GITHUB_OUTPUT"
-          else
-            echo "job=psi-sync" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Call API
         env:
           GB_API_BASE: ${{ secrets.GB_API_BASE }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          JOB: ${{ github.event_name == 'workflow_dispatch' && inputs.job || 'psi-weekly' }}
         run: |
           if [ -z "$GB_API_BASE" ] || [ -z "$CRON_SECRET" ]; then
             echo "::warning::GB_API_BASE / CRON_SECRET secrets not set; skipping"
             exit 0
           fi
-          # A full scan takes several minutes (25 pages x 2 Lighthouse runs per site).
           curl --fail-with-body --silent --show-error --max-time 1500 \
-            -X POST "$GB_API_BASE/api/jobs/${{ steps.pick.outputs.job }}" \
+            -X POST "$GB_API_BASE/api/jobs/$JOB" \
             -H "x-cron-secret: $CRON_SECRET" \
             -H "content-type: application/json" \
             -d '{}'

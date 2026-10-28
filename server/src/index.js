@@ -1,3 +1,6 @@
+import { readFileSync, existsSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import { google } from 'googleapis';
 import { supabaseAdmin, RYTSENSE_ORG, RYTSENSE_SITE } from './db.js';
@@ -12,8 +15,26 @@ import { runPSISync } from './jobs/sync-psi.js';
 import { createPSITasks } from './jobs/create-psi-tasks.js';
 import { createPsiRouter } from './routes/psi.js';
 
+const envFile = join(dirname(fileURLToPath(import.meta.url)), '..', '.env');
+if (existsSync(envFile)) {
+  for (const line of readFileSync(envFile, 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+}
+
+function corsOrigin(req) {
+  const origin = (req && req.get && req.get('origin')) || '';
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) return origin;
+  if (/^https:\/\/([a-z0-9-]+\.)?rytsensetech-growth-board\.pages\.dev$/i.test(origin)) return origin;
+  const allowed = (process.env.PUBLIC_APP_URL || '*').replace(/\/$/, '');
+  if (origin && (allowed === '*' || origin === allowed)) return origin || allowed;
+  return allowed;
+}
+
 function json(res, data, status = 200) {
-  res.set('access-control-allow-origin', process.env.PUBLIC_APP_URL || '*');
+  res.set('access-control-allow-origin', corsOrigin(res.req));
+  res.set('vary', 'Origin');
   res.set('access-control-allow-headers', 'authorization, content-type, x-cron-secret, x-support-org');
   res.set('access-control-allow-methods', 'GET, POST, PATCH, OPTIONS');
   return res.status(status).json(data);
@@ -343,31 +364,30 @@ export function createApp() {
     },
   }));
 
-  // PSI cron jobs. Daily: POST /api/jobs/psi-sync. Weekly: POST /api/jobs/psi-tasks.
+  // PSI cron jobs. Monday weekly: POST /api/jobs/psi-weekly (scan then create Dev tasks).
   // Body (optional): { "siteId": "<uuid>" } to limit to one site; default is every active site.
-  app.post('/api/jobs/psi-sync', async (req, res) => {
-    if (!cronOk(req)) return json(res, { error: 'forbidden' }, 403);
-    const db = supabaseAdmin();
-    if (!db) return json(res, { error: 'database not configured' }, 503);
-    try {
-      json(res, { ok: true, result: await runPSISync(db, { siteId: (req.body && req.body.siteId) || null }) });
-    } catch (err) {
-      console.error('PSI sync job error:', err);
-      json(res, { error: err.message }, 500);
-    }
-  });
-
-  app.post('/api/jobs/psi-tasks', async (req, res) => {
-    if (!cronOk(req)) return json(res, { error: 'forbidden' }, 403);
-    const db = supabaseAdmin();
-    if (!db) return json(res, { error: 'database not configured' }, 503);
-    try {
-      json(res, { ok: true, result: await createPSITasks(db, { siteId: (req.body && req.body.siteId) || null }) });
-    } catch (err) {
-      console.error('PSI tasks job error:', err);
-      json(res, { error: err.message }, 500);
-    }
-  });
+  function psiJob(run) {
+    return async (req, res) => {
+      if (!cronOk(req)) return json(res, { error: 'forbidden' }, 403);
+      const db = supabaseAdmin();
+      if (!db) return json(res, { error: 'database not configured' }, 503);
+      req.setTimeout(0);
+      res.setTimeout(0);
+      try {
+        json(res, { ok: true, result: await run(db, { siteId: (req.body && req.body.siteId) || null }) });
+      } catch (err) {
+        console.error('PSI job error:', err);
+        json(res, { error: err.message }, 500);
+      }
+    };
+  }
+  app.post('/api/jobs/psi-sync', psiJob((db, opts) => runPSISync(db, opts)));
+  app.post('/api/jobs/psi-tasks', psiJob((db, opts) => createPSITasks(db, opts)));
+  app.post('/api/jobs/psi-weekly', psiJob(async (db, opts) => {
+    const sync = await runPSISync(db, opts);
+    const tasks = await createPSITasks(db, opts);
+    return { sync, tasks };
+  }));
 
   app.post('/api/jobs/sync', async (req, res) => {
     if (!cronOk(req)) return json(res, { error: 'forbidden' }, 403);
@@ -471,8 +491,14 @@ function assembleOverview(site, days) {
 }
 
 const port = Number(process.env.PORT || 8787);
-if (process.argv[1] && process.argv[1].endsWith('index.js')) {
-  createApp().listen(port, () => {
-    console.log('Growth Board API on ' + port);
-  });
+const startedDirectly = /index\.js$/i.test(process.argv[1] || '');
+if (startedDirectly) {
+  createApp()
+    .listen(port, '0.0.0.0', () => {
+      console.log('Growth Board API on ' + port);
+    })
+    .on('error', (err) => {
+      console.error('API listen failed:', err.message);
+      process.exit(1);
+    });
 }

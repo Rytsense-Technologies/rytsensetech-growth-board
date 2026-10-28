@@ -9,12 +9,17 @@
     "deploy:cf": "node scripts/deploy-cloudflare.mjs",
     "import:gsc-issues": "python scripts/import-gsc-issues.py",
     "import:product": "node scripts/import-product.mjs",
+    "start": "node server/src/index.js",
     "api": "node server/src/index.js",
-    "test:product": "node --test server/test/scope.test.mjs server/test/psi.test.mjs"
+    "psi:weekly": "node scripts/psi-weekly.mjs",
+    "test:product": "node --test server/test/scope.test.mjs server/test/psi.test.mjs server/test/jobs-model.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "express": "^5.1.0",
     "googleapis": "^140.0.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
