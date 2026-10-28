@@ -30,3 +30,10 @@ test('tampered team token is rejected', () => {
   assert.equal(verifyTeamToken(token.slice(0, -2) + 'xx'), null);
   assert.equal(verifyTeamToken('not-a-token'), null);
 });
+
+test('team session expires after 30 minutes', () => {
+  const fresh = verifyTeamToken(signTeamToken());
+  assert.ok(fresh);
+  assert.ok(fresh.exp - Date.now() <= 30 * 60 * 1000 + 1000);
+  assert.equal(verifyTeamToken(signTeamToken({ exp: Date.now() - 1000, iat: Date.now() - 31 * 60 * 1000 })), null);
+});

@@ -13,6 +13,11 @@ export function teamUserId() {
   return 'team-' + teamUsername();
 }
 
+export function teamSessionMs() {
+  const minutes = Number(process.env.TEAM_SESSION_MINUTES || 30);
+  return Math.max(1, minutes) * 60 * 1000;
+}
+
 function sessionSecret() {
   return process.env.SESSION_SECRET || process.env.CRON_SECRET || 'growth-board-team-session';
 }
@@ -31,11 +36,13 @@ export function checkTeamLogin(username, password) {
 }
 
 export function signTeamToken(extra = {}) {
+  const now = Date.now();
   const payload = {
     typ: 'gb-team',
     sub: teamUserId(),
     username: teamUsername(),
-    exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
+    iat: now,
+    exp: now + teamSessionMs(),
     ...extra,
   };
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -52,7 +59,11 @@ export function verifyTeamToken(token) {
   try {
     const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
     if (payload.typ !== 'gb-team') return null;
-    if (payload.exp && Date.now() > payload.exp) return null;
+    const now = Date.now();
+    const maxAge = teamSessionMs();
+    if (payload.iat && now - payload.iat > maxAge) return null;
+    if (payload.exp && now > payload.exp) return null;
+    if (!payload.iat && payload.exp && payload.exp - now > maxAge) return null;
     return payload;
   } catch (e) {
     return null;

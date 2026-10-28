@@ -23,7 +23,28 @@
     return pageLeaf() === 'login.html';
   }
 
+  function sessionExpired() {
+    if (window.GbLive && typeof window.GbLive.sessionAlive === 'function') {
+      return !window.GbLive.sessionAlive();
+    }
+    try {
+      var exp = Number(localStorage.getItem('gb-session-expires') || 0);
+      if (exp && Date.now() >= exp) return true;
+      var tok = localStorage.getItem('gb-access-token') || '';
+      if (tok.indexOf('gb.') === 0) {
+        var part = tok.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        while (part.length % 4) part += '=';
+        var payload = JSON.parse(atob(part));
+        if (payload.exp && Date.now() >= payload.exp) return true;
+      }
+      return !(tok || localStorage.getItem('gb-refresh-token'));
+    } catch (e) {
+      return true;
+    }
+  }
+
   function signedIn() {
+    if (sessionExpired()) return false;
     try {
       return !!(localStorage.getItem('gb-access-token') || localStorage.getItem('gb-refresh-token'));
     } catch (e) {
@@ -32,7 +53,13 @@
   }
 
   function requireAuth() {
-    if (isLoginPage() || signedIn()) return true;
+    if (isLoginPage()) return true;
+    if (signedIn()) return true;
+    try {
+      localStorage.removeItem('gb-access-token');
+      localStorage.removeItem('gb-refresh-token');
+      localStorage.removeItem('gb-session-expires');
+    } catch (e) {}
     var next = pageLeaf() + location.search;
     location.replace('login.html?next=' + encodeURIComponent(next));
     return false;
@@ -81,6 +108,7 @@
     try {
       localStorage.removeItem('gb-access-token');
       localStorage.removeItem('gb-refresh-token');
+      localStorage.removeItem('gb-session-expires');
     } catch (e) {}
     location.href = 'login.html';
   }

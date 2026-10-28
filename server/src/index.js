@@ -18,6 +18,7 @@ import {
   checkTeamLogin,
   signTeamToken,
   teamActor,
+  teamSessionMs,
   teamUserId,
   verifyTeamToken,
 } from './team-auth.js';
@@ -138,7 +139,7 @@ export function createApp() {
       return json(res, {
         access_token: token,
         refresh_token: token,
-        expires_in: 30 * 24 * 60 * 60,
+        expires_in: Math.round(teamSessionMs() / 1000),
         user: { id: teamUserId(), email: username },
       });
     }
@@ -155,11 +156,11 @@ export function createApp() {
     if (!refresh) return json(res, { error: 'refresh token required' }, 400);
     const team = verifyTeamToken(refresh);
     if (team) {
-      const token = signTeamToken({ sub: team.sub, username: team.username });
+      const remaining = Math.max(0, Math.round((team.exp - Date.now()) / 1000));
       return json(res, {
-        access_token: token,
-        refresh_token: token,
-        expires_in: 30 * 24 * 60 * 60,
+        access_token: refresh,
+        refresh_token: refresh,
+        expires_in: remaining,
         user: { id: team.sub || teamUserId(), email: team.username },
       });
     }

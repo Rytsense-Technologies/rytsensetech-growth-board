@@ -25,7 +25,7 @@
 <main>
   <div class="brand"><span class="mark">RT</span><strong>Rytsense Growth Board</strong></div>
   <h1>Sign in</h1>
-  <p>Team login. This browser stays signed in until you sign out.</p>
+  <p>Team login. The session ends after 30 minutes, then everyone must sign in again.</p>
   <label for="user">Username</label>
   <input id="user" autocomplete="username" value="rytsensetech">
   <label for="password">Password</label>
@@ -79,6 +79,16 @@
   (async function () {
     var refresh = get('gb-refresh-token');
     if (!refresh) return;
+    var exp = Number(get('gb-session-expires') || 0);
+    if (refresh.indexOf('gb.') === 0 && exp && Date.now() >= exp) {
+      try {
+        localStorage.removeItem('gb-access-token');
+        localStorage.removeItem('gb-refresh-token');
+        localStorage.removeItem('gb-session-expires');
+      } catch (e) {}
+      msg.textContent = 'Session ended after 30 minutes. Sign in again.';
+      return;
+    }
     msg.textContent = 'Signing you in…';
     try {
       var res = await fetch(apiBase() + '/api/auth/refresh', {
