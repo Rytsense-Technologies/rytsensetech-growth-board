@@ -1,6 +1,6 @@
 # Page Speed Insights — once a week on Monday.
 #   Monday 03:00 UTC (08:30 IST): POST /api/jobs/psi-weekly
-#     1) scan top GSC pages  2) create Development tasks from critical/high issues
+#     1) scan every GSC + sitemap page  2) create Development tasks from critical/high issues
 # Scores stay in Postgres until the next Monday. The board reads that stored scan.
 #
 # One-time setup in GitHub repo Settings → Secrets and variables → Actions:
@@ -31,7 +31,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 180
     steps:
       - name: Call API
         env:
@@ -43,7 +43,7 @@ jobs:
             echo "::warning::GB_API_BASE / CRON_SECRET secrets not set; skipping"
             exit 0
           fi
-          curl --fail-with-body --silent --show-error --max-time 1500 \
+          curl --fail-with-body --silent --show-error --max-time 10800 \
             -X POST "$GB_API_BASE/api/jobs/$JOB" \
             -H "x-cron-secret: $CRON_SECRET" \
             -H "content-type: application/json" \

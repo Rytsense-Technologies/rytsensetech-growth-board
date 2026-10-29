@@ -1,12 +1,18 @@
 // Weekly Page Speed Insights sync (Monday). Stores scores until the next run.
-// For each active site: take the top pages by GSC impressions, run Lighthouse via
-// the PageSpeed Insights API (mobile + desktop), store one psi_scores row per page
-// per day and one psi_issues row per failing performance audit per strategy.
+// For each active site: every Search Console URL plus sitemap URLs, run Lighthouse
+// via the PageSpeed Insights API (mobile + desktop), store one psi_scores row per
+// page per day and one psi_issues row per failing performance audit per strategy.
 
 const PSI_ENDPOINT = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
-const TOP_PAGES = 25;
 const CONCURRENCY = 3;          // pages in flight at once (each = 2 PSI calls)
 const REQUEST_TIMEOUT_MS = 90_000;
+const SITEMAP_TIMEOUT_MS = 20_000;
+
+export function pageCap() {
+  const n = Number(process.env.PSI_MAX_PAGES);
+  if (Number.isFinite(n) && n > 0) return Math.floor(n);
+  return Number.MAX_SAFE_INTEGER;
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -81,8 +87,88 @@ export function extractIssues(data, strategy) {
   return issues;
 }
 
+export function urlsFromSitemapXml(xml) {
+  const out = [];
+  const re = /<loc>\s*([^<]+)\s*<\/loc>/gi;
+  let m;
+  while ((m = re.exec(String(xml || '')))) out.push(m[1].trim());
+  return out;
+}
+
+export async function collectSitemapPages(domain, { fetchImpl = fetch } = {}) {
+  const host = String(domain || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
+  if (!host) return [];
+  const seeds = [];
+  for (const origin of [`https://${host}`, `https://www.${host}`]) {
+    try {
+      const robots = await fetchImpl(`${origin}/robots.txt`, { signal: AbortSignal.timeout(SITEMAP_TIMEOUT_MS) });
+      if (robots && robots.ok && typeof robots.text === 'function') {
+        const text = await robots.text();
+        for (const line of String(text || '').split(/\r?\n/)) {
+          const sm = line.match(/^sitemap:\s*(\S+)/i);
+          if (sm) seeds.push(sm[1]);
+        }
+      }
+    } catch { /* robots.txt is optional */ }
+    seeds.push(`${origin}/sitemap.xml`);
+  }
+  const seenXml = new Set();
+  const urls = [];
+  for (const start of seeds) await walkSitemap(start, 0, seenXml, urls, fetchImpl);
+  return urls;
+}
+
+async function walkSitemap(url, depth, seenXml, urls, fetchImpl) {
+  if (depth > 2 || seenXml.has(url) || urls.length > 20000) return;
+  seenXml.add(url);
+  let xml = '';
+  try {
+    const res = await fetchImpl(url, { signal: AbortSignal.timeout(SITEMAP_TIMEOUT_MS) });
+    if (!res || !res.ok || typeof res.text !== 'function') return;
+    xml = await res.text();
+  } catch { return; }
+  const locs = urlsFromSitemapXml(xml);
+  const isIndex = /<sitemapindex/i.test(xml);
+  for (const loc of locs) {
+    if (isIndex) await walkSitemap(loc, depth + 1, seenXml, urls, fetchImpl);
+    else urls.push(loc);
+  }
+}
+
+async function loadSearchPages(db, siteId) {
+  const rows = [];
+  const pageSize = 1000;
+  let from = 0;
+  for (;;) {
+    const { data, error } = await db
+      .from('search_pages')
+      .select('page, impressions')
+      .eq('site_id', siteId)
+      .order('impressions', { ascending: false })
+      .range(from, from + pageSize - 1);
+    if (error) throw new Error(`search_pages: ${error.message}`);
+    if (!data || !data.length) break;
+    rows.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return rows;
+}
+
+function mergePages(gscPages, sitemapPages, limit) {
+  const out = [];
+  const seen = new Set();
+  for (const href of [...gscPages, ...sitemapPages]) {
+    if (seen.has(href)) continue;
+    seen.add(href);
+    out.push(href);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 // GSC in this board stores paths ("/us/blog/...") as well as full URLs.
-export function pickPages(rows, domain, limit = TOP_PAGES) {
+export function pickPages(rows, domain, limit = pageCap(), opts = {}) {
   const host = String(domain || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '').toLowerCase();
   const seen = new Set();
   const out = [];
@@ -104,7 +190,7 @@ export function pickPages(rows, domain, limit = TOP_PAGES) {
     out.push(href);
     if (out.length >= limit) break;
   }
-  if (!out.length && host) out.push(`https://${host}/`);
+  if (!out.length && host && opts.fallback !== false) out.push(`https://${host}/`);
   return out;
 }
 
@@ -121,15 +207,13 @@ async function mapPool(items, size, fn) {
 
 async function syncSite(db, site, metricDate, deps) {
   const result = { siteId: site.id, domain: site.domain, syncedPages: 0, syncedIssues: 0, errors: 0, failures: [] };
-  const { data: rows, error } = await db
-    .from('search_pages')
-    .select('page, impressions')
-    .eq('site_id', site.id)
-    .order('impressions', { ascending: false })
-    .limit(TOP_PAGES * 3);
-  if (error) throw new Error(`search_pages: ${error.message}`);
-  const pages = pickPages(rows, site.domain);
-  console.log(`[PSI Sync] ${site.domain}: scanning ${pages.length} pages`);
+  const limit = pageCap();
+  const rows = await loadSearchPages(db, site.id);
+  const fromGsc = pickPages(rows, site.domain, limit);
+  const sitemapUrls = await collectSitemapPages(site.domain, deps);
+  const fromSitemap = pickPages(sitemapUrls.map((page) => ({ page })), site.domain, limit, { fallback: false });
+  const pages = mergePages(fromGsc, fromSitemap, limit);
+  console.log(`[PSI Sync] ${site.domain}: scanning ${pages.length} pages (${fromGsc.length} from Search Console, ${fromSitemap.length} from sitemap)`);
 
   await mapPool(pages, CONCURRENCY, async (pageUrl) => {
     try {

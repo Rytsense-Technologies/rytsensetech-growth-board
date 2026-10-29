@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { extractMetrics, extractIssues, pickPages, runPSISync } from '../src/jobs/sync-psi.js';
+import { extractMetrics, extractIssues, pickPages, runPSISync, urlsFromSitemapXml } from '../src/jobs/sync-psi.js';
 import { groupIssues, taskFor, createPSITasks } from '../src/jobs/create-psi-tasks.js';
 import { summarize, latestPerPage, trend } from '../src/routes/psi.js';
 
@@ -81,6 +81,16 @@ test('pickPages keeps own-host URLs from GSC, dedupes, falls back to homepage', 
   assert.deepEqual(pickPages([], 'rytsensetech.com'), ['https://rytsensetech.com/']);
 });
 
+test('urlsFromSitemapXml reads loc entries', () => {
+  const xml = `<?xml version="1.0"?>
+  <urlset><url><loc>https://rytsensetech.com/us/</loc></url>
+  <url><loc>https://rytsensetech.com/contact/</loc></url></urlset>`;
+  assert.deepEqual(urlsFromSitemapXml(xml), [
+    'https://rytsensetech.com/us/',
+    'https://rytsensetech.com/contact/',
+  ]);
+});
+
 test('pickPages turns GSC paths into site URLs and drops utm params', () => {
   const rows = [
     { page: '/?utm_source=google-listing' },
@@ -140,7 +150,7 @@ function fakeDb(resolve) {
         single() { return run(); },
         maybeSingle() { return run(); },
       };
-      for (const m of ['eq', 'neq', 'in', 'is', 'not', 'gte', 'order', 'limit', 'or']) b[m] = (...a) => { q.filters.push([m, ...a]); return b; };
+      for (const m of ['eq', 'neq', 'in', 'is', 'not', 'gte', 'order', 'limit', 'or', 'range']) b[m] = (...a) => { q.filters.push([m, ...a]); return b; };
       return b;
     },
   };
@@ -157,6 +167,7 @@ test('runPSISync writes schema-valid rows for every page', async () => {
   });
   const calls = [];
   const fetchImpl = async (url) => {
+    if (!url.includes('pagespeedonline')) return { ok: false, text: async () => '' };
     calls.push(url);
     assert.match(url, /^https:\/\/www\.googleapis\.com\/pagespeedonline\/v5\/runPagespeed\?/);
     return { ok: true, json: async () => lighthouse(url.includes('strategy=mobile') ? 0.42 : 0.91) };
@@ -178,9 +189,12 @@ test('runPSISync counts a failing page as an error and keeps going', async () =>
     if (q.op === 'upsert' && q.table === 'psi_scores') return { data: { id: 's' }, error: null };
     return { data: null, error: null };
   });
-  const fetchImpl = async (url) => (url.includes('%2Fbad')
-    ? { ok: false, status: 400, json: async () => ({ error: { message: 'Lighthouse returned error' } }) }
-    : { ok: true, json: async () => lighthouse(0.9) });
+  const fetchImpl = async (url) => {
+    if (!url.includes('pagespeedonline')) return { ok: false, text: async () => '' };
+    return url.includes('%2Fbad')
+      ? { ok: false, status: 400, json: async () => ({ error: { message: 'Lighthouse returned error' } }) }
+      : { ok: true, json: async () => lighthouse(0.9) };
+  };
   const out = await runPSISync(db, { fetchImpl });
   assert.equal(out.syncedPages, 1);
   assert.equal(out.errors, 1);
