@@ -1,11 +1,20 @@
 // Weekly: turn critical/high PSI issues from the latest scan into Development tasks.
-// One task per (page, audit); mobile + desktop findings for the same audit share it.
+// One task per (URL template, audit). Mobile + desktop findings for the same audit share it.
+// Blog/service slugs collapse to :slug so 400 posts do not become 400 tickets.
 
 const MAX_TASKS_PER_SITE = 25;
 const DEV_TEAM = 'Development'; // matches the team name used in data/tasks.json and tasks.html
+const SLUG_PARENTS = new Set(['blog', 'news', 'articles', 'posts', 'resources', 'services', 'solutions', 'products', 'case-studies', 'work', 'guides']);
 
-function pathOf(url) {
-  try { const u = new URL(url); return u.pathname + u.search; } catch { return url || 'unknown'; }
+export function urlTemplate(url) {
+  let pathname = '';
+  try { pathname = new URL(url).pathname; } catch { pathname = String(url || ''); }
+  pathname = pathname.replace(/\/+$/, '') || '/';
+  if (pathname === '/') return '/';
+  const parts = pathname.split('/').filter(Boolean);
+  const parent = parts.length >= 2 ? parts[parts.length - 2].toLowerCase() : '';
+  if (SLUG_PARENTS.has(parent)) parts[parts.length - 1] = ':slug';
+  return '/' + parts.join('/');
 }
 
 async function notifySlack(text, fetchImpl = fetch) {
@@ -26,32 +35,54 @@ export function groupIssues(issues) {
   const groups = new Map();
   for (const issue of issues || []) {
     const page = issue.psi_scores && issue.psi_scores.page_url;
-    const key = `${page}::${issue.audit_id}`;
-    if (!groups.has(key)) groups.set(key, { page, auditId: issue.audit_id, title: issue.title, issues: [] });
-    groups.get(key).issues.push(issue);
+    const template = urlTemplate(page);
+    const key = `${template}::${issue.audit_id}`;
+    if (!groups.has(key)) {
+      groups.set(key, { page, template, auditId: issue.audit_id, title: issue.title, issues: [], urls: new Set() });
+    }
+    const g = groups.get(key);
+    g.issues.push(issue);
+    if (page) g.urls.add(page);
   }
   const rank = (g) => (g.issues.some((i) => i.severity === 'critical') ? 2 : 1) * 1000 + Math.max(...g.issues.map((i) => i.impact_score || 0));
-  return [...groups.values()].sort((a, b) => rank(b) - rank(a));
+  return [...groups.values()]
+    .map((g) => ({
+      page: g.page,
+      template: g.template,
+      auditId: g.auditId,
+      title: g.title,
+      issues: g.issues,
+      urlCount: g.urls.size,
+      sampleUrls: [...g.urls].slice(0, 3),
+    }))
+    .sort((a, b) => rank(b) - rank(a));
 }
 
 export function taskFor(group, site) {
   const critical = group.issues.some((i) => i.severity === 'critical');
+  const samples = group.sampleUrls && group.sampleUrls.length ? group.sampleUrls : (group.page ? [group.page] : []);
+  const location = group.template || '/';
   const lines = [...group.issues]
-    .sort((a, b) => a.strategy.localeCompare(b.strategy))
+    .sort((a, b) => a.strategy.localeCompare(b.strategy) || String(a.psi_scores && a.psi_scores.page_url).localeCompare(String(b.psi_scores && b.psi_scores.page_url)))
+    .slice(0, 12)
     .map((i) => `- ${i.strategy}: ${i.severity}, impact ${i.impact_score}/100${i.estimated_savings ? ` (${i.estimated_savings})` : ''}`);
   const description = (group.issues[0].description || '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  const n = group.urlCount || samples.length;
   return {
-    title: `[PSI] ${pathOf(group.page)}: ${group.title}`.slice(0, 200),
+    title: `[PSI] ${location}: ${group.title}`.slice(0, 200),
     details: [
-      `PageSpeed Insights flagged "${group.title}" on ${group.page}.`,
+      `PageSpeed Insights flagged "${group.title}" on ${n} URL(s) matching ${location}.`,
+      '',
+      'Sample URLs:',
+      ...samples.map((u) => `- ${u}`),
       '',
       ...lines,
       '',
       description,
       '',
-      `Re-test: https://pagespeed.web.dev/analysis?url=${encodeURIComponent(group.page)}`,
+      samples[0] ? `Re-test: https://pagespeed.web.dev/analysis?url=${encodeURIComponent(samples[0])}` : '',
       `Lighthouse audit id: ${group.auditId} · site ${site.domain}`,
-    ].join('\n').trim(),
+    ].filter(Boolean).join('\n').trim(),
     priority: critical ? 'critical' : 'high',
   };
 }
@@ -63,15 +94,24 @@ async function createForSite(db, site, fetchImpl) {
   if (!latest) return out;
 
   // Only issues from the most recent scan, so already-fixed problems don't become tasks.
-  const { data: issues, error } = await db
-    .from('psi_issues')
-    .select('id, audit_id, strategy, title, description, severity, impact_score, estimated_savings, psi_scores!inner(page_url, metric_date)')
-    .eq('site_id', site.id)
-    .eq('psi_scores.metric_date', latest.metric_date)
-    .in('severity', ['critical', 'high'])
-    .is('task_id', null)
-    .limit(500);
-  if (error) throw new Error(`psi_issues: ${error.message}`);
+  const issues = [];
+  const pageSize = 1000;
+  let from = 0;
+  for (;;) {
+    const { data, error } = await db
+      .from('psi_issues')
+      .select('id, audit_id, strategy, title, description, severity, impact_score, estimated_savings, psi_scores!inner(page_url, metric_date)')
+      .eq('site_id', site.id)
+      .eq('psi_scores.metric_date', latest.metric_date)
+      .in('severity', ['critical', 'high'])
+      .is('task_id', null)
+      .range(from, from + pageSize - 1);
+    if (error) throw new Error(`psi_issues: ${error.message}`);
+    if (!data || !data.length) break;
+    issues.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
 
   for (const group of groupIssues(issues).slice(0, MAX_TASKS_PER_SITE)) {
     const draft = taskFor(group, site);

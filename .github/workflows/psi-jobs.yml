@@ -1,6 +1,7 @@
 # Page Speed Insights — once a week on Monday.
-#   Monday 03:00 UTC (08:30 IST): POST /api/jobs/psi-weekly
-#     1) scan every GSC + sitemap page  2) create Development tasks from critical/high issues
+#   Monday 03:00 UTC (08:30 IST): batch POST /api/jobs/psi-sync then POST /api/jobs/psi-tasks
+# Render's proxy 502s a single all-pages request around 11 minutes, so GitHub drives
+# 6-page slices (each finishes well under that) until done, then creates Dev tasks.
 # Scores stay in Postgres until the next Monday. The board reads that stored scan.
 #
 # One-time setup in GitHub repo Settings → Secrets and variables → Actions:
@@ -43,8 +44,38 @@ jobs:
             echo "::warning::GB_API_BASE / CRON_SECRET secrets not set; skipping"
             exit 0
           fi
-          curl --fail-with-body --silent --show-error --max-time 10800 \
-            -X POST "$GB_API_BASE/api/jobs/$JOB" \
-            -H "x-cron-secret: $CRON_SECRET" \
-            -H "content-type: application/json" \
-            -d '{}'
+          if [ "$JOB" = "psi-weekly" ]; then
+            OFFSET=0
+            LIMIT=6
+            while true; do
+              echo "PSI sync batch offset=$OFFSET limit=$LIMIT"
+              RESP=$(curl --fail-with-body --silent --show-error --max-time 600 \
+                -X POST "$GB_API_BASE/api/jobs/psi-sync" \
+                -H "x-cron-secret: $CRON_SECRET" \
+                -H "content-type: application/json" \
+                -d "{\"offset\":$OFFSET,\"limit\":$LIMIT}")
+              echo "$RESP"
+              DONE=$(echo "$RESP" | jq -r '.result.done // empty')
+              NEXT=$(echo "$RESP" | jq -r '.result.nextOffset // empty')
+              if [ "$DONE" = "true" ]; then
+                break
+              fi
+              if [ -z "$NEXT" ] || [ "$NEXT" = "null" ] || [ "$NEXT" = "$OFFSET" ]; then
+                echo "batch did not advance (nextOffset=$NEXT)" >&2
+                exit 1
+              fi
+              OFFSET=$NEXT
+            done
+            echo "PSI tasks"
+            curl --fail-with-body --silent --show-error --max-time 180 \
+              -X POST "$GB_API_BASE/api/jobs/psi-tasks" \
+              -H "x-cron-secret: $CRON_SECRET" \
+              -H "content-type: application/json" \
+              -d '{}'
+          else
+            curl --fail-with-body --silent --show-error --max-time 600 \
+              -X POST "$GB_API_BASE/api/jobs/$JOB" \
+              -H "x-cron-secret: $CRON_SECRET" \
+              -H "content-type: application/json" \
+              -d '{}'
+          fi

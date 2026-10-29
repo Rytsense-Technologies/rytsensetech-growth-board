@@ -445,6 +445,16 @@ export function createApp() {
 
   // PSI cron jobs. Monday weekly: POST /api/jobs/psi-weekly (scan then create Dev tasks).
   // Body (optional): { "siteId": "<uuid>" } to limit to one site; default is every active site.
+  function psiOpts(req) {
+    const body = req.body || {};
+    const offset = Number(body.offset);
+    const limit = Number(body.limit);
+    return {
+      siteId: body.siteId || null,
+      offset: Number.isFinite(offset) && offset > 0 ? Math.floor(offset) : 0,
+      limit: Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : null,
+    };
+  }
   function psiJob(run) {
     return async (req, res) => {
       if (!cronOk(req)) return json(res, { error: 'forbidden' }, 403);
@@ -453,7 +463,7 @@ export function createApp() {
       req.setTimeout(0);
       res.setTimeout(0);
       try {
-        json(res, { ok: true, result: await run(db, { siteId: (req.body && req.body.siteId) || null }) });
+        json(res, { ok: true, result: await run(db, psiOpts(req)) });
       } catch (err) {
         console.error('PSI job error:', err);
         json(res, { error: err.message }, 500);

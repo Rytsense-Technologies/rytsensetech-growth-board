@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Monday weekly Page Speed run: scan top pages, store scores, create Dev tasks.
+// Monday weekly Page Speed run: scan every GSC + sitemap page, store scores, create Dev tasks.
+// GitHub Actions must batch /api/jobs/psi-sync instead of this one-shot path — Render 502s around 11 minutes.
 // Usage: npm run psi:weekly   (does not need the API server)
 import { readFileSync, existsSync } from 'fs';
 import { dirname, join } from 'path';

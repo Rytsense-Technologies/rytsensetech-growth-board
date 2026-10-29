@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { extractMetrics, extractIssues, pickPages, runPSISync, urlsFromSitemapXml } from '../src/jobs/sync-psi.js';
-import { groupIssues, taskFor, createPSITasks } from '../src/jobs/create-psi-tasks.js';
+import { groupIssues, taskFor, createPSITasks, urlTemplate } from '../src/jobs/create-psi-tasks.js';
 import { summarize, latestPerPage, trend } from '../src/routes/psi.js';
 
 // ---- schema columns, read from the real migrations ----
@@ -114,6 +114,14 @@ test('summary uses the latest row per page and ignores issues whose task is done
   assert.deepEqual(trend(rows).map((t) => t.date), ['2026-10-27', '2026-10-28']);
 });
 
+test('urlTemplate collapses blog and service slugs, keeps unique pages', () => {
+  assert.equal(urlTemplate('https://rytsensetech.com/'), '/');
+  assert.equal(urlTemplate('https://rytsensetech.com/us/'), '/us');
+  assert.equal(urlTemplate('https://rytsensetech.com/us/blog/carc-codes-medical-billing/'), '/us/blog/:slug');
+  assert.equal(urlTemplate('https://rytsensetech.com/services/ai-development/'), '/services/:slug');
+  assert.equal(urlTemplate('https://rytsensetech.com/freight-broker-roi-calculator/'), '/freight-broker-roi-calculator');
+});
+
 test('mobile + desktop findings for one audit become one task', () => {
   const page = { page_url: 'https://rytsensetech.com/us/' };
   const groups = groupIssues([
@@ -124,10 +132,23 @@ test('mobile + desktop findings for one audit become one task', () => {
   assert.equal(groups.length, 2);
   assert.equal(groups[0].auditId, 'unused-javascript'); // critical sorts first
   const t = taskFor(groups[0], { domain: 'rytsensetech.com' });
-  assert.equal(t.title, '[PSI] /us/: Reduce unused JavaScript');
+  assert.equal(t.title, '[PSI] /us: Reduce unused JavaScript');
   assert.equal(t.priority, 'critical');
   assert.match(t.details, /desktop: critical/);
   assert.match(t.details, /mobile: high/);
+});
+
+test('same audit on two blog posts is one cluster, not two tasks', () => {
+  const groups = groupIssues([
+    { id: 1, audit_id: 'unused-javascript', strategy: 'mobile', severity: 'critical', impact_score: 90, title: 'Reduce unused JavaScript', psi_scores: { page_url: 'https://rytsensetech.com/us/blog/aaa/' } },
+    { id: 2, audit_id: 'unused-javascript', strategy: 'mobile', severity: 'high', impact_score: 50, title: 'Reduce unused JavaScript', psi_scores: { page_url: 'https://rytsensetech.com/us/blog/bbb/' } },
+  ]);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].template, '/us/blog/:slug');
+  assert.equal(groups[0].urlCount, 2);
+  const t = taskFor(groups[0], { domain: 'rytsensetech.com' });
+  assert.equal(t.title, '[PSI] /us/blog/:slug: Reduce unused JavaScript');
+  assert.match(t.details, /2 URL/);
 });
 
 // ---- minimal fake Supabase client: records writes, answers reads from a resolver ----
@@ -180,6 +201,33 @@ test('runPSISync writes schema-valid rows for every page', async () => {
   assert.equal(scores[0].payload.desktop_score, 91);
   for (const w of scores) assertColumns('psi_scores', w.payload);
   for (const w of db.writes.filter((w) => w.table === 'psi_issues')) for (const row of w.payload) assertColumns('psi_issues', row);
+});
+
+test('runPSISync offset/limit scans a slice and reports done', async () => {
+  const pages = [
+    { page: 'https://rytsensetech.com/' },
+    { page: 'https://rytsensetech.com/us/' },
+    { page: 'https://rytsensetech.com/contact/' },
+  ];
+  const db = fakeDb((q) => {
+    if (q.table === 'sites') return { data: [SITE], error: null };
+    if (q.table === 'search_pages') return { data: pages, error: null };
+    if (q.table === 'psi_scores' && q.op === 'upsert') return { data: { id: 'score' }, error: null };
+    return { data: null, error: null };
+  });
+  const fetchImpl = async (url) => {
+    if (!url.includes('pagespeedonline')) return { ok: false, text: async () => '' };
+    return { ok: true, json: async () => lighthouse(0.9) };
+  };
+  const first = await runPSISync(db, { fetchImpl, offset: 0, limit: 1 });
+  assert.equal(first.syncedPages, 1);
+  assert.equal(first.totalPages, 3);
+  assert.equal(first.done, false);
+  assert.equal(first.nextOffset, 1);
+  const rest = await runPSISync(db, { fetchImpl, offset: 1, limit: 2 });
+  assert.equal(rest.syncedPages, 2);
+  assert.equal(rest.done, true);
+  assert.equal(rest.nextOffset, 3);
 });
 
 test('runPSISync counts a failing page as an error and keeps going', async () => {

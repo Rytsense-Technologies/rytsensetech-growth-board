@@ -207,13 +207,22 @@ async function mapPool(items, size, fn) {
 
 async function syncSite(db, site, metricDate, deps) {
   const result = { siteId: site.id, domain: site.domain, syncedPages: 0, syncedIssues: 0, errors: 0, failures: [] };
-  const limit = pageCap();
+  const cap = pageCap();
+  const offset = Math.max(0, Number(deps.offset) || 0);
+  const batch = Number.isFinite(Number(deps.limit)) && Number(deps.limit) > 0 ? Math.floor(Number(deps.limit)) : null;
   const rows = await loadSearchPages(db, site.id);
-  const fromGsc = pickPages(rows, site.domain, limit);
+  const fromGsc = pickPages(rows, site.domain, cap);
   const sitemapUrls = await collectSitemapPages(site.domain, deps);
-  const fromSitemap = pickPages(sitemapUrls.map((page) => ({ page })), site.domain, limit, { fallback: false });
-  const pages = mergePages(fromGsc, fromSitemap, limit);
-  console.log(`[PSI Sync] ${site.domain}: scanning ${pages.length} pages (${fromGsc.length} from Search Console, ${fromSitemap.length} from sitemap)`);
+  const fromSitemap = pickPages(sitemapUrls.map((page) => ({ page })), site.domain, cap, { fallback: false });
+  const allPages = mergePages(fromGsc, fromSitemap, cap);
+  const totalPages = allPages.length;
+  const pages = batch == null ? allPages.slice(offset) : allPages.slice(offset, offset + batch);
+  result.totalPages = totalPages;
+  result.offset = offset;
+  result.nextOffset = offset + pages.length;
+  result.done = offset + pages.length >= totalPages;
+  const span = pages.length ? `${offset + 1}-${offset + pages.length}` : `none at offset ${offset}`;
+  console.log(`[PSI Sync] ${site.domain}: scanning ${pages.length} pages (${span} of ${totalPages}; ${fromGsc.length} Search Console, ${fromSitemap.length} sitemap)`);
 
   await mapPool(pages, CONCURRENCY, async (pageUrl) => {
     try {
@@ -264,7 +273,9 @@ async function syncSite(db, site, metricDate, deps) {
 }
 
 // siteId: limit to one site; omit to sync every site in an active organization.
-export async function runPSISync(db, { siteId = null, fetchImpl } = {}) {
+// offset/limit: scan a slice so a host with a short HTTP timeout (Render ~10 min) can
+// be driven in batches from GitHub Actions. Omit limit to scan from offset to the end.
+export async function runPSISync(db, { siteId = null, fetchImpl, offset = 0, limit = null } = {}) {
   if (!db) throw new Error('database not configured');
   if (!process.env.GOOGLE_PAGESPEED_API_KEY) console.warn('[PSI Sync] GOOGLE_PAGESPEED_API_KEY not set; using the unauthenticated quota');
 
@@ -277,10 +288,20 @@ export async function runPSISync(db, { siteId = null, fetchImpl } = {}) {
   const metricDate = new Date().toISOString().slice(0, 10);
   const started = Date.now();
   const perSite = [];
-  for (const site of sites || []) perSite.push(await syncSite(db, site, metricDate, { fetchImpl }));
+  for (const site of sites || []) perSite.push(await syncSite(db, site, metricDate, { fetchImpl, offset, limit }));
 
   const total = (k) => perSite.reduce((a, s) => a + s[k], 0);
-  const out = { syncedPages: total('syncedPages'), syncedIssues: total('syncedIssues'), errors: total('errors'), seconds: Math.round((Date.now() - started) / 1000), sites: perSite };
-  console.log(`[PSI Sync] done: ${out.syncedPages} pages, ${out.syncedIssues} issues, ${out.errors} errors in ${out.seconds}s`);
+  const out = {
+    syncedPages: total('syncedPages'),
+    syncedIssues: total('syncedIssues'),
+    errors: total('errors'),
+    seconds: Math.round((Date.now() - started) / 1000),
+    totalPages: total('totalPages'),
+    offset,
+    nextOffset: perSite.length ? Math.max(...perSite.map((s) => s.nextOffset ?? offset)) : offset,
+    done: perSite.length ? perSite.every((s) => s.done) : true,
+    sites: perSite,
+  };
+  console.log(`[PSI Sync] done: ${out.syncedPages} pages, ${out.syncedIssues} issues, ${out.errors} errors in ${out.seconds}s (offset ${out.offset} → ${out.nextOffset}, done=${out.done})`);
   return out;
 }
