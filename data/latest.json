@@ -556,11 +556,11 @@
       "cacheHitRatio": 0
     },
     "deployment": {
-      "status": "queued",
+      "status": "failed",
       "url": "https://rytsensetech-growth-board.pages.dev",
       "deployedAt": "2026-11-02T05:36:32Z"
     },
-    "note": "deploy queued via GitHub Actions after push; analytics unavailable (no token/egress in cloud run)"
+    "note": "latest.json (~319KB, full rows) too large to retype through GitHub MCP push; committed locally only (git push has no credentials in shell) — run npm run deploy:cf or git push from Cursor. Analytics unavailable."
   },
   "gscByCountry": {
     "status": "ok",
