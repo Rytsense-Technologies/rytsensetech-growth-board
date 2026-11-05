@@ -309,7 +309,7 @@
     ]
   },
   "cloudflare": {
-    "status": "ok",
+    "status": "unavailable",
     "analytics": {
       "requests": 0,
       "bytes": 0,
@@ -318,11 +318,11 @@
       "cacheHitRatio": 0
     },
     "deployment": {
-      "status": "queued",
+      "status": "failed",
       "url": "https://rytsensetech-growth-board.pages.dev",
       "deployedAt": "2026-11-05T06:55:16Z"
     },
-    "note": "deploy queued via GitHub Actions after push; analytics unavailable (no API token/zone in cloud run)"
+    "note": "latest.json too large for Contents API \u2014 run npm run deploy:cf from Cursor (device shell has no network/git credentials; full rows kept locally)"
   },
   "ga4ByCountry": {
     "status": "ok",
