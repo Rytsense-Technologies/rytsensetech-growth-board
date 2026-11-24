@@ -150,12 +150,28 @@ export async function livePsi(db, { organizationId, siteId, pageUrl }) {
  * Gather live tool evidence for one acknowledgement and patch only that item's store.
  * Full-site sync is never triggered here.
  */
+function absoluteFromSite(domain, pathOrUrl) {
+  const raw = String(pathOrUrl || '').trim();
+  if (!raw) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const host = String(domain || '').replace(/^https?:\/\//i, '').replace(/\/.*$/, '').replace(/^www\./, '');
+  if (!host) return null;
+  if (raw.startsWith('/')) return `https://${host}${raw}`;
+  // Bare path / page key without scheme.
+  if (!raw.includes('://')) return `https://${host}/${raw.replace(/^\/+/, '')}`;
+  return null;
+}
+
 export async function probeClaimLive(db, ack) {
   const snap = ack.claim_snapshot || {};
+  let domain = null;
+  try {
+    const { data: site } = await db.from('sites').select('domain').eq('id', ack.site_id).maybeSingle();
+    domain = site && site.domain;
+  } catch { /* optional */ }
+
   const url = snap.url || snap.targetUrl || snap.sourceUrl || snap.page || null;
-  const absoluteUrl = url && /^https?:\/\//i.test(url)
-    ? url
-    : (url && String(url).startsWith('/') ? null : url);
+  const absoluteUrl = absoluteFromSite(domain, url);
   const out = {
     tools_used: [],
     http: null,
@@ -164,7 +180,7 @@ export async function probeClaimLive(db, ack) {
     patches: [],
   };
 
-  const httpUrl = absoluteUrl || (snap.url && /^https?:\/\//i.test(snap.url) ? snap.url : null);
+  const httpUrl = absoluteUrl;
   if (httpUrl) {
     out.http = await liveHttp(httpUrl);
     out.tools_used.push('http');

@@ -48,6 +48,12 @@ export function parseVerify(text) {
   };
 }
 
+/** Sheet categories are like "404 Errors", not exact "404". */
+function isHttpErrorCategory(cat) {
+  const c = String(cat || '').toLowerCase();
+  return /404|403|500|error|not[- ]?indexed|soft 404/.test(c);
+}
+
 export function shapeAck(row) {
   if (!row) return null;
   return {
@@ -83,10 +89,12 @@ async function callAnthropicVerify(key, model, evidence, { forceRetryHint } = {}
   const userPayload =
     'Human claimed this item is fixed. Verify against live connected tools for this item only.\n' +
     JSON.stringify(evidence) +
+    '\n\nRespond with ONLY one JSON object (no markdown fences): ' +
+    '{"verdict":"confirmed"|"failed","reason":"...","evidence_used":["..."]}' +
     (forceRetryHint
-      ? '\n\nIMPORTANT: Your previous reply was not valid JSON. Reply with ONLY one JSON object and nothing else.'
+      ? '\nIMPORTANT: Your previous reply was not valid JSON. Reply with ONLY that JSON object and nothing else.'
       : '');
-  // Prefill `{` so the model continues as JSON (then we prepend it when parsing).
+  // No assistant prefill — some Anthropic models reject it (conversation must end with user).
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -105,12 +113,8 @@ async function callAnthropicVerify(key, model, evidence, { forceRetryHint } = {}
         'If live evidence shows the problem is gone → verdict confirmed (the board will clear/update only this item). ' +
         'If live evidence shows it is still broken → verdict failed, and reason must explain why it still appears / what is still wrong. ' +
         'If live tools failed or evidence is inconclusive for a claimed fix → verdict failed. ' +
-        'Reply with exactly one JSON object and no markdown: ' +
-        '{"verdict":"confirmed"|"failed","reason":string,"evidence_used":string[]}.',
-      messages: [
-        { role: 'user', content: userPayload },
-        { role: 'assistant', content: '{' },
-      ],
+        'Reply with exactly one JSON object and no markdown.',
+      messages: [{ role: 'user', content: userPayload }],
     }),
   });
   if (!res.ok) {
@@ -118,8 +122,7 @@ async function callAnthropicVerify(key, model, evidence, { forceRetryHint } = {}
     throw new Error('anthropic ' + res.status + (errBody ? ': ' + errBody.slice(0, 180) : ''));
   }
   const body = await res.json();
-  const continuation = (body.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
-  const text = '{' + continuation;
+  const text = (body.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
   return parseVerify(text);
 }
 
@@ -197,7 +200,12 @@ async function evidenceFor(db, ack) {
     out.issue = issue
       ? { id: issue.id, url: issue.url, action: issue.action, category: issue.category, status: issue.status, note: issue.note }
       : null;
-    const url = (issue && issue.url) || snap.url;
+    let url = (issue && issue.url) || snap.url;
+    if (url && !/^https?:\/\//i.test(url)) {
+      const { data: site } = await db.from('sites').select('domain').eq('id', ack.site_id).maybeSingle();
+      const host = String((site && site.domain) || '').replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+      if (host) url = url.startsWith('/') ? `https://${host}${url}` : `https://${host}/${url}`;
+    }
     out.url = url || null;
     out.observed_status = await httpStatus(url);
     keys.push('observed_status', 'issue');
@@ -213,12 +221,12 @@ async function evidenceFor(db, ack) {
       out.search_pages = (pages || []).filter((p) => p.page === path || p.page === url).slice(0, 3);
       keys.push('search_pages');
     }
-    // Hard pass: claimed as 404/403/error and live is now 200.
-    const cat = String((issue && issue.category) || '').toLowerCase();
-    if (out.observed_status === '200' && ['404', '403', 'error', 'not-indexed'].includes(cat)) {
-      out.hard_pass = `Live HTTP ${out.observed_status} for previously ${cat} URL`;
+    // Hard pass/fail: sheet categories look like "404 Errors", not exact "404".
+    const cat = String((issue && issue.category) || snap.category || '').toLowerCase();
+    if (out.observed_status === '200' && isHttpErrorCategory(cat)) {
+      out.hard_pass = `Live HTTP ${out.observed_status} for previously ${cat || 'error'} URL`;
     }
-    if (out.observed_status && ['404', '403', '500', '502', '503'].includes(out.observed_status) && ['404', '403', 'error'].includes(cat)) {
+    if (out.observed_status && ['404', '403', '500', '502', '503'].includes(out.observed_status) && isHttpErrorCategory(cat)) {
       out.hard_fail = `Live HTTP still ${out.observed_status}`;
     }
     return out;
@@ -673,8 +681,8 @@ function applyLiveHardSignals(evidence, live) {
   }
   if (live.http && live.http.status === '200' && evidence.source_kind === 'gsc_issue') {
     const cat = String((evidence.issue && evidence.issue.category) || '').toLowerCase();
-    if (['404', '403', 'error', 'not-indexed'].includes(cat)) {
-      evidence.hard_pass = evidence.hard_pass || `Live HTTP 200 for previously ${cat} URL`;
+    if (isHttpErrorCategory(cat)) {
+      evidence.hard_pass = evidence.hard_pass || `Live HTTP 200 for previously ${cat || 'error'} URL`;
     }
   }
   return evidence;
