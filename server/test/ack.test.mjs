@@ -37,6 +37,14 @@ test('0004 expands source_kind for board surfaces', () => {
   }
 });
 
+test('live-probe module exports item-scoped helpers', async () => {
+  const mod = await import('../src/jobs/live-probe.js');
+  assert.equal(typeof mod.liveHttp, 'function');
+  assert.equal(typeof mod.probeClaimLive, 'function');
+  assert.equal(typeof mod.livePsi, 'function');
+  assert.equal(typeof mod.liveGscPage, 'function');
+});
+
 test('parseVerify accepts confirmed and failed only', () => {
   assert.equal(parseVerify('{"verdict":"confirmed","reason":"ok","evidence_used":["x"]}').verdict, 'confirmed');
   assert.equal(parseVerify('noise {"verdict":"failed","reason":"still 404"} more').verdict, 'failed');

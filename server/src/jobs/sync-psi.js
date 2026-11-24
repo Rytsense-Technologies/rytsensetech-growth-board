@@ -272,6 +272,62 @@ async function syncSite(db, site, metricDate, deps) {
   return result;
 }
 
+/** Re-scan one live page only (Addressed checkbox verify). Writes today's psi_scores + psi_issues for that URL. */
+export async function refreshOnePsiPage(db, { organizationId, siteId, pageUrl, fetchImpl = fetch } = {}) {
+  if (!db || !organizationId || !siteId || !pageUrl) throw new Error('refreshOnePsiPage requires organizationId, siteId, pageUrl');
+  const metricDate = new Date().toISOString().slice(0, 10);
+  const [mobile, desktop] = await Promise.all([
+    fetchPSI(pageUrl, 'mobile', { fetchImpl }),
+    fetchPSI(pageUrl, 'desktop', { fetchImpl }),
+  ]);
+  const m = extractMetrics(mobile);
+  const d = extractMetrics(desktop);
+  const { data: score, error: scoreError } = await db
+    .from('psi_scores')
+    .upsert({
+      organization_id: organizationId,
+      site_id: siteId,
+      page_url: pageUrl,
+      metric_date: metricDate,
+      mobile_score: m.score,
+      desktop_score: d.score,
+      lcp_mobile: m.lcp,
+      lcp_desktop: d.lcp,
+      fcp_mobile: m.fcp,
+      fcp_desktop: d.fcp,
+      cls_mobile: m.cls,
+      cls_desktop: d.cls,
+      ttfb_mobile: m.ttfb,
+      ttfb_desktop: d.ttfb,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'organization_id,site_id,page_url,metric_date' })
+    .select('id')
+    .single();
+  if (scoreError) throw new Error(`psi_scores: ${scoreError.message}`);
+
+  // Drop today's issues for this score row, then rewrite from the live scan (keeps older days intact).
+  await db.from('psi_issues').delete().eq('psi_score_id', score.id);
+  const issues = [...extractIssues(mobile, 'mobile'), ...extractIssues(desktop, 'desktop')].map((i) => ({
+    ...i,
+    organization_id: organizationId,
+    site_id: siteId,
+    psi_score_id: score.id,
+  }));
+  if (issues.length) {
+    const { error: issueError } = await db.from('psi_issues').upsert(issues, { onConflict: 'psi_score_id,strategy,audit_id' });
+    if (issueError) throw new Error(`psi_issues: ${issueError.message}`);
+  }
+  return {
+    pageUrl,
+    metricDate,
+    mobile_score: m.score,
+    desktop_score: d.score,
+    issueCount: issues.length,
+    criticalHigh: issues.filter((i) => i.severity === 'critical' || i.severity === 'high').length,
+    audits: issues.map((i) => ({ audit_id: i.audit_id, severity: i.severity, strategy: i.strategy, title: i.title })),
+  };
+}
+
 // siteId: limit to one site; omit to sync every site in an active organization.
 // offset/limit: scan a slice so a host with a short HTTP timeout (Render ~10 min) can
 // be driven in batches from GitHub Actions. Omit limit to scan from offset to the end.

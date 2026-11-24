@@ -1,7 +1,9 @@
-// Human claimed "Addressed / live". Gather stored evidence, ask the model once,
-// then confirm or reopen. Never invent HTTP status, PSI scores, or GSC metrics.
+// Human claimed "I fixed this". Live-probe connected tools for that item only,
+// ask the model once, then confirm or reopen — and patch only that item's keys.
+// Never invent HTTP status, PSI scores, or GSC metrics. Never full-site sync.
 
 import { pickAutoModel, isAutoModel } from '../jobs.js';
+import { probeClaimLive } from './live-probe.js';
 
 export const KINDS = new Set([
   'gsc_issue',
@@ -97,17 +99,20 @@ async function askModel(evidence) {
       model,
       max_tokens: 600,
       system:
-        'You verify whether a Growth Board item was addressed in live. ' +
-        'Items include issues, KPIs, keywords, pages, cannibalization, content ideas, and other board rows. ' +
-        'Use ONLY the evidence JSON (latest stored GSC/PSI/HTTP/overview). Do not invent HTTP status, scores, clicks, or impressions. ' +
-        'If the claimed problem is still present in stored evidence, verdict must be failed. ' +
-        'If evidence is missing or inconclusive for a claimed fix, verdict must be failed. ' +
-        'If the human acknowledged a healthy/info row and evidence still looks healthy, verdict may be confirmed. ' +
+        'You verify one Growth Board "Addressed" claim. The human says this specific item is fixed. ' +
+        'The dashboard may still show a stale row — your job is to decide from LIVE tool evidence whether the live site is fixed. ' +
+        'Use ONLY the evidence JSON. Prefer live.* fields (HTTP, GSC URL inspection / page metrics, PSI re-scan) over stored snapshots. ' +
+        'Do not invent HTTP status, scores, clicks, or impressions. ' +
+        'If live evidence shows the problem is gone → verdict confirmed (the board will clear/update only this item). ' +
+        'If live evidence shows it is still broken → verdict failed, and reason must explain why it still appears / what is still wrong. ' +
+        'If live tools failed or evidence is inconclusive for a claimed fix → verdict failed. ' +
         'Return one JSON object: { "verdict": "confirmed"|"failed", "reason": string, "evidence_used": string[] }.',
       messages: [
         {
           role: 'user',
-          content: 'Evidence:\n' + JSON.stringify(evidence),
+          content:
+            'Human claimed this item is fixed. Verify against live connected tools for this item only.\n' +
+            JSON.stringify(evidence),
         },
       ],
     }),
@@ -444,6 +449,62 @@ async function applyClaimSideEffects(db, ack, actorLabel) {
   }
 }
 
+async function applyConfirmedPatches(db, ack, evidence, actorLabel) {
+  const now = new Date().toISOString();
+  const reason = (evidence && evidence.live && evidence.live.http && evidence.live.http.status)
+    ? `live HTTP ${evidence.live.http.status}`
+    : 'live verify confirmed';
+  const patches = [];
+
+  if (ack.source_kind === 'gsc_issue') {
+    await db.from('issues').update({
+      status: 'fixed',
+      note: [ack.claim_snapshot && ack.claim_snapshot.note, `Verified live (${reason})`].filter(Boolean).join(' · ').slice(0, 500),
+    }).eq('id', ack.source_id).eq('site_id', ack.site_id);
+    patches.push('issues');
+    const httpStatus = evidence?.live?.http?.status || evidence?.observed_status || null;
+    await db.from('issue_reviews').insert({
+      issue_id: ack.source_id,
+      organization_id: ack.organization_id,
+      why: 'Human marked Addressed; live tools confirmed.',
+      fix: (ack.claim_snapshot && ack.claim_snapshot.note) || 'Verified live',
+      observed_status: httpStatus ? String(httpStatus) : 'confirmed_live',
+      reviewed_at: now,
+      agents: ['ack-verify'],
+    });
+    patches.push('issue_reviews');
+  }
+
+  if (ack.source_kind === 'psi_issue') {
+    await db.from('psi_issues').update({ reviewed_at: now }).eq('id', ack.source_id);
+    patches.push('psi_issues');
+  }
+
+  if (ack.source_kind === 'task') {
+    await db.from('tasks').update({ status: 'done', completed_at: now }).eq('id', ack.source_id);
+    patches.push('tasks');
+  }
+
+  // Record which live patches already ran during probe.
+  if (evidence?.live?.patches?.length) patches.push(...evidence.live.patches);
+
+  await db.from('agent_runs').insert({
+    organization_id: ack.organization_id,
+    site_id: ack.site_id,
+    kind: 'ack-patch',
+    status: 'succeeded',
+    detail: {
+      ack_id: ack.id,
+      source_kind: ack.source_kind,
+      source_id: ack.source_id,
+      patches: [...new Set(patches)],
+      actor: actorLabel || 'ack-verify',
+      note: 'Targeted update only — not a full sync',
+    },
+  });
+  return patches;
+}
+
 async function applyFailedSideEffects(db, ack, actorLabel) {
   if (ack.source_kind === 'gsc_issue') {
     await db.from('issues').update({ status: 'open' }).eq('id', ack.source_id).eq('site_id', ack.site_id);
@@ -550,6 +611,38 @@ export async function unclaimAck(db, { organizationId, siteId, sourceKind, sourc
   return ack;
 }
 
+function applyLiveHardSignals(evidence, live) {
+  if (!live) return evidence;
+  evidence.live = live;
+  evidence.keys = [...(evidence.keys || []), 'live', ...(live.tools_used || [])];
+
+  if (live.http && live.http.status) {
+    evidence.observed_status = live.http.status;
+    evidence.keys.push('observed_status');
+  }
+  if (live.psi && live.psi.claimed_audit_cleared) {
+    evidence.hard_pass = `Live PSI re-scan: audit cleared on ${live.psi.metricDate}`;
+  }
+  if (live.psi && Array.isArray(live.psi.claimed_audit_still_open) && live.psi.claimed_audit_still_open.length) {
+    evidence.hard_fail = `Live PSI re-scan: audit still ${live.psi.claimed_audit_still_open.map((a) => a.severity).join('/')} on ${live.psi.pageUrl}`;
+  }
+  if (live.gsc && live.gsc.inspection && /not.?found|excluded|error|blocked/i.test(String(live.gsc.inspection.coverageState || ''))) {
+    if (evidence.source_kind === 'gsc_issue') {
+      evidence.hard_fail = evidence.hard_fail || `GSC inspection: ${live.gsc.inspection.coverageState}`;
+    }
+  }
+  if (live.http && ['404', '403', '500', '502', '503'].includes(String(live.http.status)) && (evidence.source_kind === 'gsc_issue' || evidence.source_kind === 'page' || evidence.source_kind === 'internal_link')) {
+    evidence.hard_fail = evidence.hard_fail || `Live HTTP still ${live.http.status}`;
+  }
+  if (live.http && live.http.status === '200' && evidence.source_kind === 'gsc_issue') {
+    const cat = String((evidence.issue && evidence.issue.category) || '').toLowerCase();
+    if (['404', '403', 'error', 'not-indexed'].includes(cat)) {
+      evidence.hard_pass = evidence.hard_pass || `Live HTTP 200 for previously ${cat} URL`;
+    }
+  }
+  return evidence;
+}
+
 export async function verifyAck(db, ackId, { actorLabel } = {}) {
   const { data: ack, error } = await db.from('acknowledgements').select('*').eq('id', ackId).maybeSingle();
   if (error) throw new Error(error.message);
@@ -558,7 +651,18 @@ export async function verifyAck(db, ackId, { actorLabel } = {}) {
     err.status = 404;
     throw err;
   }
-  const evidence = await evidenceFor(db, ack);
+
+  // 1) Stored context  2) Live tools for THIS item only  3) LLM  4) Targeted patch
+  let evidence = await evidenceFor(db, ack);
+  let live = null;
+  try {
+    live = await probeClaimLive(db, ack);
+    evidence = applyLiveHardSignals(evidence, live);
+  } catch (err) {
+    evidence.live_error = String(err.message || err).slice(0, 300);
+    evidence.keys = [...(evidence.keys || []), 'live_error'];
+  }
+
   let result;
   try {
     result = await askModel(evidence);
@@ -570,6 +674,8 @@ export async function verifyAck(db, ackId, { actorLabel } = {}) {
     reason: result.reason,
     evidence_used: result.evidence_used,
     evidence,
+    live_tools: live && live.tools_used ? live.tools_used : [],
+    patches: live && live.patches ? live.patches : [],
   };
   if (result.verdict === 'confirmed') {
     await db.from('acknowledgements').update({
@@ -578,6 +684,11 @@ export async function verifyAck(db, ackId, { actorLabel } = {}) {
       verified_at: now,
       updated_at: now,
     }).eq('id', ack.id);
+    try {
+      detail.patches = await applyConfirmedPatches(db, ack, evidence, actorLabel || 'ack-verify');
+    } catch (err) {
+      detail.patch_error = String(err.message || err).slice(0, 300);
+    }
   } else {
     await applyFailedSideEffects(db, ack, actorLabel || 'ack-verify');
     await db.from('acknowledgements').update({
@@ -592,7 +703,16 @@ export async function verifyAck(db, ackId, { actorLabel } = {}) {
     site_id: ack.site_id,
     kind: 'ack-verify',
     status: result.verdict === 'confirmed' ? 'succeeded' : 'failed',
-    detail: { ack_id: ack.id, source_kind: ack.source_kind, source_id: ack.source_id, verdict: result.verdict, reason: result.reason },
+    detail: {
+      ack_id: ack.id,
+      source_kind: ack.source_kind,
+      source_id: ack.source_id,
+      verdict: result.verdict,
+      reason: result.reason,
+      live_tools: detail.live_tools,
+      patches: detail.patches,
+      scope: 'item-only',
+    },
   });
   const { data: fresh } = await db.from('acknowledgements').select('*').eq('id', ack.id).single();
   return fresh;
