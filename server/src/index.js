@@ -505,10 +505,19 @@ export function createApp() {
     const { tokens } = await client.getToken(req.query.code);
     if (!tokens.refresh_token) return json(res, { error: 'no refresh token' }, 400);
     const state = JSON.parse(req.query.state || '{}');
-    const { data: secretId, error } = await db.rpc('store_connection_secret', {
-      p_name: 'gsc-' + state.siteId,
+    const secretName = 'gsc-' + state.siteId;
+    let { data: secretId, error } = await db.rpc('store_connection_secret', {
+      p_name: secretName,
       p_secret: tokens.refresh_token,
     });
+    // Until 0005 upsert migration is applied on Supabase, create under a unique name
+    // and point connections.vault_secret_id at the new row so reconnect still works.
+    if (error && /duplicate key|secrets_name_idx/i.test(error.message || '')) {
+      ({ data: secretId, error } = await db.rpc('store_connection_secret', {
+        p_name: `${secretName}-${Date.now()}`,
+        p_secret: tokens.refresh_token,
+      }));
+    }
     if (error) return json(res, { error: error.message }, 500);
     const { data: site } = await db.from('sites').select('id, organization_id, domain').eq('id', state.siteId).single();
     client.setCredentials({ refresh_token: tokens.refresh_token });
