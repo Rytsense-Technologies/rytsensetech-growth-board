@@ -222,8 +222,10 @@ async function evidenceFor(db, ack) {
       keys.push('search_pages');
     }
     // Hard pass/fail: sheet categories look like "404 Errors", not exact "404".
+    // 2xx/3xx means the claimed dead URL is now reachable or redirected (typical fix).
     const cat = String((issue && issue.category) || snap.category || '').toLowerCase();
-    if (out.observed_status === '200' && isHttpErrorCategory(cat)) {
+    const code = Number(out.observed_status);
+    if (isHttpErrorCategory(cat) && Number.isFinite(code) && code >= 200 && code < 400) {
       out.hard_pass = `Live HTTP ${out.observed_status} for previously ${cat || 'error'} URL`;
     }
     if (out.observed_status && ['404', '403', '500', '502', '503'].includes(out.observed_status) && isHttpErrorCategory(cat)) {
@@ -679,10 +681,11 @@ function applyLiveHardSignals(evidence, live) {
   if (live.http && ['404', '403', '500', '502', '503'].includes(String(live.http.status)) && (evidence.source_kind === 'gsc_issue' || evidence.source_kind === 'page' || evidence.source_kind === 'internal_link')) {
     evidence.hard_fail = evidence.hard_fail || `Live HTTP still ${live.http.status}`;
   }
-  if (live.http && live.http.status === '200' && evidence.source_kind === 'gsc_issue') {
+  if (live.http && evidence.source_kind === 'gsc_issue') {
     const cat = String((evidence.issue && evidence.issue.category) || '').toLowerCase();
-    if (isHttpErrorCategory(cat)) {
-      evidence.hard_pass = evidence.hard_pass || `Live HTTP 200 for previously ${cat || 'error'} URL`;
+    const code = Number(live.http.status);
+    if (isHttpErrorCategory(cat) && Number.isFinite(code) && code >= 200 && code < 400) {
+      evidence.hard_pass = evidence.hard_pass || `Live HTTP ${live.http.status} for previously ${cat || 'error'} URL`;
     }
   }
   return evidence;
