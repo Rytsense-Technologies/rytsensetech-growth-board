@@ -3,7 +3,25 @@
 
 import { pickAutoModel, isAutoModel } from '../jobs.js';
 
-const KINDS = new Set(['gsc_issue', 'psi_issue', 'audit_finding', 'fix', 'task']);
+export const KINDS = new Set([
+  'gsc_issue',
+  'psi_issue',
+  'audit_finding',
+  'fix',
+  'task',
+  'kpi',
+  'keyword',
+  'page',
+  'channel',
+  'cannibalization',
+  'content_idea',
+  'topic_trend',
+  'internal_link',
+  'clarity',
+  'deploy',
+  'ops',
+  'board',
+]);
 
 export function parseVerify(text) {
   const raw = String(text || '');
@@ -79,9 +97,12 @@ async function askModel(evidence) {
       model,
       max_tokens: 600,
       system:
-        'You verify whether a Growth Board issue was fixed in live. ' +
-        'Use ONLY the evidence JSON. Do not invent HTTP status, scores, clicks, or impressions. ' +
-        'If evidence is missing or inconclusive, verdict must be failed. ' +
+        'You verify whether a Growth Board item was addressed in live. ' +
+        'Items include issues, KPIs, keywords, pages, cannibalization, content ideas, and other board rows. ' +
+        'Use ONLY the evidence JSON (latest stored GSC/PSI/HTTP/overview). Do not invent HTTP status, scores, clicks, or impressions. ' +
+        'If the claimed problem is still present in stored evidence, verdict must be failed. ' +
+        'If evidence is missing or inconclusive for a claimed fix, verdict must be failed. ' +
+        'If the human acknowledged a healthy/info row and evidence still looks healthy, verdict may be confirmed. ' +
         'Return one JSON object: { "verdict": "confirmed"|"failed", "reason": string, "evidence_used": string[] }.',
       messages: [
         {
@@ -231,23 +252,155 @@ async function evidenceFor(db, ack) {
     return out;
   }
 
-  // audit_finding | fix — snapshot from the client is the identity; prove via URL when present.
+  if (ack.source_kind === 'audit_finding' || ack.source_kind === 'fix') {
+    out.snapshot = snap;
+    keys.push('snapshot');
+    if (snap.url) {
+      out.observed_status = await httpStatus(snap.url);
+      keys.push('observed_status');
+      const path = pathOf(snap.url);
+      const { data: pages } = await db
+        .from('search_pages')
+        .select('page, clicks, impressions, position')
+        .eq('site_id', ack.site_id)
+        .order('impressions', { ascending: false })
+        .limit(500);
+      out.search_pages = (pages || []).filter((p) => p.page === path || p.page === snap.url).slice(0, 3);
+      keys.push('search_pages');
+    } else {
+      out.hard_pass = 'No URL on finding; accepting human claim with caveat';
+    }
+    return out;
+  }
+
+  // KPI / keyword / page / cannibalization / content / etc. — use claim snapshot + stored board data.
+  return evidenceBoard(db, ack, out, keys, snap);
+}
+
+async function loadOverview(db, siteId) {
+  const { data } = await db
+    .from('site_snapshots')
+    .select('document, updated_at')
+    .eq('site_id', siteId)
+    .eq('kind', 'overview')
+    .maybeSingle();
+  return data || null;
+}
+
+function pickMetric(doc, metricKey) {
+  if (!doc || !metricKey) return null;
+  const g = doc.gsc && doc.gsc.current ? doc.gsc.current : null;
+  const a = doc.ga4 && doc.ga4.totals ? doc.ga4.totals : null;
+  const map = {
+    'gsc.clicks': g && g.clicks,
+    'gsc.impressions': g && g.impressions,
+    'gsc.ctr': g && g.ctr,
+    'gsc.position': g && g.position,
+    'ga4.sessions': a && a.sessions,
+    'ga4.activeUsers': a && a.activeUsers,
+    'ga4.engagementRate': a && a.engagementRate,
+  };
+  if (Object.prototype.hasOwnProperty.call(map, metricKey)) return map[metricKey];
+  const parts = String(metricKey).split('.');
+  let cur = doc;
+  for (const p of parts) {
+    if (cur == null || typeof cur !== 'object') return null;
+    cur = cur[p];
+  }
+  return typeof cur === 'number' ? cur : null;
+}
+
+async function evidenceBoard(db, ack, out, keys, snap) {
   out.snapshot = snap;
   keys.push('snapshot');
-  if (snap.url) {
-    out.observed_status = await httpStatus(snap.url);
+
+  const overview = await loadOverview(db, ack.site_id);
+  if (overview) {
+    out.overview_updated_at = overview.updated_at;
+    keys.push('overview_updated_at');
+    const doc = overview.document || {};
+    if (ack.source_kind === 'kpi' || snap.metricKey) {
+      out.current_metric = pickMetric(doc, snap.metricKey);
+      out.claimed_metric = snap.metricValue != null ? Number(snap.metricValue) : null;
+      out.current_gsc = doc.gsc && doc.gsc.current ? doc.gsc.current : null;
+      out.current_ga4 = doc.ga4 && doc.ga4.totals ? doc.ga4.totals : null;
+      keys.push('current_metric', 'current_gsc', 'current_ga4');
+      if (snap.warn && out.current_metric != null && out.claimed_metric != null) {
+        // Lower-is-worse problem metrics (critical tasks, position when high): still bad if not improved.
+        const worseIsHigher = !/ctr|engagement|score|clicks|impressions|sessions|users/i.test(String(snap.metricKey || ''));
+        if (worseIsHigher && out.current_metric >= out.claimed_metric && out.claimed_metric > 0) {
+          out.hard_fail = `Metric ${snap.metricKey} still ${out.current_metric} (was ${out.claimed_metric})`;
+        }
+      }
+    }
+    if (ack.source_kind === 'cannibalization' || snap.query) {
+      const cann = doc.gscCannibalization;
+      if (cann && Array.isArray(cann.rows) && snap.query) {
+        const still = cann.rows.filter((r) => r.query === snap.query).slice(0, 3);
+        out.cannibalization_rows = still;
+        keys.push('cannibalization_rows');
+        if (still.length && (still[0].pages || []).length > 1) {
+          out.hard_fail = `Query still cannibalized across ${(still[0].pages || []).length} pages`;
+        } else if (cann.status === 'ok' && snap.query && !still.length) {
+          out.hard_pass = 'Query no longer in cannibalization list';
+        }
+      }
+    }
+    if (ack.source_kind === 'channel' && snap.title) {
+      const channels = (doc.ga4 && doc.ga4.channels) || [];
+      out.channel_row = channels.find((c) => c.channel === snap.title) || null;
+      keys.push('channel_row');
+    }
+  }
+
+  const url = snap.url || snap.targetUrl || snap.sourceUrl || null;
+  if (url) {
+    out.url = url;
+    out.observed_status = await httpStatus(url);
     keys.push('observed_status');
-    const path = pathOf(snap.url);
-    const { data: pages } = await db
-      .from('search_pages')
-      .select('page, clicks, impressions, position')
-      .eq('site_id', ack.site_id)
-      .order('impressions', { ascending: false })
-      .limit(500);
-    out.search_pages = (pages || []).filter((p) => p.page === path || p.page === snap.url).slice(0, 3);
-    keys.push('search_pages');
-  } else {
-    out.hard_pass = 'No URL on finding; accepting human claim with caveat';
+    if (snap.sourceUrl && snap.targetUrl) {
+      out.source_status = await httpStatus(snap.sourceUrl);
+      out.target_status = await httpStatus(snap.targetUrl);
+      keys.push('source_status', 'target_status');
+      if (out.source_status === '200' && out.target_status === '200') {
+        out.hard_pass = out.hard_pass || 'Source and target URLs return HTTP 200';
+      }
+      if (['404', '403', '500', '502', '503'].includes(out.source_status) || ['404', '403', '500', '502', '503'].includes(out.target_status)) {
+        out.hard_fail = `Link endpoints not healthy (${out.source_status}/${out.target_status})`;
+      }
+    }
+  }
+
+  if (snap.query || ack.source_kind === 'keyword' || ack.source_kind === 'content_idea' || ack.source_kind === 'topic_trend') {
+    const q = snap.query || snap.title || null;
+    if (q) {
+      const { data: qs } = await db
+        .from('search_queries')
+        .select('query, clicks, impressions, ctr, position')
+        .eq('site_id', ack.site_id)
+        .eq('query', q)
+        .limit(5);
+      out.search_queries = qs || [];
+      keys.push('search_queries');
+    }
+  }
+
+  if (snap.page || ack.source_kind === 'page' || (snap.url && ack.source_kind === 'page')) {
+    const page = snap.page || pathOf(snap.url);
+    if (page) {
+      const { data: pages } = await db
+        .from('search_pages')
+        .select('page, clicks, impressions, ctr, position')
+        .eq('site_id', ack.site_id)
+        .eq('page', page)
+        .limit(5);
+      out.search_pages = pages || [];
+      keys.push('search_pages');
+    }
+  }
+
+  if (!out.hard_pass && !out.hard_fail && !url && !snap.query && !snap.metricKey && !snap.page) {
+    out.hard_pass = 'Informational board row with no measurable URL/query/metric; accepting human claim with caveat';
   }
   return out;
 }
@@ -356,6 +509,14 @@ export async function claimAck(db, {
       title: snapshot.title || null,
       url: snapshot.url || null,
       note: snapshot.note || null,
+      query: snapshot.query || null,
+      page: snapshot.page || null,
+      metricKey: snapshot.metricKey || null,
+      metricValue: snapshot.metricValue != null ? snapshot.metricValue : null,
+      warn: !!snapshot.warn,
+      sourceUrl: snapshot.sourceUrl || null,
+      targetUrl: snapshot.targetUrl || null,
+      expected: snapshot.expected || null,
     },
     claimed_by: claimedBy || null,
     claimed_at: now,

@@ -30,6 +30,13 @@ test('acknowledgements migration has required columns', () => {
   ]) assert.ok(cols.has(c), c);
 });
 
+test('0004 expands source_kind for board surfaces', () => {
+  const sql = readFileSync(new URL('../../supabase/migrations/0004_ack_expand_kinds.sql', import.meta.url), 'utf8');
+  for (const kind of ['kpi', 'keyword', 'page', 'cannibalization', 'content_idea', 'topic_trend', 'internal_link', 'channel', 'clarity']) {
+    assert.ok(sql.includes(`'${kind}'`), kind);
+  }
+});
+
 test('parseVerify accepts confirmed and failed only', () => {
   assert.equal(parseVerify('{"verdict":"confirmed","reason":"ok","evidence_used":["x"]}').verdict, 'confirmed');
   assert.equal(parseVerify('noise {"verdict":"failed","reason":"still 404"} more').verdict, 'failed');

@@ -113,6 +113,37 @@
     return hit ? sum : null;
   }
 
+  function ackTh() {
+    return '<th>Addressed</th>';
+  }
+  function ackSid(prefix, raw) {
+    return window.GbAck ? window.GbAck.stableId(prefix, raw) : String(prefix) + ':' + String(raw || 'item');
+  }
+  function ackTd(kind, id, opts) {
+    return window.GbAck ? window.GbAck.td(kind, id, opts || {}) : '<td class="ack-col"></td>';
+  }
+  function ackTile(kind, id, opts) {
+    return window.GbAck ? window.GbAck.onTile(kind, id, opts || {}) : '';
+  }
+  function kpiTile(label, valueHtml, tail, metricKey, metricValue, warn, idRaw) {
+    var id = ackSid('kpi', idRaw || label);
+    return (
+      '<div class="tile"><div class="label">' +
+      esc(label) +
+      '</div><div class="value mono">' +
+      valueHtml +
+      '</div>' +
+      (tail || '') +
+      ackTile('kpi', id, {
+        title: label,
+        metricKey: metricKey,
+        metricValue: metricValue,
+        warn: !!warn,
+      }) +
+      '</div>'
+    );
+  }
+
   var state = {
     live: null,
     audit: null,
@@ -355,53 +386,43 @@
     el.innerHTML =
       head('1 · Executive Dashboard', 'Organic + channels · vs prior 28d', badge('live')) +
       '<div class="tiles">' +
-      '<div class="tile"><div class="label">Total sessions</div><div class="value mono">' +
-      num(a && a.totals && a.totals.sessions) +
-      '</div>' +
-      delta(null) +
-      '</div>' +
-      '<div class="tile"><div class="label">Organic sessions</div><div class="value mono">' +
-      num(organic) +
-      '</div></div>' +
-      '<div class="tile"><div class="label">AI traffic</div><div class="value mono">' +
-      num(ai) +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Referral</div><div class="value mono">' +
-      num(referral) +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Direct</div><div class="value mono">' +
-      num(direct) +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Social</div><div class="value mono">' +
-      num(social) +
-      '</div><div class="hint">GA4 Organic Social</div></div>' +
-      '<div class="tile"><div class="label">Paid</div><div class="value mono">' +
-      num(paid) +
-      '</div><div class="hint">' +
-      (paid == null ? 'no paid channel in GA4' : 'GA4 paid / ads') +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Organic clicks</div><div class="value mono">' +
-      num(g.current.clicks) +
-      '</div>' +
-      delta(g.change && g.change.clicksPercent) +
-      '</div>' +
-      '<div class="tile"><div class="label">Impressions</div><div class="value mono">' +
-      num(g.current.impressions) +
-      '</div>' +
-      delta(g.change && g.change.impressionsPercent) +
-      '</div>' +
-      '<div class="tile"><div class="label">CTR</div><div class="value mono">' +
-      pct(g.current.ctr) +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Avg position</div><div class="value mono">' +
-      (g.current.position != null ? Number(g.current.position).toFixed(1) : '–') +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Users</div><div class="value mono">' +
-      num(a && a.totals && a.totals.activeUsers) +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Engagement rate</div><div class="value mono">' +
-      pct((a && a.totals && a.totals.engagementRate) * 100) +
-      '</div></div>' +
+      kpiTile('Total sessions', num(a && a.totals && a.totals.sessions), delta(null), 'ga4.sessions', a && a.totals && a.totals.sessions) +
+      kpiTile('Organic sessions', num(organic), '', 'ga4.channel.Organic Search', organic) +
+      kpiTile('AI traffic', num(ai), '', 'ga4.channel.ai', ai) +
+      kpiTile('Referral', num(referral), '', 'ga4.channel.Referral', referral) +
+      kpiTile('Direct', num(direct), '', 'ga4.channel.Direct', direct) +
+      kpiTile('Social', num(social), '<div class="hint">GA4 Organic Social</div>', 'ga4.channel.Organic Social', social) +
+      kpiTile(
+        'Paid',
+        num(paid),
+        '<div class="hint">' + (paid == null ? 'no paid channel in GA4' : 'GA4 paid / ads') + '</div>',
+        'ga4.channel.paid',
+        paid
+      ) +
+      kpiTile('Organic clicks', num(g.current.clicks), delta(g.change && g.change.clicksPercent), 'gsc.clicks', g.current.clicks) +
+      kpiTile(
+        'Impressions',
+        num(g.current.impressions),
+        delta(g.change && g.change.impressionsPercent),
+        'gsc.impressions',
+        g.current.impressions
+      ) +
+      kpiTile('CTR', pct(g.current.ctr), '', 'gsc.ctr', g.current.ctr) +
+      kpiTile(
+        'Avg position',
+        g.current.position != null ? Number(g.current.position).toFixed(1) : '–',
+        '',
+        'gsc.position',
+        g.current.position
+      ) +
+      kpiTile('Users', num(a && a.totals && a.totals.activeUsers), '', 'ga4.activeUsers', a && a.totals && a.totals.activeUsers) +
+      kpiTile(
+        'Engagement rate',
+        pct((a && a.totals && a.totals.engagementRate) * 100),
+        '',
+        'ga4.engagementRate',
+        a && a.totals && a.totals.engagementRate
+      ) +
       '</div>' +
       blocked(
         'Leads · qualified leads · conversion · backlinks · DA need CRM / Ahrefs (Phase 4). See Alerts for automated drops.'
@@ -421,36 +442,67 @@
     var html = head('2 · Global & US Performance', 'Country rollups', badge('live'));
     if (g && g.status === 'ok') {
       html +=
-        '<div class="grid2"><div><div class="sub">GSC United States</div><div class="tiles"><div class="tile"><div class="label">Clicks</div><div class="value mono">' +
-        num(g.us && g.us.clicks) +
-        '</div></div><div class="tile"><div class="label">Impr</div><div class="value mono">' +
-        num(g.us && g.us.impressions) +
-        '</div></div><div class="tile"><div class="label">CTR</div><div class="value mono">' +
-        pct(g.us && g.us.ctr) +
-        '</div></div><div class="tile"><div class="label">Pos</div><div class="value mono">' +
-        (g.us && g.us.position != null ? Number(g.us.position).toFixed(1) : '–') +
-        '</div></div></div></div>' +
-        '<div><div class="sub">GSC Rest of world</div><div class="tiles"><div class="tile"><div class="label">Clicks</div><div class="value mono">' +
-        num(g.global && g.global.clicks) +
-        '</div></div><div class="tile"><div class="label">Impr</div><div class="value mono">' +
-        num(g.global && g.global.impressions) +
-        '</div></div><div class="tile"><div class="label">CTR</div><div class="value mono">' +
-        pct(g.global && g.global.ctr) +
-        '</div></div><div class="tile"><div class="label">Pos</div><div class="value mono">' +
-        (g.global && g.global.position != null ? Number(g.global.position).toFixed(1) : '–') +
-        '</div></div></div></div></div>';
+        '<div class="grid2"><div><div class="sub">GSC United States</div><div class="tiles">' +
+        kpiTile('Clicks', num(g.us && g.us.clicks), '', 'gsc.us.clicks', g.us && g.us.clicks, false, 'geo:us:clicks') +
+        kpiTile('Impr', num(g.us && g.us.impressions), '', 'gsc.us.impressions', g.us && g.us.impressions, false, 'geo:us:impressions') +
+        kpiTile('CTR', pct(g.us && g.us.ctr), '', 'gsc.us.ctr', g.us && g.us.ctr, false, 'geo:us:ctr') +
+        kpiTile(
+          'Pos',
+          g.us && g.us.position != null ? Number(g.us.position).toFixed(1) : '–',
+          '',
+          'gsc.us.position',
+          g.us && g.us.position,
+          false,
+          'geo:us:position'
+        ) +
+        '</div></div>' +
+        '<div><div class="sub">GSC Rest of world</div><div class="tiles">' +
+        kpiTile('Clicks', num(g.global && g.global.clicks), '', 'gsc.global.clicks', g.global && g.global.clicks, false, 'geo:global:clicks') +
+        kpiTile(
+          'Impr',
+          num(g.global && g.global.impressions),
+          '',
+          'gsc.global.impressions',
+          g.global && g.global.impressions,
+          false,
+          'geo:global:impressions'
+        ) +
+        kpiTile('CTR', pct(g.global && g.global.ctr), '', 'gsc.global.ctr', g.global && g.global.ctr, false, 'geo:global:ctr') +
+        kpiTile(
+          'Pos',
+          g.global && g.global.position != null ? Number(g.global.position).toFixed(1) : '–',
+          '',
+          'gsc.global.position',
+          g.global && g.global.position,
+          false,
+          'geo:global:position'
+        ) +
+        '</div></div></div>';
     }
     if (a && a.status === 'ok')
       html +=
-        '<div class="tiles" style="margin-top:12px"><div class="tile"><div class="label">GA4 US sessions</div><div class="value mono">' +
-        num(a.us && a.us.sessions) +
-        '</div></div><div class="tile"><div class="label">GA4 rest sessions</div><div class="value mono">' +
-        num(a.rest && a.rest.sessions) +
-        '</div></div><div class="tile"><div class="label">GA4 US users</div><div class="value mono">' +
-        num(a.us && a.us.activeUsers) +
-        '</div></div><div class="tile"><div class="label">GA4 rest users</div><div class="value mono">' +
-        num(a.rest && a.rest.activeUsers) +
-        '</div></div></div>';
+        '<div class="tiles" style="margin-top:12px">' +
+        kpiTile('GA4 US sessions', num(a.us && a.us.sessions), '', 'ga4.us.sessions', a.us && a.us.sessions, false, 'geo:ga4:us:sessions') +
+        kpiTile(
+          'GA4 rest sessions',
+          num(a.rest && a.rest.sessions),
+          '',
+          'ga4.rest.sessions',
+          a.rest && a.rest.sessions,
+          false,
+          'geo:ga4:rest:sessions'
+        ) +
+        kpiTile('GA4 US users', num(a.us && a.us.activeUsers), '', 'ga4.us.activeUsers', a.us && a.us.activeUsers, false, 'geo:ga4:us:users') +
+        kpiTile(
+          'GA4 rest users',
+          num(a.rest && a.rest.activeUsers),
+          '',
+          'ga4.rest.activeUsers',
+          a.rest && a.rest.activeUsers,
+          false,
+          'geo:ga4:rest:users'
+        ) +
+        '</div>';
     html += blocked('Leads / qualified leads by country need CRM integration.');
     el.innerHTML = html;
   }
@@ -529,6 +581,7 @@
       th('Pos', 'position', 'page', true) +
       th('Sessions', 'sessions', 'page', true) +
       th('Eng %', 'engagementRate', 'page', true) +
+      ackTh() +
       '</tr></thead><tbody>' +
       rows
         .map(function (r) {
@@ -549,7 +602,14 @@
             num(r.sessions) +
             '</td><td class="num mono">' +
             (r.engagementRate != null ? pct(r.engagementRate * 100) : '–') +
-            '</td></tr>'
+            '</td>' +
+            ackTd('page', ackSid('page', r.page), {
+              title: r.page,
+              page: r.page,
+              url: r.page,
+              metricValue: r.impressions,
+            }) +
+            '</tr>'
           );
         })
         .join('') +
@@ -604,13 +664,7 @@
       '<div class="tiles">' +
       order
         .map(function (k) {
-          return (
-            '<div class="tile"><div class="label">Pos ' +
-            k +
-            '</div><div class="value mono" style="font-size:17px">' +
-            num(buckets[k]) +
-            '</div></div>'
-          );
+          return kpiTile('Pos ' + k, num(buckets[k]), '', 'kw.bucket.' + k, buckets[k], false, 'kw-bucket:' + k);
         })
         .join('') +
       '</div>' +
@@ -627,6 +681,7 @@
       th('CTR', 'ctr', 'kw', true) +
       th('Pos', 'position', 'kw', true) +
       th('Bucket', 'bucket', 'kw') +
+      ackTh() +
       '</tr></thead><tbody>' +
       rows
         .map(function (r) {
@@ -643,7 +698,13 @@
             (r.position != null ? Number(r.position).toFixed(1) : '–') +
             '</td><td>' +
             esc(r.bucket) +
-            '</td></tr>'
+            '</td>' +
+            ackTd('keyword', ackSid('kw', r.query), {
+              title: r.query,
+              query: r.query,
+              metricValue: r.impressions,
+            }) +
+            '</tr>'
           );
         })
         .join('') +
@@ -693,6 +754,7 @@
       th('Clicks', 'clicks', 'opp', true) +
       th('CTR', 'ctr', 'opp', true) +
       th('Pos', 'position', 'opp', true) +
+      ackTh() +
       '</tr></thead><tbody>' +
       (derived.length
         ? derived
@@ -710,11 +772,19 @@
                 pct(r.ctr) +
                 '</td><td class="num mono">' +
                 Number(r.position).toFixed(1) +
-                '</td></tr>'
+                '</td>' +
+                ackTd('keyword', ackSid('kw', r.query + ':' + r.type), {
+                  title: r.query,
+                  query: r.query,
+                  note: r.type,
+                  metricValue: r.impressions,
+                  warn: true,
+                }) +
+                '</tr>'
               );
             })
             .join('')
-        : '<tr><td colspan="6" class="sub">No opportunity rows in current slice.</td></tr>') +
+        : '<tr><td colspan="7" class="sub">No opportunity rows in current slice.</td></tr>') +
       '</tbody></table></div>' +
       (qw.length
         ? '<p class="sub" style="margin-top:10px">Classic quickWins (pos 4–15): ' +
@@ -775,6 +845,7 @@
         th('Impr', 'impressionSum', 'cann', true) +
         th('σ pos', 'positionVariance', 'cann', true) +
         th('Primary', 'primary', 'cann') +
+        ackTh() +
         '</tr></thead><tbody>' +
         filtered
           .map(function (r) {
@@ -791,7 +862,14 @@
               (r.positionVariance != null ? Number(r.positionVariance).toFixed(2) : '–') +
               '</td><td class="mono">' +
               esc(r.primary || '–') +
-              '</td></tr>'
+              '</td>' +
+              ackTd('cannibalization', ackSid('cann', r.query), {
+                title: r.query,
+                query: r.query,
+                metricValue: r.impressionSum,
+                warn: true,
+              }) +
+              '</tr>'
             );
           })
           .join('') +
@@ -847,13 +925,11 @@
         tech.passing + '/' + tech.totalChecks + ' passing',
         badge('live')
       ) +
-      '<div class="tiles"><div class="tile"><div class="label">Passing</div><div class="value mono">' +
-      num(tech.passing) +
-      '</div></div><div class="tile"><div class="label">Failing</div><div class="value mono">' +
-      num(tech.failing) +
-      '</div></div><div class="tile"><div class="label">Money pages flagged</div><div class="value mono">' +
-      num(money.length) +
-      '</div></div></div>' +
+      '<div class="tiles">' +
+      kpiTile('Passing', num(tech.passing), '', 'audit.tech.passing', tech.passing) +
+      kpiTile('Failing', num(tech.failing), '', 'audit.tech.failing', tech.failing, (tech.failing || 0) > 0) +
+      kpiTile('Money pages flagged', num(money.length), '', 'audit.moneyPages', money.length, money.length > 0) +
+      '</div>' +
       filterBar('tech', {
         status: true,
         statusOptions: ['pass', 'fail', 'warn', 'pending'],
@@ -864,20 +940,12 @@
       th('Check', 'name', 'tech') +
       th('Status', 'status', 'tech') +
       th('Note', 'note', 'tech') +
-      '<th>Live</th>' +
+      ackTh() +
       '</tr></thead><tbody>' +
       checks
         .map(function (c) {
           var b =
             c.status === 'pass' ? 'live' : c.status === 'fail' ? 'blocked' : 'pending';
-          var ack =
-            c.status === 'fail' && window.GbAck
-              ? window.GbAck.checkboxHtml('audit_finding', c.id, {
-                  title: c.name,
-                  note: c.note || '',
-                  label: 'Addressed',
-                })
-              : '';
           return (
             '<tr><td class="mono">' +
             esc(c.id) +
@@ -887,9 +955,13 @@
             badge(b, c.status) +
             '</td><td class="sub">' +
             esc(c.note || '') +
-            '</td><td>' +
-            ack +
-            '</td></tr>'
+            '</td>' +
+            ackTd('audit_finding', c.id, {
+              title: c.name,
+              note: c.note || '',
+              warn: c.status === 'fail',
+            }) +
+            '</tr>'
           );
         })
         .join('') +
@@ -900,6 +972,7 @@
       th('URL', 'url', 'money') +
       th('Defects', 'defects', 'money') +
       th('Note', 'note', 'money') +
+      ackTh() +
       '</tr></thead><tbody>' +
       moneyRows
         .map(function (m) {
@@ -910,7 +983,15 @@
             esc(m.defects) +
             '</td><td class="sub">' +
             esc(m.note) +
-            '</td></tr>'
+            '</td>' +
+            ackTd('page', ackSid('page', m.url), {
+              title: m.url,
+              page: m.url,
+              url: m.url,
+              note: m.defects,
+              warn: true,
+            }) +
+            '</tr>'
           );
         })
         .join('') +
@@ -926,19 +1007,18 @@
     var html =
       head('8 · Indexation', '', inv ? badge('live') : badge('pending')) +
       (inv
-        ? '<div class="tiles"><div class="tile"><div class="label">Inventory URLs</div><div class="value mono">' +
-          num(inv.totalUrls) +
-          '</div></div><div class="tile"><div class="label">Global</div><div class="value mono">' +
-          num(inv.globalUrls) +
-          '</div></div><div class="tile"><div class="label">US tree</div><div class="value mono">' +
-          num(inv.usUrls) +
-          '</div></div><div class="tile"><div class="label">Blog posts</div><div class="value mono">' +
-          num(inv.blogPostCount) +
-          '</div></div></div>' +
+        ? '<div class="tiles">' +
+          kpiTile('Inventory URLs', num(inv.totalUrls), '', 'audit.inventory.totalUrls', inv.totalUrls) +
+          kpiTile('Global', num(inv.globalUrls), '', 'audit.inventory.globalUrls', inv.globalUrls) +
+          kpiTile('US tree', num(inv.usUrls), '', 'audit.inventory.usUrls', inv.usUrls) +
+          kpiTile('Blog posts', num(inv.blogPostCount), '', 'audit.inventory.blogPostCount', inv.blogPostCount) +
+          '</div>' +
           '<p class="sub">' +
           esc(inv.note || '') +
           '</p>' +
-          '<div class="table-wrap"><table><thead><tr><th>Segment</th><th class="num">URLs</th></tr></thead><tbody>' +
+          '<div class="table-wrap"><table><thead><tr><th>Segment</th><th class="num">URLs</th>' +
+          ackTh() +
+          '</tr></thead><tbody>' +
           (inv.segments || [])
             .map(function (s) {
               return (
@@ -946,7 +1026,12 @@
                 esc(s.name) +
                 '</td><td class="num mono">' +
                 num(s.urls) +
-                '</td></tr>'
+                '</td>' +
+                ackTd('ops', ackSid('idx', s.name), {
+                  title: s.name,
+                  metricValue: s.urls,
+                }) +
+                '</tr>'
               );
             })
             .join('') +
@@ -971,11 +1056,17 @@
     var inv = state.audit && state.audit.pageInventory;
     el.innerHTML =
       head('10 · Internal Linking', '', badge('live')) +
-      '<div class="tiles"><div class="tile"><div class="label">Unlinked blogs → money</div><div class="value mono">' +
-      num(inv && inv.unlinkedBlogToMoney) +
-      '</div><div class="hint">From audit</div></div><div class="tile"><div class="label">Blog corpus</div><div class="value mono">' +
-      num(inv && inv.blogPostCount) +
-      '</div></div></div>' +
+      '<div class="tiles">' +
+      kpiTile(
+        'Unlinked blogs → money',
+        num(inv && inv.unlinkedBlogToMoney),
+        '<div class="hint">From audit</div>',
+        'audit.unlinkedBlogToMoney',
+        inv && inv.unlinkedBlogToMoney,
+        (inv && inv.unlinkedBlogToMoney) > 0
+      ) +
+      kpiTile('Blog corpus', num(inv && inv.blogPostCount), '', 'audit.blogPostCount', inv && inv.blogPostCount) +
+      '</div>' +
       blocked(
         'Per-URL inlink counts, orphan graph, anchor text map need site crawl (Screaming Frog) — not connected.'
       );
@@ -1007,15 +1098,12 @@
     );
     el.innerHTML =
       head('12 · Traffic & Acquisition', 'GA4 channels · this board only', badge('live')) +
-      '<div class="tiles"><div class="tile"><div class="label">Users</div><div class="value mono">' +
-      num(a.totals.activeUsers) +
-      '</div></div><div class="tile"><div class="label">Sessions</div><div class="value mono">' +
-      num(a.totals.sessions) +
-      '</div></div><div class="tile"><div class="label">Page views</div><div class="value mono">' +
-      num(a.totals.pageViews) +
-      '</div></div><div class="tile"><div class="label">Engagement rate</div><div class="value mono">' +
-      pct(a.totals.engagementRate * 100) +
-      '</div></div></div>' +
+      '<div class="tiles">' +
+      kpiTile('Users', num(a.totals.activeUsers), '', 'ga4.activeUsers', a.totals.activeUsers) +
+      kpiTile('Sessions', num(a.totals.sessions), '', 'ga4.sessions', a.totals.sessions) +
+      kpiTile('Page views', num(a.totals.pageViews), '', 'ga4.pageViews', a.totals.pageViews) +
+      kpiTile('Engagement rate', pct(a.totals.engagementRate * 100), '', 'ga4.engagementRate', a.totals.engagementRate) +
+      '</div>' +
       filterBar('channels', {
         sessions: true,
         qPlaceholder: 'Filter channel…',
@@ -1025,6 +1113,7 @@
       th('Sessions', 'sessions', 'channels', true) +
       th('Users', 'activeUsers', 'channels', true) +
       th('Conv', 'conversions', 'channels', true) +
+      ackTh() +
       '</tr></thead><tbody>' +
       chSorted
         .map(function (c) {
@@ -1037,7 +1126,13 @@
             num(c.activeUsers) +
             '</td><td class="num mono">' +
             num(c.conversions) +
-            '</td></tr>'
+            '</td>' +
+            ackTd('channel', ackSid('ch', c.channel), {
+              title: c.channel,
+              metricKey: 'ga4.channel.' + c.channel,
+              metricValue: c.sessions,
+            }) +
+            '</tr>'
           );
         })
         .join('') +
@@ -1057,15 +1152,30 @@
       );
     if (base)
       html +=
-        '<div class="tiles"><div class="tile"><div class="label">Non-brand cite rate</div><div class="value mono">' +
-        (base.aiCitationRateNonBranded * 100).toFixed(1) +
-        '%</div></div><div class="tile"><div class="label">Branded cite</div><div class="value mono">' +
-        esc(base.aiCitationRateBranded) +
-        '</div></div><div class="tile"><div class="label">SoV vs LeewayHertz</div><div class="value mono" style="font-size:16px">' +
-        esc(base.aiShareOfVoiceVsLeewayHertz) +
-        '</div></div><div class="tile"><div class="label">AI sessions (GA4 ch)</div><div class="value mono">' +
-        num(findChannel(/ai|chatgpt|assistant/i)) +
-        '</div></div></div>';
+        '<div class="tiles">' +
+        kpiTile(
+          'Non-brand cite rate',
+          (base.aiCitationRateNonBranded * 100).toFixed(1) + '%',
+          '',
+          'audit.baselines.aiCitationRateNonBranded',
+          base.aiCitationRateNonBranded
+        ) +
+        kpiTile('Branded cite', esc(base.aiCitationRateBranded), '', 'audit.baselines.aiCitationRateBranded', null) +
+        kpiTile(
+          'SoV vs LeewayHertz',
+          esc(base.aiShareOfVoiceVsLeewayHertz),
+          '',
+          'audit.baselines.aiShareOfVoiceVsLeewayHertz',
+          null
+        ) +
+        kpiTile(
+          'AI sessions (GA4 ch)',
+          num(findChannel(/ai|chatgpt|assistant/i)),
+          '',
+          'ga4.channel.ai',
+          findChannel(/ai|chatgpt|assistant/i)
+        ) +
+        '</div>';
     if (!ai || ai.status !== 'ok')
       html += pending('Scheduler adds ga4AiTraffic by referrer (ChatGPT, Perplexity, Gemini, Claude, Copilot).');
     else {
@@ -1086,6 +1196,7 @@
         th('AI referrer', 'referrer', 'ai') +
         th('Sessions', 'sessions', 'ai', true) +
         th('Users', 'activeUsers', 'ai', true) +
+        ackTh() +
         '</tr></thead><tbody>' +
         aiRows
           .map(function (r) {
@@ -1096,7 +1207,12 @@
               num(r.sessions) +
               '</td><td class="num mono">' +
               num(r.activeUsers) +
-              '</td></tr>'
+              '</td>' +
+              ackTd('channel', ackSid('ai', r.referrer), {
+                title: r.referrer,
+                metricValue: r.sessions,
+              }) +
+              '</tr>'
             );
           })
           .join('') +
@@ -1111,11 +1227,20 @@
         })
         .slice(0, 8)
         .map(function (e) {
+          var ack =
+            window.GbAck &&
+            window.GbAck.checkboxHtml('audit_finding', e.id, {
+              title: e.id,
+              note: e.error,
+              label: 'Addressed',
+              compact: true,
+            });
           return (
             '<div class="empty" style="padding:6px 0;border-bottom:1px solid var(--line)"><strong class="mono">' +
             esc(e.id) +
             '</strong> ' +
             esc(e.error) +
+            (ack ? ' ' + ack : '') +
             '</div>'
           );
         })
@@ -1155,13 +1280,18 @@
         content.length + ' content URLs · sort: ' + state.sort.content.key,
         badge('live')
       ) +
-      '<div class="tiles"><div class="tile"><div class="label">Content shown</div><div class="value mono">' +
-      num(content.length) +
-      '</div></div><div class="tile"><div class="label">Audit blogs</div><div class="value mono">' +
-      num(inv && inv.blogPostCount) +
-      '</div></div><div class="tile"><div class="label">Unlinked to money</div><div class="value mono">' +
-      num(inv && inv.unlinkedBlogToMoney) +
-      '</div></div></div>' +
+      '<div class="tiles">' +
+      kpiTile('Content shown', num(content.length), '', 'content.urlCount', content.length) +
+      kpiTile('Audit blogs', num(inv && inv.blogPostCount), '', 'audit.blogPostCount', inv && inv.blogPostCount) +
+      kpiTile(
+        'Unlinked to money',
+        num(inv && inv.unlinkedBlogToMoney),
+        '',
+        'audit.unlinkedBlogToMoney',
+        inv && inv.unlinkedBlogToMoney,
+        (inv && inv.unlinkedBlogToMoney) > 0
+      ) +
+      '</div>' +
       filterBar('content', {
         type: true,
         bucket: true,
@@ -1176,6 +1306,7 @@
       th('Clicks', 'clicks', 'content', true) +
       th('CTR', 'ctr', 'content', true) +
       th('Pos', 'position', 'content', true) +
+      ackTh() +
       '</tr></thead><tbody>' +
       content
         .map(function (r) {
@@ -1192,7 +1323,14 @@
             pct(r.ctr) +
             '</td><td class="num mono">' +
             (r.position != null ? Number(r.position).toFixed(1) : '–') +
-            '</td></tr>'
+            '</td>' +
+            ackTd('page', ackSid('page', r.page), {
+              title: r.page,
+              page: r.page,
+              url: r.page,
+              metricValue: r.impressions,
+            }) +
+            '</tr>'
           );
         })
         .join('') +
@@ -1253,22 +1391,17 @@
         badge('live')
       ) +
       '<div class="tiles">' +
-      '<div class="tile"><div class="label">Clicks Δ</div><div class="value mono">' +
-      pct(chg(newest.clicks, oldest.clicks)) +
-      '</div><div class="hint">' +
-      num(oldest.clicks) +
-      ' → ' +
-      num(newest.clicks) +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Impr Δ</div><div class="value mono">' +
-      pct(chg(newest.impressions, oldest.impressions)) +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Sessions Δ</div><div class="value mono">' +
-      pct(chg(newest.sessions, oldest.sessions)) +
-      '</div></div>' +
-      '<div class="tile"><div class="label">Points in range</div><div class="value mono">' +
-      num(hist.length) +
-      '</div></div></div>' +
+      kpiTile(
+        'Clicks Δ',
+        pct(chg(newest.clicks, oldest.clicks)),
+        '<div class="hint">' + num(oldest.clicks) + ' → ' + num(newest.clicks) + '</div>',
+        'decay.clicksDelta',
+        chg(newest.clicks, oldest.clicks)
+      ) +
+      kpiTile('Impr Δ', pct(chg(newest.impressions, oldest.impressions)), '', 'decay.impressionsDelta', chg(newest.impressions, oldest.impressions)) +
+      kpiTile('Sessions Δ', pct(chg(newest.sessions, oldest.sessions)), '', 'decay.sessionsDelta', chg(newest.sessions, oldest.sessions)) +
+      kpiTile('Points in range', num(hist.length), '', 'decay.points', hist.length) +
+      '</div>' +
       '<p class="sub" style="margin-top:10px">Uses trailing-window snapshots (not calendar-day GSC sums). Per-URL decay needs page-level history series next.</p>';
   }
 
@@ -1305,6 +1438,7 @@
       th('Who', 'who', 'activity') +
       th('Type', 'activityType', 'activity') +
       th('Note', 'note', 'activity') +
+      ackTh() +
       '</tr></thead><tbody>' +
       (entries.length
         ? entries
@@ -1322,11 +1456,17 @@
                 (e.url
                   ? ' · <a href="' + esc(e.url) + '" target="_blank">link</a>'
                   : '') +
-                '</td></tr>'
+                '</td>' +
+                ackTd('board', ackSid('activity', (e.id || e.date) + ':' + (e.who || '')), {
+                  title: (e.who || '') + ' · ' + (e.activityType || ''),
+                  note: e.note,
+                  url: e.url,
+                }) +
+                '</tr>'
               );
             })
             .join('')
-        : '<tr><td colspan="4" class="sub">No activity yet.</td></tr>') +
+        : '<tr><td colspan="5" class="sub">No activity yet.</td></tr>') +
       '</tbody></table></div>';
   }
 
@@ -1352,7 +1492,9 @@
     var targets = (state.goals && state.goals.targets) || [];
     el.innerHTML =
       head('18 · Goals & Targets', 'Editable · KV when API live', badge('live')) +
-      '<div class="table-wrap"><table><thead><tr><th>KPI</th><th>Cadence</th><th class="num">Current</th><th class="num">Previous</th><th class="num">Target</th><th></th></tr></thead><tbody>' +
+      '<div class="table-wrap"><table><thead><tr><th>KPI</th><th>Cadence</th><th class="num">Current</th><th class="num">Previous</th><th class="num">Target</th><th></th>' +
+      ackTh() +
+      '</tr></thead><tbody>' +
       targets
         .map(function (t) {
           var cur = currentValueForGoal(t);
@@ -1404,7 +1546,13 @@
             (tgt == null ? '' : esc(tgt)) +
             '" style="width:110px;text-align:right"></td><td><button class="secondary" data-save-goal="' +
             esc(t.id) +
-            '">Save</button></td></tr>'
+            '">Save</button></td>' +
+            ackTd('kpi', ackSid('goal', t.id), {
+              title: t.label,
+              metricKey: t.source || t.id,
+              metricValue: cur,
+            }) +
+            '</tr>'
           );
         })
         .join('') +
@@ -1470,15 +1618,24 @@
       head('19 · Automated Alerts', 'Rules on latest + history + audit', badge('live')) +
       alerts
         .map(function (a) {
+          var ack =
+            window.GbAck &&
+            window.GbAck.checkboxHtml('board', ackSid('alert', a.title), {
+              title: a.title,
+              warn: a.sev === 'bad' || a.sev === 'warn',
+              compact: true,
+            });
           return (
-            '<div class="empty" style="border-bottom:1px solid var(--line);padding:8px 0">' +
+            '<div class="empty" style="border-bottom:1px solid var(--line);padding:8px 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
             badge(
               a.sev === 'bad' ? 'blocked' : a.sev === 'warn' ? 'pending' : 'live',
               a.sev
             ) +
             ' <strong style="margin-left:6px">' +
             esc(a.title) +
-            '</strong></div>'
+            '</strong>' +
+            (ack || '') +
+            '</div>'
           );
         })
         .join('');
@@ -1518,13 +1675,15 @@
           th('CTR', 'ctr', 'reports', true) +
           th('Pos', 'position', 'reports', true) +
           th('Sessions', 'sessions', 'reports', true) +
+          ackTh() +
           '</tr></thead><tbody>' +
           (hist.length
             ? hist
                 .map(function (h) {
+                  var d = h.bucketLabel || h.date;
                   return (
                     '<tr><td class="mono">' +
-                    esc(h.bucketLabel || h.date) +
+                    esc(d) +
                     '</td><td class="num mono">' +
                     num(h.clicks) +
                     '</td><td class="num mono">' +
@@ -1535,11 +1694,16 @@
                     (h.position != null ? Number(h.position).toFixed(1) : '–') +
                     '</td><td class="num mono">' +
                     num(h.sessions) +
-                    '</td></tr>'
+                    '</td>' +
+                    ackTd('kpi', ackSid('report', d), {
+                      title: 'Report ' + d,
+                      metricValue: h.clicks,
+                    }) +
+                    '</tr>'
                   );
                 })
                 .join('')
-            : '<tr><td colspan="6" class="sub">No snapshots in this date range yet. Keep daily refresh running.</td></tr>') +
+            : '<tr><td colspan="7" class="sub">No snapshots in this date range yet. Keep daily refresh running.</td></tr>') +
           '</tbody></table></div>'
         : pending('No history yet')) +
       '<p class="sub" style="margin-top:10px">Date range + Day/Week/Month controls sit above all modules. Snapshot values are trailing GSC/GA4 totals as of each day (not summed calendar days).</p>';
@@ -1571,6 +1735,7 @@
       th('Source', 'name', 'sources') +
       th('Status', 'status', 'sources') +
       th('Note', 'note', 'sources') +
+      ackTh() +
       '</tr></thead><tbody>' +
       rows
         .map(function (s) {
@@ -1583,7 +1748,13 @@
             badge(b, s.status) +
             '</td><td class="sub">' +
             esc(s.note || '') +
-            '</td></tr>'
+            '</td>' +
+            ackTd('ops', ackSid('source', s.name), {
+              title: s.name,
+              note: s.note || '',
+              warn: s.status !== 'live',
+            }) +
+            '</tr>'
           );
         })
         .join('') +
@@ -1605,12 +1776,21 @@
       head('Phase 4 — gated integrations', 'UI ready · connect vendor to unlock JSON fields', badge('blocked', 'gated')) +
       items
         .map(function (i) {
+          var ack =
+            window.GbAck &&
+            window.GbAck.checkboxHtml('ops', ackSid('gate', i.name), {
+              title: i.name,
+              note: i.unlocks,
+              compact: true,
+            });
           return (
             '<div class="empty" style="border-bottom:1px solid var(--line);padding:10px 0"><strong>' +
             esc(i.name) +
             '</strong><p style="margin:4px 0 0" class="sub">Unlocks: ' +
             esc(i.unlocks) +
-            '</p></div>'
+            '</p>' +
+            (ack || '') +
+            '</div>'
           );
         })
         .join('');
@@ -1651,20 +1831,27 @@
       .join('');
     el.innerHTML =
       head('Fixes Tracker', done + ' / ' + items.length + ' done', '<a href="report.html#fixes">Report →</a>') +
-      '<div class="tiles"><div class="tile"><div class="label">Open</div><div class="value mono">' +
-      num(items.length - done) +
-      '</div></div><div class="tile"><div class="label">Done</div><div class="value mono">' +
-      num(done) +
-      '</div></div><div class="tile"><div class="label">Critical open</div><div class="value mono">' +
-      num(
-        items.filter(function (i) {
-          var a = window.GbAck && window.GbAck.get('fix', i.id);
-          var liveDone = a && a.verifyStatus !== 'failed';
-          return i.type === 'critical' && !liveDone && !i.done;
-        }).length
+      '<div class="tiles">' +
+      kpiTile('Open', num(items.length - done), '', 'fixes.open', items.length - done, items.length - done > 0) +
+      kpiTile('Done', num(done), '', 'fixes.done', done) +
+      kpiTile(
+        'Critical open',
+        num(
+          items.filter(function (i) {
+            var a = window.GbAck && window.GbAck.get('fix', i.id);
+            var liveDone = a && a.verifyStatus !== 'failed';
+            return i.type === 'critical' && !liveDone && !i.done;
+          }).length
+        ),
+        '',
+        'fixes.criticalOpen',
+        null,
+        true
       ) +
-      '</div></div></div>' +
-      '<div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>ID</th><th>Title</th><th>Type</th><th>Live</th></tr></thead><tbody>' +
+      '</div>' +
+      '<div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>ID</th><th>Title</th><th>Type</th>' +
+      ackTh() +
+      '</tr></thead><tbody>' +
       (rows || '<tr><td colspan="4" class="empty">No fixes</td></tr>') +
       '</tbody></table></div>' +
       '<p class="sub" style="margin-top:10px"><a href="tasks.html">Team Tasks</a> — tick Addressed when live; LLM verifies stored evidence.</p>';
@@ -1695,13 +1882,11 @@
       '<p style="margin:0 0 12px;color:var(--ink-soft);max-width:72ch">' +
       esc(latest.summary) +
       '</p>' +
-      '<div class="tiles"><div class="tile"><div class="label">Critical</div><div class="value mono">' +
-      num(v.criticalCount) +
-      '</div></div><div class="tile"><div class="label">Findings</div><div class="value mono">' +
-      num(findings.length) +
-      '</div></div><div class="tile"><div class="label">Agents used</div><div class="value mono">' +
-      num((latest.agentsUsed || []).length) +
-      '</div></div></div>' +
+      '<div class="tiles">' +
+      kpiTile('Critical', num(v.criticalCount), '', 'agents.critical', v.criticalCount, (v.criticalCount || 0) > 0) +
+      kpiTile('Findings', num(findings.length), '', 'agents.findings', findings.length) +
+      kpiTile('Agents used', num((latest.agentsUsed || []).length), '', 'agents.used', (latest.agentsUsed || []).length) +
+      '</div>' +
       (agents.length
         ? '<p class="sub" style="margin-top:12px">' +
           agents
@@ -1725,15 +1910,12 @@
       '<p style="margin:0 0 10px;color:var(--ink-soft);max-width:70ch">' +
       esc(a.verdict && a.verdict.summary) +
       '</p>' +
-      '<div class="tiles"><div class="tile"><div class="label">Critical</div><div class="value mono">' +
-      num(a.verdict && a.verdict.criticalCount) +
-      '</div></div><div class="tile"><div class="label">High</div><div class="value mono">' +
-      num(a.verdict && a.verdict.highCount) +
-      '</div></div><div class="tile"><div class="label">URLs</div><div class="value mono">' +
-      num(a.pageInventory && a.pageInventory.totalUrls) +
-      '</div></div><div class="tile"><div class="label">Easy wins</div><div class="value mono">' +
-      num((a.easyWins || []).length) +
-      '</div></div></div>' +
+      '<div class="tiles">' +
+      kpiTile('Critical', num(a.verdict && a.verdict.criticalCount), '', 'audit.critical', a.verdict && a.verdict.criticalCount, true) +
+      kpiTile('High', num(a.verdict && a.verdict.highCount), '', 'audit.high', a.verdict && a.verdict.highCount) +
+      kpiTile('URLs', num(a.pageInventory && a.pageInventory.totalUrls), '', 'audit.urls', a.pageInventory && a.pageInventory.totalUrls) +
+      kpiTile('Easy wins', num((a.easyWins || []).length), '', 'audit.easyWins', (a.easyWins || []).length) +
+      '</div>' +
       '<p class="sub" style="margin-top:10px"><a href="report.html">Intelligence Report</a> · <a href="tasks.html">Team Tasks</a></p>';
   }
 
@@ -2044,7 +2226,10 @@
   });
 
   document.addEventListener('gb-ack-changed', function () {
+    renderExec();
     renderTech();
     renderFixes();
+    renderGoals();
+    renderAlerts();
   });
 })();

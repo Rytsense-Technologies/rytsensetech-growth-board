@@ -436,24 +436,27 @@
   function renderTiles(gsc, ga4, taskSummary){
     var tiles = [];
     if(gsc){
-      tiles.push({label:'Clicks (28d)', value: fmtNum(gsc.current.clicks), delta: deltaEl(gsc.change.clicksPercent, false)});
-      tiles.push({label:'Impressions', value: fmtNum(gsc.current.impressions), delta: deltaEl(gsc.change.impressionsPercent, false)});
-      tiles.push({label:'Avg CTR', value: gsc.current.ctr.toFixed(2)+'%', delta: gsc.prior.ctr ? deltaEl((gsc.change.ctr/gsc.prior.ctr)*100, false) : ''});
-      tiles.push({label:'Avg Position', value: gsc.current.position.toFixed(1), delta: gsc.prior.position ? deltaEl((gsc.change.position/gsc.prior.position)*100, true) : ''});
+      tiles.push({id:'kpi:gsc-clicks', label:'Clicks (28d)', value: fmtNum(gsc.current.clicks), delta: deltaEl(gsc.change.clicksPercent, false), metricKey:'gsc.clicks', metricValue:gsc.current.clicks});
+      tiles.push({id:'kpi:gsc-impressions', label:'Impressions', value: fmtNum(gsc.current.impressions), delta: deltaEl(gsc.change.impressionsPercent, false), metricKey:'gsc.impressions', metricValue:gsc.current.impressions});
+      tiles.push({id:'kpi:gsc-ctr', label:'Avg CTR', value: gsc.current.ctr.toFixed(2)+'%', delta: gsc.prior.ctr ? deltaEl((gsc.change.ctr/gsc.prior.ctr)*100, false) : '', metricKey:'gsc.ctr', metricValue:gsc.current.ctr});
+      tiles.push({id:'kpi:gsc-position', label:'Avg Position', value: gsc.current.position.toFixed(1), delta: gsc.prior.position ? deltaEl((gsc.change.position/gsc.prior.position)*100, true) : '', metricKey:'gsc.position', metricValue:gsc.current.position, warn:gsc.current.position>20});
     }
     if(ga4){
-      tiles.push({label:'Sessions (29d)', value: fmtNum(ga4.totals.sessions)});
-      tiles.push({label:'Active Users', value: fmtNum(ga4.totals.activeUsers)});
-      tiles.push({label:'Engagement Rate', value: fmtPct(ga4.totals.engagementRate*100)});
+      tiles.push({id:'kpi:ga4-sessions', label:'Sessions (29d)', value: fmtNum(ga4.totals.sessions), metricKey:'ga4.sessions', metricValue:ga4.totals.sessions});
+      tiles.push({id:'kpi:ga4-users', label:'Active Users', value: fmtNum(ga4.totals.activeUsers), metricKey:'ga4.activeUsers', metricValue:ga4.totals.activeUsers});
+      tiles.push({id:'kpi:ga4-engagement', label:'Engagement Rate', value: fmtPct(ga4.totals.engagementRate*100), metricKey:'ga4.engagementRate', metricValue:ga4.totals.engagementRate});
     }
     if(taskSummary){
       var crit = taskSummary.openCritical||0;
       var overdue = taskSummary.overdue||0;
       tiles.push({
+        id:'kpi:open-critical-tasks',
         label:'Open critical tasks',
         value: fmtNum(crit),
         delta: overdue ? ('<span class="delta down">'+fmtNum(overdue)+' overdue</span>') : '<a href="tasks.html" style="font-size:12px;font-weight:600">Team Tasks →</a>',
-        warn: crit>0
+        warn: crit>0,
+        metricKey:'tasks.openCritical',
+        metricValue:crit
       });
     }
     if(window.GbLive && window.GbLive.base()){
@@ -461,16 +464,26 @@
       var psiScore = psi && psi.avg_mobile_score != null ? psi.avg_mobile_score : null;
       var psiCrit = psi ? (psi.critical_issues||0) : 0;
       tiles.push({
+        id:'kpi:psi-mobile',
         label:'Page Speed (mobile)',
         value: psiScore != null ? psiScore+'<span style="font-size:13px;color:var(--ink-faint)">/100</span>' : '—',
         delta: '<a href="psi.html" style="font-size:12px;font-weight:600">'+(psi ? (fmtNum(psiCrit)+' critical · ') : (psiLoaded ? 'Not scanned yet · ' : ''))+'Page Speed →</a>',
-        warn: psiCrit>0 || (psiScore != null && psiScore < 50)
+        warn: psiCrit>0 || (psiScore != null && psiScore < 50),
+        metricKey:'psi.avg_mobile_score',
+        metricValue:psiScore
       });
     }
     document.getElementById('tiles').innerHTML = tiles.map(function(t){
       var sub = t.delta || '';
       if(t.delta && t.delta.indexOf('href=')<0 && t.delta.indexOf('overdue')<0) sub = t.delta + ' vs prior period';
-      return '<div class="tile"'+(t.warn?' style="outline:1px solid color-mix(in srgb, var(--bad) 35%, transparent)"':'')+'><div class="label">'+t.label+'</div><div class="value mono"'+(t.warn?' style="color:var(--bad)"':'')+'>'+t.value+'</div>'+(sub?('<div>'+sub+'</div>'):'')+'</div>';
+      var ack = window.GbAck ? window.GbAck.onTile('kpi', t.id || window.GbAck.stableId('kpi', t.label), {
+        title: t.label,
+        metricKey: t.metricKey,
+        metricValue: t.metricValue,
+        warn: !!t.warn,
+        note: t.warn ? 'Problem KPI at claim time' : 'KPI acknowledged'
+      }) : '';
+      return '<div class="tile"'+(t.warn?' style="outline:1px solid color-mix(in srgb, var(--bad) 35%, transparent)"':'')+'><div class="label">'+t.label+'</div><div class="value mono"'+(t.warn?' style="color:var(--bad)"':'')+'>'+t.value+'</div>'+(sub?('<div>'+sub+'</div>'):'')+ack+'</div>';
     }).join('');
   }
 
@@ -501,15 +514,25 @@
           g.th('CTR','ctr',qwState.sort,{num:true})+
           g.th('Pos.','position',qwState.sort,{num:true})+
           g.th('Opp.','opportunity',qwState.sort,{num:true})+
+          '<th>Addressed</th>'+
         '</tr>';
       } else {
-        head.innerHTML = '<tr><th>Query</th><th class="num-cell">Impr.</th><th class="num-cell">Clicks</th><th class="num-cell">CTR</th><th class="num-cell">Pos.</th><th class="num-cell">Opp.</th></tr>';
+        head.innerHTML = '<tr><th>Query</th><th class="num-cell">Impr.</th><th class="num-cell">Clicks</th><th class="num-cell">CTR</th><th class="num-cell">Pos.</th><th class="num-cell">Opp.</th><th>Addressed</th></tr>';
       }
     }
     if(!show.length){
-      body.innerHTML = '<tr><td colspan="6" style="color:var(--ink-faint);">No near-miss queries match filters.</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" style="color:var(--ink-faint);">No near-miss queries match filters.</td></tr>';
     } else {
       body.innerHTML = show.map(function(r){
+        var ack = window.GbAck
+          ? window.GbAck.td('keyword', window.GbAck.stableId('kw', r.query), {
+              title: r.query,
+              query: r.query,
+              note: 'opp '+fmtNum(r.opportunity)+' · pos '+(r.position!=null?Number(r.position).toFixed(1):'–'),
+              metricValue: r.opportunity,
+              warn: (r.opportunity||0) > 0
+            })
+          : '<td></td>';
         return '<tr>'+
           '<td class="q">'+esc(r.query)+'</td>'+
           '<td class="num-cell mono">'+fmtNum(r.impressions)+'</td>'+
@@ -517,6 +540,7 @@
           '<td class="num-cell mono">'+(r.ctr!=null?Number(r.ctr).toFixed(2):'–')+'%</td>'+
           '<td class="num-cell mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td>'+
           '<td class="num-cell"><span class="opp-badge">'+fmtNum(r.opportunity)+'</span></td>'+
+          ack+
         '</tr>';
       }).join('');
     }
@@ -618,9 +642,18 @@
     var max = Math.max.apply(null, channels.map(function(c){return c.sessions;}));
     el.innerHTML = channels.map(function(c){
       var pct = max ? (c.sessions/max*100) : 0;
+      var ack = window.GbAck
+        ? window.GbAck.checkboxHtml('channel', window.GbAck.stableId('ch', c.channel), {
+            title: c.channel,
+            metricKey: 'ga4.channel.'+c.channel,
+            metricValue: c.sessions,
+            note: 'sessions '+fmtNum(c.sessions),
+            compact: true
+          })
+        : '';
       return '<div class="channel-row"><div class="name">'+c.channel+'</div>'+
         '<div class="channel-bar-track"><div class="channel-bar-fill" style="width:'+pct.toFixed(1)+'%"></div></div>'+
-        '<div class="num mono">'+fmtNum(c.sessions)+'</div></div>';
+        '<div class="num mono">'+fmtNum(c.sessions)+'</div>'+ack+'</div>';
     }).join('');
   }
 
@@ -675,7 +708,15 @@
           : s.fmt === 'ms' ? fmtNum(+s.value) + ' ms'
           : s.fmt === 'sec' ? (+s.value).toFixed(1) + 's'
           : fmtNum(+s.value);
-        return '<div class="mini-tile"><div class="label">'+esc(s.label)+'</div><div class="value mono">'+display+'</div></div>';
+        var ack = window.GbAck
+          ? window.GbAck.onTile('clarity', window.GbAck.stableId('clarity', s.key), {
+              title: s.label,
+              metricKey: 'clarity.'+s.key,
+              metricValue: typeof s.value === 'number' ? s.value : null,
+              note: String(s.value)
+            })
+          : '';
+        return '<div class="mini-tile"><div class="label">'+esc(s.label)+'</div><div class="value mono">'+display+'</div>'+ack+'</div>';
       }).join('');
       html += '</div></div>';
     }
@@ -685,9 +726,16 @@
       html += '<div class="clarity-block"><div class="clarity-block-title">'+esc(block.label)+'</div><div class="channels">';
       html += block.rows.slice(0, 8).map(function(r){
         var pct = max ? ((+r.value || 0) / max * 100) : 0;
+        var ack = window.GbAck
+          ? window.GbAck.checkboxHtml('clarity', window.GbAck.stableId('clarity', block.key+':'+r.name), {
+              title: r.name,
+              note: block.label+' · '+fmtNum(r.value),
+              compact: true
+            })
+          : '';
         return '<div class="channel-row"><div class="name" title="'+esc(r.name)+'">'+esc(r.name)+'</div>'+
           '<div class="channel-bar-track"><div class="channel-bar-fill" style="width:'+pct.toFixed(1)+'%"></div></div>'+
-          '<div class="num mono">'+fmtNum(r.value)+'</div></div>';
+          '<div class="num mono">'+fmtNum(r.value)+'</div>'+ack+'</div>';
       }).join('');
       html += '</div></div>';
     });
@@ -830,11 +878,18 @@
           '</a>';
         }).join('')
       : '<p style="margin:0;color:var(--ink-faint);font-size:12.5px;">No recent commits.</p>';
+    var ack = window.GbAck
+      ? window.GbAck.onTile('deploy', window.GbAck.stableId('github', github.repo || 'repo'), {
+          title: 'GitHub '+ (github.repo || ''),
+          note: (github.recentCommits && github.recentCommits[0] && github.recentCommits[0].message) || 'github ok',
+          url: github.recentCommits && github.recentCommits[0] && github.recentCommits[0].url
+        })
+      : '';
     pane.innerHTML =
       '<div class="site-pane-label">GitHub'+
         (github.repo ? '<span class="repo">'+esc(github.repo)+'</span>' : '')+
       '</div>'+
-      '<div class="commit-list">'+list+'</div>';
+      '<div class="commit-list">'+list+'</div>'+ack;
   }
 
   function renderCloudflare(cf){
@@ -854,6 +909,14 @@
     if(cachePct != null && !isNaN(cachePct)){
       cachePct = cachePct <= 1 ? cachePct * 100 : cachePct;
     }
+    var ack = window.GbAck
+      ? window.GbAck.onTile('deploy', 'cf:last-deploy', {
+          title: 'Cloudflare deploy',
+          note: statusLabel,
+          url: url || null,
+          warn: status === 'failed'
+        })
+      : '';
     pane.innerHTML =
       '<div class="site-pane-label">Cloudflare</div>'+
       '<div class="deploy-row">'+
@@ -866,7 +929,7 @@
         '<div class="mini-tile"><div class="label">Unique visitors</div><div class="value mono">'+fmtNum(analytics.uniqueVisitors)+'</div></div>'+
         '<div class="mini-tile"><div class="label">Threats blocked</div><div class="value mono">'+fmtNum(analytics.threats)+'</div></div>'+
         '<div class="mini-tile"><div class="label">Cache hit</div><div class="value mono">'+(cachePct==null||isNaN(cachePct)?'–':cachePct.toFixed(1)+'%')+'</div></div>'+
-      '</div>';
+      '</div>'+ack;
   }
 
   function renderLive(updatedAt){
@@ -955,7 +1018,9 @@
     var overview = (window.GbLive && window.GbLive.base())
       ? window.GbLive.overview().catch(function () { return null; })
       : Promise.resolve(null);
+    var acks = window.GbAck ? window.GbAck.ensureLoaded() : Promise.resolve();
     Promise.all([
+      acks,
       overview.then(function (live) {
         return live || fetch('data/latest.json', { cache: 'no-store' }).then(function (r) { return r.json(); });
       }),
@@ -971,9 +1036,9 @@
             };
           }).catch(function(){ return null; });
         })
-    ]).then(function(pair){
-      var data = pair[0];
-      var taskSummary = pair[1];
+    ]).then(function(parts){
+      var data = parts[1];
+      var taskSummary = parts[2];
       var taskKey = taskSummary ? (taskSummary.openCritical + ':' + taskSummary.overdue) : '';
       if(data.updatedAt !== lastUpdatedAt || taskKey !== lastTaskKey){
         lastUpdatedAt = data.updatedAt;

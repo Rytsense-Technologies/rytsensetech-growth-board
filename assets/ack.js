@@ -12,6 +12,13 @@
     });
   }
 
+  function stableId(prefix, raw) {
+    var s = String(raw == null ? '' : raw).toLowerCase().trim();
+    s = s.replace(/https?:\/\//g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!s) s = 'item';
+    return String(prefix || 'board') + ':' + s.slice(0, 140);
+  }
+
   function badge(ack) {
     if (!ack) return '';
     var s = ack.verifyStatus || 'pending';
@@ -21,23 +28,47 @@
     return '<span class="ack-badge ' + cls + '" title="' + esc(title) + '">' + esc(label) + '</span>';
   }
 
+  function attr(name, value) {
+    if (value == null || value === '') return '';
+    return ' data-' + name + '="' + esc(value) + '"';
+  }
+
   function checkboxHtml(kind, id, opts) {
     opts = opts || {};
     var ack = cache.byKey[key(kind, id)];
     var checked = !!(ack && ack.verifyStatus !== 'failed');
     var failed = !!(ack && ack.verifyStatus === 'failed');
     return (
-      '<label class="ack-wrap' + (failed ? ' ack-failed' : '') + '" data-ack-kind="' + esc(kind) + '" data-ack-id="' + esc(id) + '">' +
+      '<label class="ack-wrap' + (failed ? ' ack-failed' : '') + (opts.compact ? ' ack-compact' : '') + '" data-ack-kind="' + esc(kind) + '" data-ack-id="' + esc(id) + '">' +
       '<input type="checkbox" class="ack-box" data-kind="' + esc(kind) + '" data-id="' + esc(id) + '"' +
-      (opts.title ? ' data-title="' + esc(opts.title) + '"' : '') +
-      (opts.url ? ' data-url="' + esc(opts.url) + '"' : '') +
-      (opts.note ? ' data-note="' + esc(opts.note) + '"' : '') +
+      attr('title', opts.title) +
+      attr('url', opts.url) +
+      attr('note', opts.note) +
+      attr('query', opts.query) +
+      attr('page', opts.page) +
+      attr('metric-key', opts.metricKey) +
+      attr('metric-value', opts.metricValue != null ? String(opts.metricValue) : '') +
+      attr('warn', opts.warn ? '1' : '') +
+      attr('source-url', opts.sourceUrl) +
+      attr('target-url', opts.targetUrl) +
+      attr('expected', opts.expected) +
       (checked ? ' checked' : '') +
       ' />' +
       '<span class="ack-label">' + esc(opts.label || 'Addressed') + '</span>' +
       badge(ack) +
       '</label>'
     );
+  }
+
+  function td(kind, id, opts) {
+    return '<td class="ack-col">' + checkboxHtml(kind, id, opts) + '</td>';
+  }
+
+  function onTile(kind, id, opts) {
+    opts = opts || {};
+    opts.compact = true;
+    opts.label = opts.label || 'Addressed';
+    return '<div class="ack-tile-row">' + checkboxHtml(kind, id, opts) + '</div>';
   }
 
   async function ensureLoaded(force) {
@@ -97,6 +128,14 @@
             title: el.getAttribute('data-title') || null,
             url: el.getAttribute('data-url') || null,
             note: el.getAttribute('data-note') || null,
+            query: el.getAttribute('data-query') || null,
+            page: el.getAttribute('data-page') || null,
+            metricKey: el.getAttribute('data-metric-key') || null,
+            metricValue: el.getAttribute('data-metric-value') || null,
+            warn: el.getAttribute('data-warn') === '1',
+            sourceUrl: el.getAttribute('data-source-url') || null,
+            targetUrl: el.getAttribute('data-target-url') || null,
+            expected: el.getAttribute('data-expected') || null,
           }),
         });
         var body = {};
@@ -146,7 +185,10 @@
     s.id = 'gb-ack-style';
     s.textContent =
       '.ack-wrap{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ink-soft,#4B5563);white-space:nowrap}' +
-      '.ack-wrap input{accent-color:var(--accent,#0E7A82);width:15px;height:15px}' +
+      '.ack-wrap input{accent-color:var(--accent,#0E7A82);width:15px;height:15px;flex:0 0 auto}' +
+      '.ack-compact{font-size:11px;margin-top:6px}' +
+      '.ack-tile-row{margin-top:8px}' +
+      '.ack-col{min-width:118px;vertical-align:middle}' +
       '.ack-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;letter-spacing:.02em}' +
       '.ack-ok{background:var(--good-soft,#E4F5EC);color:var(--good,#1E8E5A)}' +
       '.ack-wait{background:var(--warn-soft,#FBF0DC);color:var(--warn,#B4740E)}' +
@@ -162,6 +204,9 @@
     ensureLoaded: ensureLoaded,
     loadToday: loadToday,
     checkboxHtml: checkboxHtml,
+    td: td,
+    onTile: onTile,
+    stableId: stableId,
     badge: badge,
     bind: bind,
     injectStyles: injectStyles,

@@ -64,7 +64,7 @@ Two-company test, required before a real second customer: company B’s user rec
 
 Automation may refresh metrics and suggestions. Humans own task status.
 
-**Addressed / live checkbox.** A human ticks Addressed on a fixable row (GSC issue, PSI issue, audit finding, fix, or task). Express marks it addressed immediately (`issues.status = fixed` / task `done` as applicable), then runs one LLM verify against stored evidence (HTTP status Express fetched, `psi_scores` / `psi_issues`, `search_pages`). The model must not invent numbers. Verdict `confirmed` keeps the claim. Verdict `failed` reopens the row and sets `verify_status = failed`. Viewers cannot ack.
+**Addressed / live checkbox.** A human ticks Addressed on **every** board surface that shows a claimable item: GSC/PSI issues, audit findings, fixes, tasks, KPI tiles, keyword/page tables, cannibalization, content ideas, topic trends, internal links, channels, Clarity metrics, ops rows, and related platform modules. Express marks it addressed immediately (`issues.status = fixed` / task `done` as applicable for issue/task kinds), then runs one LLM verify against stored evidence (`latest.json` / `site_snapshots` overview, HTTP status Express fetched, `psi_scores` / `psi_issues`, `search_pages` / `search_queries`). The model must not invent numbers. Verdict `confirmed` keeps the claim. Verdict `failed` shows **Verify failed**, unchecks the row, and reopens issue/task status when those kinds apply. Viewers cannot ack.
 
 Create task is a human action. The model may propose the title and details. Express inserts the task only when the user confirms. The new task is Unassigned (`assignee` null) unless the user picks a member of their own company.
 

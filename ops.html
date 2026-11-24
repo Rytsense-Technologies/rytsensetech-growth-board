@@ -119,6 +119,7 @@
 <script src="assets/site-nav.js" defer></script>
 <script src="assets/app-config.js"></script>
 <script src="assets/live-api.js"></script>
+<script src="assets/ack.js"></script>
 <script src="assets/table-sort.js"></script>
 <div class="shell">
   <aside class="sidebar">
@@ -246,6 +247,21 @@
     if(!f.q) return true;
     return String(text||'').toLowerCase().indexOf(f.q.toLowerCase())!==-1;
   }
+  function ackTh(){ return '<th>Addressed</th>'; }
+  function ackSid(prefix, raw){
+    return window.GbAck ? window.GbAck.stableId(prefix, raw) : String(prefix)+':'+String(raw||'item');
+  }
+  function ackTd(kind, id, opts){
+    return window.GbAck ? window.GbAck.td(kind, id, opts||{}) : '<td class="ack-col"></td>';
+  }
+  function ackTile(kind, id, opts){
+    return window.GbAck ? window.GbAck.onTile(kind, id, opts||{}) : '';
+  }
+  function kpiTile(label, valueHtml, tail, metricKey, metricValue, warn, idRaw){
+    var id = ackSid('kpi', idRaw || label);
+    return '<div class="tile"><div class="label">'+esc(label)+'</div><div class="value mono">'+valueHtml+'</div>'+(tail||'')+
+      ackTile('kpi', id, {title:label, metricKey:metricKey, metricValue:metricValue, warn:!!warn})+'</div>';
+  }
   function filterBar(board, opts){
     opts = opts||{};
     var f = filtersFor(board);
@@ -283,14 +299,14 @@
     var find = function(name){ var x=ch.find(function(c){return c.channel===name;}); return x?x.sessions:null; };
     el.innerHTML = head('Executive KPIs','Organic + traffic mix','<span class="badge live">live</span>')+
       '<div class="tiles">'+
-        '<div class="tile"><div class="label">Organic clicks</div><div class="value mono">'+num(g.current.clicks)+'</div>'+delta(g.change&&g.change.clicksPercent)+'</div>'+
-        '<div class="tile"><div class="label">Impressions</div><div class="value mono">'+num(g.current.impressions)+'</div>'+delta(g.change&&g.change.impressionsPercent)+'</div>'+
-        '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.current.ctr)+'</div></div>'+
-        '<div class="tile"><div class="label">Avg position</div><div class="value mono">'+(g.current.position!=null?Number(g.current.position).toFixed(1):'–')+'</div></div>'+
-        '<div class="tile"><div class="label">Sessions</div><div class="value mono">'+num(a&&a.totals&&a.totals.sessions)+'</div></div>'+
-        '<div class="tile"><div class="label">Organic search</div><div class="value mono">'+num(find('Organic Search'))+'</div></div>'+
-        '<div class="tile"><div class="label">Direct</div><div class="value mono">'+num(find('Direct'))+'</div></div>'+
-        '<div class="tile"><div class="label">Organic social</div><div class="value mono">'+num(find('Organic Social'))+'</div></div>'+
+        kpiTile('Organic clicks', num(g.current.clicks), delta(g.change&&g.change.clicksPercent), 'gsc.clicks', g.current.clicks, false)+
+        kpiTile('Impressions', num(g.current.impressions), delta(g.change&&g.change.impressionsPercent), 'gsc.impressions', g.current.impressions, false)+
+        kpiTile('CTR', pct(g.current.ctr), '', 'gsc.ctr', g.current.ctr, false)+
+        kpiTile('Avg position', (g.current.position!=null?Number(g.current.position).toFixed(1):'–'), '', 'gsc.position', g.current.position, false)+
+        kpiTile('Sessions', num(a&&a.totals&&a.totals.sessions), '', 'ga4.sessions', a&&a.totals&&a.totals.sessions, false)+
+        kpiTile('Organic search', num(find('Organic Search')), '', 'ga4.channel.Organic Search', find('Organic Search'), false)+
+        kpiTile('Direct', num(find('Direct')), '', 'ga4.channel.Direct', find('Direct'), false)+
+        kpiTile('Organic social', num(find('Organic Social')), '', 'ga4.channel.Organic Social', find('Organic Social'), false)+
       '</div>'+
       blocked('Leads / qualified leads / conversion rate need CRM (Phase 4). AI traffic needs referrer segmentation (Phase 3). Backlinks need Ahrefs/Semrush (Phase 4).');
   }
@@ -305,20 +321,23 @@
     var html = head('Global vs US','Country rollups','<span class="badge live">live</span>');
     if(g&&g.status==='ok'){
       html += '<div class="grid2"><div><div class="sub" style="font-size:11.5px;color:var(--ink-faint);margin-bottom:6px;">GSC · US</div><div class="tiles">'+
-        '<div class="tile"><div class="label">Clicks</div><div class="value mono">'+num(g.us&&g.us.clicks)+'</div></div>'+
-        '<div class="tile"><div class="label">Impr.</div><div class="value mono">'+num(g.us&&g.us.impressions)+'</div></div>'+
-        '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.us&&g.us.ctr)+'</div></div>'+
-        '<div class="tile"><div class="label">Pos.</div><div class="value mono">'+(g.us&&g.us.position!=null?Number(g.us.position).toFixed(1):'–')+'</div></div></div></div>'+
+        kpiTile('Clicks', num(g.us&&g.us.clicks), '', 'gsc.us.clicks', g.us&&g.us.clicks, false, 'geo:us:clicks')+
+        kpiTile('Impr.', num(g.us&&g.us.impressions), '', 'gsc.us.impressions', g.us&&g.us.impressions, false, 'geo:us:impressions')+
+        kpiTile('CTR', pct(g.us&&g.us.ctr), '', 'gsc.us.ctr', g.us&&g.us.ctr, false, 'geo:us:ctr')+
+        kpiTile('Pos.', (g.us&&g.us.position!=null?Number(g.us.position).toFixed(1):'–'), '', 'gsc.us.position', g.us&&g.us.position, false, 'geo:us:position')+
+        '</div></div>'+
         '<div><div class="sub" style="font-size:11.5px;color:var(--ink-faint);margin-bottom:6px;">GSC · Rest of world</div><div class="tiles">'+
-        '<div class="tile"><div class="label">Clicks</div><div class="value mono">'+num(g.global&&g.global.clicks)+'</div></div>'+
-        '<div class="tile"><div class="label">Impr.</div><div class="value mono">'+num(g.global&&g.global.impressions)+'</div></div>'+
-        '<div class="tile"><div class="label">CTR</div><div class="value mono">'+pct(g.global&&g.global.ctr)+'</div></div>'+
-        '<div class="tile"><div class="label">Pos.</div><div class="value mono">'+(g.global&&g.global.position!=null?Number(g.global.position).toFixed(1):'–')+'</div></div></div></div></div>';
+        kpiTile('Clicks', num(g.global&&g.global.clicks), '', 'gsc.global.clicks', g.global&&g.global.clicks, false, 'geo:global:clicks')+
+        kpiTile('Impr.', num(g.global&&g.global.impressions), '', 'gsc.global.impressions', g.global&&g.global.impressions, false, 'geo:global:impressions')+
+        kpiTile('CTR', pct(g.global&&g.global.ctr), '', 'gsc.global.ctr', g.global&&g.global.ctr, false, 'geo:global:ctr')+
+        kpiTile('Pos.', (g.global&&g.global.position!=null?Number(g.global.position).toFixed(1):'–'), '', 'gsc.global.position', g.global&&g.global.position, false, 'geo:global:position')+
+        '</div></div></div>';
     }
     if(a&&a.status==='ok'){
       html += '<div class="tiles" style="margin-top:12px;">'+
-        '<div class="tile"><div class="label">GA4 US sessions</div><div class="value mono">'+num(a.us&&a.us.sessions)+'</div></div>'+
-        '<div class="tile"><div class="label">GA4 rest sessions</div><div class="value mono">'+num(a.rest&&a.rest.sessions)+'</div></div></div>';
+        kpiTile('GA4 US sessions', num(a.us&&a.us.sessions), '', 'ga4.us.sessions', a.us&&a.us.sessions, false, 'geo:ga4:us:sessions')+
+        kpiTile('GA4 rest sessions', num(a.rest&&a.rest.sessions), '', 'ga4.rest.sessions', a.rest&&a.rest.sessions, false, 'geo:ga4:rest:sessions')+
+        '</div>';
     }
     el.innerHTML = html;
   }
@@ -351,12 +370,14 @@
       filterBar('page')+
       '<div class="table-wrap"><table data-sort-id="page"><thead><tr>'+
         th('URL','page','page')+th('Type','type','page')+th('Impr.','impressions','page',1)+th('Clicks','clicks','page',1)+
-        th('CTR','ctr','page',1)+th('Pos.','position','page',1)+th('Sessions','sessions','page',1)+
+        th('CTR','ctr','page',1)+th('Pos.','position','page',1)+th('Sessions','sessions','page',1)+ackTh()+
       '</tr></thead><tbody>'+
       rows.map(function(r){
         return '<tr><td class="mono" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;">'+esc(r.page)+'</td><td>'+esc(r.type)+'</td>'+
           '<td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td>'+
-          '<td class="num mono">'+num(r.sessions)+'</td></tr>';
+          '<td class="num mono">'+num(r.sessions)+'</td>'+
+          ackTd('page', ackSid('page', r.page), {title:r.page, page:r.page, url:r.page, metricValue:r.impressions})+
+          '</tr>';
       }).join('')+'</tbody></table></div>'+
       blocked('Leads columns blocked until CRM is connected.');
   }
@@ -382,14 +403,16 @@
     var order = ['1','2-3','4-5','6-10','11-20','21-50','51-100'];
     el.innerHTML = head('Keyword Performance', filtered.length+' queries · this board only', badge)+
       '<div class="tiles">'+order.map(function(k){
-        return '<div class="tile"><div class="label">Pos '+k+'</div><div class="value mono" style="font-size:18px;">'+num(buckets[k])+'</div></div>';
+        return kpiTile('Pos '+k, num(buckets[k]), '', 'kw.bucket.'+k, buckets[k], false, 'kw-bucket:'+k);
       }).join('')+'</div>'+
       filterBar('kw', {type:false, geo:false, qPlaceholder:'Filter keyword…'})+
       '<div class="table-wrap" style="margin-top:4px;"><table data-sort-id="kw"><thead><tr>'+
-        th('Query','query','kw')+th('Impr.','impressions','kw',1)+th('Clicks','clicks','kw',1)+th('CTR','ctr','kw',1)+th('Pos.','position','kw',1)+
+        th('Query','query','kw')+th('Impr.','impressions','kw',1)+th('Clicks','clicks','kw',1)+th('CTR','ctr','kw',1)+th('Pos.','position','kw',1)+ackTh()+
       '</tr></thead><tbody>'+
       filtered.map(function(r){
-        return '<tr><td>'+esc(r.query||'')+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>';
+        return '<tr><td>'+esc(r.query||'')+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+pct(r.ctr)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td>'+
+          ackTd('keyword', ackSid('kw', r.query), {title:r.query, query:r.query, metricValue:r.impressions})+
+          '</tr>';
       }).join('')+'</tbody></table></div>';
   }
 
@@ -406,10 +429,12 @@
       '<p style="margin:0 0 10px;color:var(--ink-soft);font-size:12.5px;">Core rule: position 4–15, impressions ≥ 100, opportunity-scored.</p>'+
       filterBar('opp', {type:false, geo:false, qPlaceholder:'Filter query…'})+
       '<div class="table-wrap"><table data-sort-id="opp"><thead><tr>'+
-        th('Query','query','opp')+th('Impr.','impressions','opp',1)+th('Clicks','clicks','opp',1)+th('Pos.','position','opp',1)+th('Opp.','opportunity','opp',1)+
+        th('Query','query','opp')+th('Impr.','impressions','opp',1)+th('Clicks','clicks','opp',1)+th('Pos.','position','opp',1)+th('Opp.','opportunity','opp',1)+ackTh()+
       '</tr></thead><tbody>'+
       qw.map(function(r){
-        return '<tr><td>'+esc(r.query)+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td><td class="num mono">'+num(r.opportunity)+'</td></tr>';
+        return '<tr><td>'+esc(r.query)+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td><td class="num mono">'+num(r.opportunity)+'</td>'+
+          ackTd('keyword', ackSid('kw', r.query), {title:r.query, query:r.query, metricValue:r.opportunity, warn:(r.opportunity||0)>0})+
+          '</tr>';
       }).join('')+'</tbody></table></div>'+
       (zeroClick.length?('<p style="margin:12px 0 0;font-size:12.5px;color:var(--ink-soft);"><strong>'+zeroClick.length+'</strong> high-impression / zero-click queries in this slice.</p>'):'')+
       pending('Declining-keyword list needs Phase 2 history (or prior-period query diff in scheduler).');
@@ -433,10 +458,12 @@
       filtered = applySort(filtered, 'cann');
       html += filterBar('cann', {type:false, bucket:false, geo:false, qPlaceholder:'Filter keyword / URL…'})+
         '<div class="table-wrap"><table data-sort-id="cann"><thead><tr>'+
-          th('Query','query','cann')+th('Pages','pages','cann')+th('Impr.','impressionSum','cann',1)+th('Pos σ','positionVariance','cann',1)+
+          th('Query','query','cann')+th('Pages','pages','cann')+th('Impr.','impressionSum','cann',1)+th('Pos σ','positionVariance','cann',1)+ackTh()+
         '</tr></thead><tbody>'+
         filtered.map(function(r){
-          return '<tr><td>'+esc(r.query)+'</td><td class="mono" style="font-size:11.5px;">'+esc((r.pages||[]).join(', '))+'</td><td class="num mono">'+num(r.impressionSum)+'</td><td class="num mono">'+(r.positionVariance!=null?Number(r.positionVariance).toFixed(2):'–')+'</td></tr>';
+          return '<tr><td>'+esc(r.query)+'</td><td class="mono" style="font-size:11.5px;">'+esc((r.pages||[]).join(', '))+'</td><td class="num mono">'+num(r.impressionSum)+'</td><td class="num mono">'+(r.positionVariance!=null?Number(r.positionVariance).toFixed(2):'–')+'</td>'+
+            ackTd('cannibalization', ackSid('cann', r.query), {title:r.query, query:r.query, metricValue:r.impressionSum, warn:true})+
+            '</tr>';
         }).join('')+'</tbody></table></div>';
     }
     el.innerHTML = html;
@@ -451,8 +478,10 @@
     var unlinked = inv ? inv.unlinkedBlogToMoney : null;
     if(!pages){
       el.innerHTML = head('Content Performance','Blog / case studies / resources')+
-        (inv?('<div class="tiles"><div class="tile"><div class="label">Blog posts (audit)</div><div class="value mono">'+num(blogCount)+'</div></div>'+
-          '<div class="tile"><div class="label">Unlinked to money pages</div><div class="value mono">'+num(unlinked)+'</div></div></div>'):'')+
+        (inv?('<div class="tiles">'+
+          kpiTile('Blog posts (audit)', num(blogCount), '', 'audit.blogPostCount', blogCount, false, 'content:audit:blogs')+
+          kpiTile('Unlinked to money pages', num(unlinked), '', 'audit.unlinkedBlogToMoney', unlinked, (unlinked||0)>0, 'content:audit:unlinked')+
+          '</div>'):'')+
         pending('Join gscByPage filtered to /blog/, /case-studies/, /resources/ once page report lands.');
       return;
     }
@@ -467,16 +496,20 @@
     content = applySort(content, 'content');
     var withImpr = content.filter(function(r){return (r.impressions||0)>0;}).length;
     el.innerHTML = head('Content Performance', content.length+' URLs · this board only','<span class="badge live">live</span>')+
-      '<div class="tiles"><div class="tile"><div class="label">Content URLs shown</div><div class="value mono">'+num(content.length)+'</div></div>'+
-      '<div class="tile"><div class="label">With impressions</div><div class="value mono">'+num(withImpr)+'</div></div>'+
-      '<div class="tile"><div class="label">Audit blog corpus</div><div class="value mono">'+num(blogCount)+'</div></div>'+
-      '<div class="tile"><div class="label">Unlinked posts</div><div class="value mono">'+num(unlinked)+'</div></div></div>'+
+      '<div class="tiles">'+
+      kpiTile('Content URLs shown', num(content.length), '', 'content.urlCount', content.length, false)+
+      kpiTile('With impressions', num(withImpr), '', 'content.withImpressions', withImpr, false)+
+      kpiTile('Audit blog corpus', num(blogCount), '', 'audit.blogPostCount', blogCount, false, 'content:audit:blogs')+
+      kpiTile('Unlinked posts', num(unlinked), '', 'audit.unlinkedBlogToMoney', unlinked, (unlinked||0)>0, 'content:audit:unlinked')+
+      '</div>'+
       filterBar('content', {type:false, qPlaceholder:'Filter content URL…'})+
       '<div class="table-wrap" style="margin-top:4px;"><table data-sort-id="content"><thead><tr>'+
-        th('URL','page','content')+th('Impr.','impressions','content',1)+th('Clicks','clicks','content',1)+th('Pos.','position','content',1)+
+        th('URL','page','content')+th('Impr.','impressions','content',1)+th('Clicks','clicks','content',1)+th('Pos.','position','content',1)+ackTh()+
       '</tr></thead><tbody>'+
       content.map(function(r){
-        return '<tr><td class="mono">'+esc(r.page)+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td></tr>';
+        return '<tr><td class="mono">'+esc(r.page)+'</td><td class="num mono">'+num(r.impressions)+'</td><td class="num mono">'+num(r.clicks)+'</td><td class="num mono">'+(r.position!=null?Number(r.position).toFixed(1):'–')+'</td>'+
+          ackTd('page', ackSid('page', r.page), {title:r.page, page:r.page, url:r.page, metricValue:r.impressions})+
+          '</tr>';
       }).join('')+'</tbody></table></div>';
   }
 
@@ -491,11 +524,13 @@
     el.innerHTML = head('Data Sources & Integrations','This board only','<span class="badge live">live</span>')+
       filterBar('sources', {type:false, bucket:false, geo:false, metrics:false, qPlaceholder:'Filter source…'})+
       '<div class="table-wrap"><table data-sort-id="sources"><thead><tr>'+
-        th('Source','name','sources')+th('Status','status','sources')+th('Note','note','sources')+
+        th('Source','name','sources')+th('Status','status','sources')+th('Note','note','sources')+ackTh()+
       '</tr></thead><tbody>'+
       rows.map(function(s){
         var b = s.status==='live'?'live':(s.status==='not_connected'?'off':'pending');
-        return '<tr><td>'+esc(s.name)+'</td><td><span class="badge '+b+'">'+esc(s.status)+'</span></td><td style="color:var(--ink-soft)">'+esc(s.note||'')+'</td></tr>';
+        return '<tr><td>'+esc(s.name)+'</td><td><span class="badge '+b+'">'+esc(s.status)+'</span></td><td style="color:var(--ink-soft)">'+esc(s.note||'')+'</td>'+
+          ackTd('ops', ackSid('source', s.name), {title:s.name, note:s.note||'', warn:s.status!=='live'})+
+          '</tr>';
       }).join('')+'</tbody></table></div>';
   }
 
@@ -537,7 +572,8 @@
       ? window.GbLive.overview()
       : fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.json();})
     ).catch(function(){ return fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.json();}); }),
-    fetch('data/audit.json',{cache:'no-store'}).then(function(r){return r.json();})
+    fetch('data/audit.json',{cache:'no-store'}).then(function(r){return r.json();}),
+    window.GbAck ? window.GbAck.ensureLoaded() : Promise.resolve()
   ]).then(function(pair){
     liveCache = pair[0]; auditCache = pair[1];
     document.getElementById('sync').textContent = 'Last synced '+(liveCache.updatedAt?new Date(liveCache.updatedAt).toLocaleString():'—')+' · Audit '+((auditCache&&auditCache.auditedRange)||'');

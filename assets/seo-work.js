@@ -305,6 +305,9 @@
     });
     var rows = list
       .map(function (r) {
+        var sid = window.GbAck
+          ? window.GbAck.stableId('ilink', (r.sourceUrl || '') + '>' + (r.targetUrl || ''))
+          : (r.sourceUrl || '') + '>' + (r.targetUrl || '');
         return (
           '<tr>' +
           '<td>' +
@@ -333,6 +336,15 @@
           '<td>' +
           esc(r.reason || '') +
           '</td>' +
+          (window.GbAck
+            ? window.GbAck.td('internal_link', sid, {
+                title: shortUrl(r.sourceUrl) + ' → ' + shortUrl(r.targetUrl),
+                sourceUrl: r.sourceUrl,
+                targetUrl: r.targetUrl,
+                url: r.targetUrl,
+                note: r.reason || r.anchorSuggestion || '',
+              })
+            : '<td></td>') +
           '</tr>'
         );
       })
@@ -363,9 +375,9 @@
       '</select>' +
       '</div>' +
       '<div class="sw-table-wrap"><table><thead><tr>' +
-      '<th>Priority</th><th>From (blog / page)</th><th>To (money page)</th><th>Why</th>' +
+      '<th>Priority</th><th>From (blog / page)</th><th>To (money page)</th><th>Why</th><th>Addressed</th>' +
       '</tr></thead><tbody>' +
-      (rows || '<tr><td colspan="4">No recommendations yet.</td></tr>') +
+      (rows || '<tr><td colspan="5">No recommendations yet.</td></tr>') +
       '</tbody></table></div>'
     );
   }
@@ -387,6 +399,9 @@
             : x.cannibalization === 'risk'
               ? 'warn'
               : 'bad';
+        var sid = window.GbAck
+          ? window.GbAck.stableId('idea', (x.market || '') + ':' + (x.keyword || ''))
+          : (x.keyword || '');
         return (
           '<tr>' +
           '<td>' +
@@ -409,6 +424,14 @@
           '<div class="sw-note">pos ' +
           (x.position != null ? Number(x.position).toFixed(1) : '–') +
           '</div></td>' +
+          (window.GbAck
+            ? window.GbAck.td('content_idea', sid, {
+                title: x.proposedTitle || x.keyword,
+                query: x.keyword,
+                note: (x.cannibalization || '') + ' · ' + (x.reason || ''),
+                warn: x.cannibalization === 'risk' || x.cannibalization === 'blocked',
+              })
+            : '<td></td>') +
           '</tr>'
         );
       })
@@ -452,9 +475,9 @@
       '</select>' +
       '</div>' +
       '<div class="sw-table-wrap"><table><thead><tr>' +
-      '<th>Cannibalization</th><th>Keyword</th><th>Proposed title / slug</th><th class="num">Demand</th>' +
+      '<th>Cannibalization</th><th>Keyword</th><th>Proposed title / slug</th><th class="num">Demand</th><th>Addressed</th>' +
       '</tr></thead><tbody>' +
-      (rows || '<tr><td colspan="4">No ideas in this filter.</td></tr>') +
+      (rows || '<tr><td colspan="5">No ideas in this filter.</td></tr>') +
       '</tbody></table></div>'
     );
   }
@@ -467,6 +490,9 @@
       .map(function (t) {
         var topics = (t.topics || [])
           .map(function (q) {
+            var sid = window.GbAck
+              ? window.GbAck.stableId('topic', (t.label || '') + ':' + (q.query || ''))
+              : q.query;
             return (
               '<tr>' +
               '<td>' +
@@ -484,6 +510,14 @@
               '<td>' +
               badge(q.signal === 'watch' ? 'warn' : 'mute', q.signal || 'steady') +
               '</td>' +
+              (window.GbAck
+                ? window.GbAck.td('topic_trend', sid, {
+                    title: q.query,
+                    query: q.query,
+                    note: (t.label || '') + ' · ' + (q.signal || 'steady'),
+                    warn: q.signal === 'watch',
+                  })
+                : '<td></td>') +
               '</tr>'
             );
           })
@@ -499,11 +533,18 @@
           num(t.clicks) +
           ' clk · ' +
           num(t.queryCount) +
-          ' queries</div></header>' +
+          ' queries</div>' +
+          (window.GbAck
+            ? window.GbAck.onTile('topic_trend', window.GbAck.stableId('obj', t.label), {
+                title: t.label,
+                note: 'objective ' + num(t.impressions) + ' imp',
+              })
+            : '') +
+          '</header>' +
           '<div class="sw-table-wrap compact"><table><thead><tr>' +
-          '<th>Query</th><th class="num">Imp</th><th class="num">Clk</th><th class="num">Pos</th><th>Signal</th>' +
+          '<th>Query</th><th class="num">Imp</th><th class="num">Clk</th><th class="num">Pos</th><th>Signal</th><th>Addressed</th>' +
           '</tr></thead><tbody>' +
-          (topics || '<tr><td colspan="5">No tagged queries yet.</td></tr>') +
+          (topics || '<tr><td colspan="6">No tagged queries yet.</td></tr>') +
           '</tbody></table></div></article>'
         );
       })
