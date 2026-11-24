@@ -15,6 +15,14 @@ import { runPSISync } from './jobs/sync-psi.js';
 import { createPSITasks } from './jobs/create-psi-tasks.js';
 import { createPsiRouter } from './routes/psi.js';
 import {
+  ackTodaySummary,
+  claimAck,
+  listAcks,
+  shapeAck,
+  unclaimAck,
+  verifyAck,
+} from './jobs/verify-ack.js';
+import {
   checkTeamLogin,
   signTeamToken,
   teamActor,
@@ -44,7 +52,7 @@ function json(res, data, status = 200) {
   res.set('access-control-allow-origin', corsOrigin(res.req));
   res.set('vary', 'Origin');
   res.set('access-control-allow-headers', 'authorization, content-type, x-cron-secret, x-support-org');
-  res.set('access-control-allow-methods', 'GET, POST, PATCH, OPTIONS');
+  res.set('access-control-allow-methods', 'GET, POST, PATCH, DELETE, OPTIONS');
   return res.status(status).json(data);
 }
 
@@ -382,6 +390,77 @@ export function createApp() {
     }
   });
 
+  // Addressed / live checkbox: human claims, LLM verifies against stored evidence.
+  app.get('/api/ack', async (req, res) => {
+    const actor = await actorFrom(req, req.db);
+    if (!requireActor(actor, res)) return;
+    const site = await resolveSite(req, actor);
+    if (site.error) return json(res, { error: site.error }, site.status);
+    try {
+      const today = req.query.today === '1' || req.query.today === 'true';
+      if (today) {
+        json(res, { ok: true, summary: await ackTodaySummary(req.db, site.row.id) });
+        return;
+      }
+      const items = await listAcks(req.db, { siteId: site.row.id });
+      json(res, { ok: true, items });
+    } catch (err) {
+      json(res, { error: err.message }, 500);
+    }
+  });
+
+  app.post('/api/ack', async (req, res) => {
+    const actor = await actorFrom(req, req.db);
+    if (!requireActor(actor, res)) return;
+    const site = await resolveSite(req, actor);
+    if (site.error) return json(res, { error: site.error }, site.status);
+    if (!canWriteTask(site.role)) return json(res, { error: 'forbidden' }, 403);
+    const sourceKind = String(req.body.sourceKind || req.body.source_kind || '').trim();
+    const sourceId = String(req.body.sourceId || req.body.source_id || '').trim();
+    if (!sourceKind || !sourceId) return json(res, { error: 'sourceKind and sourceId required' }, 400);
+    try {
+      const claimed = await claimAck(req.db, {
+        organizationId: site.row.organization_id,
+        siteId: site.row.id,
+        sourceKind,
+        sourceId,
+        snapshot: {
+          title: req.body.title || null,
+          url: req.body.url || null,
+          note: req.body.note || null,
+        },
+        claimedBy: actor.email || actor.userId,
+      });
+      const verified = await verifyAck(req.db, claimed.id, { actorLabel: actor.email || 'ack-verify' });
+      json(res, { ok: true, ack: shapeAck(verified) });
+    } catch (err) {
+      json(res, { error: err.message }, err.status || 500);
+    }
+  });
+
+  app.delete('/api/ack', async (req, res) => {
+    const actor = await actorFrom(req, req.db);
+    if (!requireActor(actor, res)) return;
+    const site = await resolveSite(req, actor);
+    if (site.error) return json(res, { error: site.error }, site.status);
+    if (!canWriteTask(site.role)) return json(res, { error: 'forbidden' }, 403);
+    const sourceKind = String((req.body && (req.body.sourceKind || req.body.source_kind)) || req.query.sourceKind || '').trim();
+    const sourceId = String((req.body && (req.body.sourceId || req.body.source_id)) || req.query.sourceId || '').trim();
+    if (!sourceKind || !sourceId) return json(res, { error: 'sourceKind and sourceId required' }, 400);
+    try {
+      await unclaimAck(req.db, {
+        organizationId: site.row.organization_id,
+        siteId: site.row.id,
+        sourceKind,
+        sourceId,
+        actorLabel: actor.email || 'human-uncheck',
+      });
+      json(res, { ok: true });
+    } catch (err) {
+      json(res, { error: err.message }, err.status || 500);
+    }
+  });
+
   app.get('/api/oauth/google/start', async (req, res) => {
     const actor = await actorFrom(req, req.db);
     if (!requireActor(actor, res)) return;
@@ -519,7 +598,9 @@ export function createApp() {
   }
 
   async function resolveSite(req, actor) {
-    const requested = req.query.siteId || (req.body && req.body.siteId) || null;
+    const requested = req.query.siteId || req.query.site_id
+      || (req.body && (req.body.siteId || req.body.site_id))
+      || null;
     let query = req.db.from('sites').select('id, organization_id, domain, name, organizations(status)');
     if (requested) query = query.eq('id', requested);
     else if (actor.supportOrgId && actor.isPlatformAdmin) query = query.eq('organization_id', actor.supportOrgId);

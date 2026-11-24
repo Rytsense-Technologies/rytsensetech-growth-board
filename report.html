@@ -37,6 +37,9 @@
   </div>
 </nav>
 <script src="assets/site-nav.js" defer></script>
+<script src="assets/app-config.js"></script>
+<script src="assets/live-api.js"></script>
+<script src="assets/ack.js"></script>
 <div class="rts-report" id="app">
   <div class="scrim" id="scrim" hidden></div>
   <div class="shell">
@@ -211,24 +214,29 @@
   }
 
   function renderCritical(a){
-    var html='<p class="lede">Findings verified during the '+esc(a.auditedRange)+' engagement. Critical items block trustworthy AI citation and SERP conversion.</p>';
+    var html='<p class="lede">Findings verified during the '+esc(a.auditedRange)+' engagement. Critical items block trustworthy AI citation and SERP conversion. Tick <strong>Addressed</strong> when live; the board verifies against stored data.</p>';
     a.criticalIssues.forEach(function(i){
       html+='<article class="find crit"><h4>'+esc(i.title)+' <span class="tag t-crit">'+esc(i.id)+'</span> <span class="tag t-sig">'+esc(i.scope)+'</span></h4>'+
-        '<p>'+esc(i.detail)+'</p></article>';
+        '<p>'+esc(i.detail)+'</p>'+
+        (window.GbAck?window.GbAck.checkboxHtml('audit_finding', i.id, { title:i.title, note:i.detail, label:'Addressed' }):'')+
+        '</article>';
     });
     a.highIssues.forEach(function(i){
       html+='<article class="find warn"><h4>'+esc(i.title)+' <span class="tag t-warn">'+esc(i.id)+'</span></h4>'+
-        '<p>'+esc(i.detail)+'</p></article>';
+        '<p>'+esc(i.detail)+'</p>'+
+        (window.GbAck?window.GbAck.checkboxHtml('audit_finding', i.id, { title:i.title, note:i.detail, label:'Addressed' }):'')+
+        '</article>';
     });
     document.getElementById('critical').innerHTML=html;
   }
 
   function renderWins(a){
-    var html='<p class="lede">Fifteen shippable actions with owner and effort. Prefer W1–W5 this sprint.</p>';
-    html+='<div class="h2">Ship today</div><div class="tblwrap"><table><thead><tr><th>ID</th><th>Action</th><th>Location</th><th>Effort</th><th>Owner</th></tr></thead><tbody>';
+    var html='<p class="lede">Fifteen shippable actions with owner and effort. Prefer W1–W5 this sprint. Tick Addressed when live.</p>';
+    html+='<div class="h2">Ship today</div><div class="tblwrap"><table><thead><tr><th>ID</th><th>Action</th><th>Location</th><th>Effort</th><th>Owner</th><th>Live</th></tr></thead><tbody>';
     a.easyWins.forEach(function(w){
       html+='<tr><td class="u">'+esc(w.id)+'</td><td>'+esc(w.action)+'<div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">'+esc(w.rationale)+'</div></td>'+
-        '<td>'+esc(w.location)+'</td><td class="n">'+esc(w.effort)+'</td><td>'+esc(w.owner)+'</td></tr>';
+        '<td>'+esc(w.location)+'</td><td class="n">'+esc(w.effort)+'</td><td>'+esc(w.owner)+'</td>'+
+        '<td>'+(window.GbAck?window.GbAck.checkboxHtml('audit_finding', w.id, { title:w.action, note:w.location, label:'Addressed' }):'')+'</td></tr>';
     });
     html+='</tbody></table></div>';
     document.getElementById('wins').innerHTML=html;
@@ -326,16 +334,30 @@
 
   function renderFixes(){
     var items=state.fixes.items||[];
-    var done=items.filter(function(i){return i.done}).length;
-    var html='<p class="lede">Checklist synced'+(state.fixes.source==='api'?' via Cloudflare KV':' in this browser')+'. '+done+' / '+items.length+' done.</p>';
+    var done=items.filter(function(i){
+      if (window.GbAck) {
+        var a=window.GbAck.get('fix', i.id);
+        if (a && a.verifyStatus!=='failed') return true;
+      }
+      return i.done;
+    }).length;
+    var html='<p class="lede">Tick Addressed when the fix is live. The board verifies against stored data'+(window.GbLive&&window.GbLive.base()?' via the API':'; local checklist still kept as fallback')+'. '+done+' / '+items.length+' done.</p>';
     html+='<div class="card" id="fixes-list">';
     if(!items.length) html+='<p class="note" style="margin:0;color:var(--ink-3)">No fixes loaded.</p>';
     items.forEach(function(item){
-      html+='<div class="fix-row'+(item.done?' done':'')+'" data-id="'+esc(item.id)+'">'+
-        '<input type="checkbox" '+(item.done?'checked':'')+' aria-label="Mark '+esc(item.id)+' done">'+
+      var ackHtml = window.GbAck
+        ? window.GbAck.checkboxHtml('fix', item.id, {
+            title: item.title,
+            note: [item.type, item.location, item.owner].filter(Boolean).join(' · '),
+            label: 'Addressed',
+          })
+        : '<input type="checkbox" '+(item.done?'checked':'')+' aria-label="Mark '+esc(item.id)+' done">';
+      var liveDone = window.GbAck && window.GbAck.get('fix', item.id) && window.GbAck.get('fix', item.id).verifyStatus!=='failed';
+      html+='<div class="fix-row'+(liveDone||item.done?' done':'')+'" data-id="'+esc(item.id)+'">'+
+        ackHtml+
         '<div><div class="fix-title"><span class="mono">'+esc(item.id)+'</span> · '+esc(item.title)+'</div>'+
         '<div class="fix-meta">'+esc(item.type||'')+(item.effort?' · '+esc(item.effort):'')+(item.owner?' · '+esc(item.owner):'')+(item.location?' · '+esc(item.location):'')+'</div></div>'+
-        '<div class="mono" style="font-size:11px;color:var(--ink-3)">'+(item.done?'done':'open')+'</div></div>';
+        '<div class="mono" style="font-size:11px;color:var(--ink-3)">'+(liveDone||item.done?'done':'open')+'</div></div>';
     });
     html+='</div>';
     document.getElementById('fixes').innerHTML=html;
@@ -564,6 +586,8 @@
   }
 
   document.getElementById('wrap').addEventListener('change', async function(ev){
+    // Live ack checkboxes are handled by assets/ack.js. Local-only fallback for offline.
+    if(ev.target.classList && ev.target.classList.contains('ack-box')) return;
     if(!ev.target.matches('#fixes-list input[type=checkbox]')) return;
     var row=ev.target.closest('.fix-row'); var id=row&&row.getAttribute('data-id'); if(!id) return;
     var item=state.fixes.items.find(function(i){return i.id===id}); if(!item) return;
@@ -572,6 +596,10 @@
     if(state.fixes.source==='api'){
       try{await fetch('/api/fixes/'+encodeURIComponent(id),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({done:item.done,doneBy:'dashboard'})})}catch(e){}
     }
+  });
+  document.addEventListener('gb-ack-changed', function(){
+    if(state.audit){ renderCritical(state.audit); renderWins(state.audit); }
+    renderFixes();
   });
 
   async function loadHistory(){
@@ -590,7 +618,8 @@
     fetch('data/fixes.json',{cache:'no-store'}).then(function(r){return r.json()}),
     fetch('data/latest.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}}),
     loadHistory(),
-    fetch('/api/fixes',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})
+    fetch('/api/fixes',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null}),
+    window.GbAck ? window.GbAck.ensureLoaded() : Promise.resolve()
   ]).then(function(pair){
     state.audit=pair[0]; state.live=pair[2]; state.history=pair[3];
     if(pair[4]&&pair[4].items){ state.fixes={items:pair[4].items,source:'api'}; }

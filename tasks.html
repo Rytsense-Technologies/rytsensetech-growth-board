@@ -164,6 +164,7 @@
 </nav>
 <script src="assets/app-config.js"></script>
 <script src="assets/live-api.js"></script>
+<script src="assets/ack.js"></script>
 <script src="assets/site-nav.js" defer></script>
 
 <div class="wrap">
@@ -285,12 +286,21 @@
     var due=dueLabel(t.dueDate);
     var note=(t.notes&&t.notes[0])?('<p class="alert">'+esc(t.notes[0].text)+'</p>'):'';
     var who=displayAssignee(t)||'Unassigned';
+    var ack = window.GbAck
+      ? window.GbAck.checkboxHtml('task', t.id, {
+          title: t.title,
+          url: t.location || '',
+          note: (t.details || t.rationale || '').slice(0, 200),
+          label: 'Addressed',
+        })
+      : '';
     return '<div class="tcard" data-id="'+esc(t.id)+'">'+
       '<h3>'+esc(t.title)+'</h3>'+
       '<div class="meta"><span class="tag '+teamKey(t.team)+'">'+esc(teamLabel(t.team))+'</span>'+
       '<span class="tag id">'+esc(t.id)+'</span>'+
       (due.text?'<span class="due'+(due.hot?' hot':'')+'">'+esc(due.text)+'</span>':'')+'</div>'+
       note+
+      (ack?'<div style="margin:8px 0" onclick="event.stopPropagation()">'+ack+'</div>':'')+
       '<div class="card-foot"><div class="who"><span class="av" style="background:'+memberColor(who)+'">'+esc(initials(who))+'</span>'+esc(who)+'</div>'+
       '<select class="st" data-id="'+esc(t.id)+'" onclick="event.stopPropagation()">'+
       ['todo','in-progress','blocked','done'].map(function(x){return '<option value="'+x+'"'+(t.status===x?' selected':'')+'>'+x+'</option>'}).join('')+
@@ -475,8 +485,10 @@
       if(t.assignee && !isRosterName(t.assignee)) t.assignee=null;
     });
     if(tasksData.summary) state.summary=tasksData.summary; else recompute();
+    if(window.GbAck) await window.GbAck.ensureLoaded(true);
     render();
   }
+  document.addEventListener('gb-ack-changed', function(){ reload(); });
 
   document.getElementById('view-seg').addEventListener('click', function(ev){
     var b=ev.target.closest('button[data-view]'); if(!b) return;

@@ -264,6 +264,7 @@
 <script src="assets/site-nav.js" defer></script>
 <script src="assets/app-config.js"></script>
 <script src="assets/live-api.js"></script>
+<script src="assets/ack.js"></script>
 <script src="assets/table-sort.js"></script>
 <script src="assets/date-range.js"></script>
 <div class="wrap">
@@ -291,6 +292,16 @@
     </div>
   </div>
 
+  <div class="ack-today" id="ack-today" hidden>
+    <div class="ack-pill">Addressed today<span id="ack-claimed">0</span></div>
+    <div class="ack-pill">Verified<span id="ack-confirmed">0</span></div>
+    <div class="ack-pill">Verifying<span id="ack-pending">0</span></div>
+    <div class="ack-pill">Verify failed<span id="ack-failed">0</span></div>
+    <div style="font-size:12px;color:var(--ink-soft);align-self:center">
+      Tick <strong>Addressed</strong> on SEO Work, Page Speed, Report, or Tasks when a fix is live.
+      <a href="seo-work.html#issues">SEO Work</a> · <a href="tasks.html">Tasks</a>
+    </div>
+  </div>
   <div class="tiles" id="tiles"></div>
   <div id="date-range-host" style="margin:0 0 18px"></div>
 
@@ -876,6 +887,17 @@
     updatedText.textContent = 'Last synced ' + fmtDate(updatedAt);
   }
 
+  function renderAckToday(summary){
+    var el = document.getElementById('ack-today');
+    if(!el) return;
+    if(!summary){ el.hidden = true; return; }
+    el.hidden = false;
+    document.getElementById('ack-claimed').textContent = summary.claimed || 0;
+    document.getElementById('ack-confirmed').textContent = summary.confirmed || 0;
+    document.getElementById('ack-pending').textContent = summary.pending || 0;
+    document.getElementById('ack-failed').textContent = summary.failed || 0;
+  }
+
   function render(data, taskSummary){
     if(!data) return;
     lastBoardData = data;
@@ -923,8 +945,13 @@
       })
       .catch(function(){ /* keep last tile */ });
   }
+  function loadAckToday(){
+    if(!(window.GbAck && window.GbLive && window.GbLive.base())) { renderAckToday(null); return; }
+    window.GbAck.loadToday().then(renderAckToday).catch(function(){ renderAckToday(null); });
+  }
   function load(){
     loadPsi();
+    loadAckToday();
     var overview = (window.GbLive && window.GbLive.base())
       ? window.GbLive.overview().catch(function () { return null; })
       : Promise.resolve(null);

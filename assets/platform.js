@@ -864,11 +864,20 @@
       th('Check', 'name', 'tech') +
       th('Status', 'status', 'tech') +
       th('Note', 'note', 'tech') +
+      '<th>Live</th>' +
       '</tr></thead><tbody>' +
       checks
         .map(function (c) {
           var b =
             c.status === 'pass' ? 'live' : c.status === 'fail' ? 'blocked' : 'pending';
+          var ack =
+            c.status === 'fail' && window.GbAck
+              ? window.GbAck.checkboxHtml('audit_finding', c.id, {
+                  title: c.name,
+                  note: c.note || '',
+                  label: 'Addressed',
+                })
+              : '';
           return (
             '<tr><td class="mono">' +
             esc(c.id) +
@@ -878,6 +887,8 @@
             badge(b, c.status) +
             '</td><td class="sub">' +
             esc(c.note || '') +
+            '</td><td>' +
+            ack +
             '</td></tr>'
           );
         })
@@ -1609,8 +1620,35 @@
     var el = document.querySelector('[data-mod=fixes]');
     var items = (state.fixes && state.fixes.items) || [];
     var done = items.filter(function (i) {
+      if (window.GbAck) {
+        var a = window.GbAck.get('fix', i.id);
+        if (a && a.verifyStatus !== 'failed') return true;
+      }
       return i.done;
     }).length;
+    var rows = items
+      .slice(0, 40)
+      .map(function (item) {
+        var ack = window.GbAck
+          ? window.GbAck.checkboxHtml('fix', item.id, {
+              title: item.title,
+              note: [item.type, item.location].filter(Boolean).join(' · '),
+              label: 'Addressed',
+            })
+          : '';
+        return (
+          '<tr><td class="mono">' +
+          esc(item.id) +
+          '</td><td>' +
+          esc(item.title) +
+          '</td><td>' +
+          esc(item.type || '') +
+          '</td><td>' +
+          ack +
+          '</td></tr>'
+        );
+      })
+      .join('');
     el.innerHTML =
       head('Fixes Tracker', done + ' / ' + items.length + ' done', '<a href="report.html#fixes">Report →</a>') +
       '<div class="tiles"><div class="tile"><div class="label">Open</div><div class="value mono">' +
@@ -1620,11 +1658,16 @@
       '</div></div><div class="tile"><div class="label">Critical open</div><div class="value mono">' +
       num(
         items.filter(function (i) {
-          return i.type === 'critical' && !i.done;
+          var a = window.GbAck && window.GbAck.get('fix', i.id);
+          var liveDone = a && a.verifyStatus !== 'failed';
+          return i.type === 'critical' && !liveDone && !i.done;
         }).length
       ) +
       '</div></div></div>' +
-      '<p class="sub" style="margin-top:10px"><a href="tasks.html">Team Tasks</a> — weekly audit creates Unassigned criticals for Rama/Srivishwa to claim.</p>';
+      '<div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>ID</th><th>Title</th><th>Type</th><th>Live</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="4" class="empty">No fixes</td></tr>') +
+      '</tbody></table></div>' +
+      '<p class="sub" style="margin-top:10px"><a href="tasks.html">Team Tasks</a> — tick Addressed when live; LLM verifies stored evidence.</p>';
   }
 
   function renderAgents() {
@@ -1958,6 +2001,7 @@
         })
       );
     }),
+    window.GbAck ? window.GbAck.ensureLoaded() : Promise.resolve(),
   ]).then(function (pair) {
     state.live = pair[0];
     state.audit = pair[1];
@@ -1997,5 +2041,10 @@
       ' ' +
       badge('live', 'Platform');
     renderAll();
+  });
+
+  document.addEventListener('gb-ack-changed', function () {
+    renderTech();
+    renderFixes();
   });
 })();

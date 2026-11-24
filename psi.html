@@ -84,6 +84,7 @@
 <script src="assets/site-nav.js" defer></script>
 <script src="assets/app-config.js"></script>
 <script src="assets/live-api.js"></script>
+<script src="assets/ack.js"></script>
 
 <div class="wrap">
   <div class="head">
@@ -138,8 +139,8 @@
     </div>
     <div class="table-scroll">
       <table>
-        <thead><tr><th>Issue</th><th>Page</th><th>Device</th><th>Severity</th><th>Savings</th><th>Task</th></tr></thead>
-        <tbody id="issues-body"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        <thead><tr><th>Issue</th><th>Page</th><th>Device</th><th>Severity</th><th>Savings</th><th>Task</th><th>Live</th></tr></thead>
+        <tbody id="issues-body"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -211,9 +212,17 @@
     var data = await get('/api/psi/issues?' + qs(extra));
     var body = document.getElementById('issues-body');
     var rows = data.issues || [];
-    if(!rows.length){ body.innerHTML = '<tr><td colspan="6" class="empty">No issues match these filters.</td></tr>'; return; }
+    if(!rows.length){ body.innerHTML = '<tr><td colspan="7" class="empty">No issues match these filters.</td></tr>'; return; }
     body.innerHTML = rows.map(function(i){
       var page = i.psi_scores && i.psi_scores.page_url;
+      var ack = window.GbAck
+        ? window.GbAck.checkboxHtml('psi_issue', i.id, {
+            title: i.title,
+            url: page || '',
+            note: i.audit_id || '',
+            label: 'Addressed',
+          })
+        : '';
       return '<tr>'+
         '<td>'+esc(i.title)+'</td>'+
         '<td class="url">'+esc(path(page))+'</td>'+
@@ -221,6 +230,7 @@
         '<td><span class="badge b-'+esc(i.severity)+'">'+esc(i.severity)+'</span></td>'+
         '<td class="muted">'+esc(i.estimated_savings || '')+'</td>'+
         '<td>'+taskBadge(i.tasks)+'</td>'+
+        '<td>'+ack+'</td>'+
       '</tr>';
     }).join('');
   }
@@ -228,11 +238,12 @@
   async function load(){
     if(!window.GbLive || !window.GbLive.base()){
       notice('Page Speed needs the live API. <a href="login.html?next=psi.html">Sign in</a> with your Growth Board email.');
-      document.getElementById('scores-body').innerHTML = document.getElementById('issues-body').innerHTML = '<tr><td colspan="6" class="empty">Live API not configured.</td></tr>';
+      document.getElementById('scores-body').innerHTML = document.getElementById('issues-body').innerHTML = '<tr><td colspan="7" class="empty">Live API not configured.</td></tr>';
       return;
     }
     try {
       notice('');
+      if (window.GbAck) await window.GbAck.ensureLoaded();
       await Promise.all([loadScores(), loadIssues()]);
     } catch(err){
       if(err.code === 401) notice('Your session has expired. <a href="login.html?next=psi.html">Sign in</a> with the team username and password.');

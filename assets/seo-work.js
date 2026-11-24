@@ -224,6 +224,16 @@
           '" data-team="' +
           esc((ar && ar.ownerTeam) || 'SEO') +
           '">Create task</button></td>' +
+          '<td>' +
+          (window.GbAck
+            ? window.GbAck.checkboxHtml('gsc_issue', i.id, {
+                title: (i.categoryLabel || 'GSC') + ': ' + shortUrl(i.url),
+                url: i.url,
+                note: i.action || i.note || '',
+                label: 'Addressed',
+              })
+            : '') +
+          '</td>' +
           '</tr>'
         );
       })
@@ -279,9 +289,9 @@
       '">' +
       '</div>' +
       '<div class="sw-table-wrap"><table><thead><tr>' +
-      '<th>Type</th><th>URL</th><th>SEO sheet action</th><th>Agent: Why &amp; Fix</th><th>Market</th><th></th>' +
+      '<th>Type</th><th>URL</th><th>SEO sheet action</th><th>Agent: Why &amp; Fix</th><th>Market</th><th></th><th>Live</th>' +
       '</tr></thead><tbody>' +
-      (rows || '<tr><td colspan="6">No issues match filters.</td></tr>') +
+      (rows || '<tr><td colspan="7">No issues match filters.</td></tr>') +
       '</tbody></table></div>'
     );
   }
@@ -676,6 +686,7 @@
       fetchJson('data/topic-trends.json').then(function (d) {
         state.trends = d;
       }),
+      window.GbAck ? window.GbAck.ensureLoaded() : Promise.resolve(),
     ])
       .then(function () {
         render();
@@ -694,6 +705,10 @@
         if (host) host.innerHTML = renderEmpty('Failed to load SEO Work data: ' + err.message);
       });
   }
+
+  document.addEventListener('gb-ack-changed', function () {
+    if (state.view === 'issues') render();
+  });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

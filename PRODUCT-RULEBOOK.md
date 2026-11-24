@@ -59,9 +59,12 @@ Two-company test, required before a real second customer: company B’s user rec
 | Daily sync | `metric_daily`, `search_pages`, `search_queries`, connection `last_sync_at` | tasks, task status, reviews that a human edited |
 | Weekly review | `issue_reviews`, `agent_runs` | task status, assignees |
 | Ask box | `ask_threads`, `ask_messages` | task status, unless a human confirms Create task |
-| Human | tasks, task status, notes, assignee | another company’s rows |
+| Addressed verify | `acknowledgements.verify_*`; may reopen issue/task on **failed** prove | invent metrics; claim without a human checkbox click |
+| Human | tasks, task status, notes, assignee; **Addressed** checkbox claim | another company’s rows |
 
 Automation may refresh metrics and suggestions. Humans own task status.
+
+**Addressed / live checkbox.** A human ticks Addressed on a fixable row (GSC issue, PSI issue, audit finding, fix, or task). Express marks it addressed immediately (`issues.status = fixed` / task `done` as applicable), then runs one LLM verify against stored evidence (HTTP status Express fetched, `psi_scores` / `psi_issues`, `search_pages`). The model must not invent numbers. Verdict `confirmed` keeps the claim. Verdict `failed` reopens the row and sets `verify_status = failed`. Viewers cannot ack.
 
 Create task is a human action. The model may propose the title and details. Express inserts the task only when the user confirms. The new task is Unassigned (`assignee` null) unless the user picks a member of their own company.
 
