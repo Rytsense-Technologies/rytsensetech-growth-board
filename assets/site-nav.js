@@ -310,6 +310,27 @@
     });
   }
 
+  function showConnectedToast() {
+    try {
+      var params = new URLSearchParams(location.search || '');
+      if (params.get('connected') !== '1') return;
+      var toast = document.createElement('div');
+      toast.className = 'gb-connected-toast';
+      toast.setAttribute('role', 'status');
+      toast.textContent = 'Google Search Console + GA4 connected.';
+      document.body.appendChild(toast);
+      requestAnimationFrame(function () { toast.classList.add('is-on'); });
+      setTimeout(function () {
+        toast.classList.remove('is-on');
+        setTimeout(function () { toast.remove(); }, 320);
+      }, 4200);
+      params.delete('connected');
+      var next = location.pathname + (params.toString() ? '?' + params.toString() : '') + (location.hash || '');
+      if (window.history && history.replaceState) history.replaceState({}, '', next);
+      refreshConnectLink();
+    } catch (e) { /* non-fatal */ }
+  }
+
   function ensureMenuButton() {
     var existing = document.getElementById('gb-menu-btn');
     if (existing) return existing;
@@ -503,6 +524,7 @@
       var el = document.getElementById(id);
       if (el) el.hidden = true;
     });
+    showConnectedToast();
   }
 
   if (document.readyState === 'loading') {

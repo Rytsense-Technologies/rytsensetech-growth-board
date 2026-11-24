@@ -284,6 +284,11 @@ html.gb-app body {
   justify-content: center;
   gap: 8px;
 }
+/* Author display:flex beats the UA [hidden] rule — keep Connect Google truly hidden when connected. */
+.site-nav-signout[hidden],
+.site-nav-connect[hidden] {
+  display: none !important;
+}
 .site-nav-signout:hover {
   border-color: var(--sn-accent);
   background: var(--sn-accent-soft);
@@ -538,6 +543,29 @@ html.gb-side-rail .rts-report {
   .gb-side-collapse {
     display: none;
   }
+}
+
+.gb-connected-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 12px);
+  z-index: 400;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--sn-line, #d7dde5);
+  background: var(--sn-bg, #fff);
+  color: var(--sn-ink, #12181f);
+  box-shadow: 0 10px 28px rgba(18, 24, 31, 0.14);
+  font: 600 13px/1.35 inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.gb-connected-toast.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 @media (prefers-reduced-motion: reduce) {

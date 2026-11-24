@@ -21,3 +21,21 @@ end;
 $$;
 
 revoke all on function public.store_connection_secret(text, text) from public, anon, authenticated;
+
+-- Update an existing vault secret by id (reconnect when connections.vault_secret_id is known).
+create or replace function public.update_connection_secret(p_id uuid, p_secret text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, vault
+as $$
+begin
+  if p_id is null then
+    raise exception 'secret id required';
+  end if;
+  perform vault.update_secret(p_id, p_secret, null, 'growth-board connection');
+  return p_id;
+end;
+$$;
+
+revoke all on function public.update_connection_secret(uuid, text) from public, anon, authenticated;

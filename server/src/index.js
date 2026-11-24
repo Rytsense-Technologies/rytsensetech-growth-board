@@ -351,8 +351,20 @@ export function createApp() {
     if (!requireActor(actor, res)) return;
     const site = await resolveSite(req, actor);
     if (site.error) return json(res, { error: site.error }, site.status);
-    const { data } = await req.db.from('connections').select('provider, status, last_sync_at, last_error').eq('site_id', site.row.id);
-    json(res, { connections: data || [] });
+    const { data } = await req.db
+      .from('connections')
+      .select('provider, status, last_sync_at, last_error, external_property_id')
+      .eq('site_id', site.row.id);
+    json(res, {
+      connections: (data || []).map((row) => ({
+        provider: row.provider,
+        status: row.status,
+        last_sync_at: row.last_sync_at,
+        last_error: row.last_error,
+        has_property: !!row.external_property_id,
+        external_property_id: row.external_property_id || null,
+      })),
+    });
   });
 
   app.get('/api/sites/current/export/issues.csv', async (req, res) => {
@@ -506,10 +518,32 @@ export function createApp() {
     if (!tokens.refresh_token) return json(res, { error: 'no refresh token' }, 400);
     const state = JSON.parse(req.query.state || '{}');
     const secretName = 'gsc-' + state.siteId;
-    let { data: secretId, error } = await db.rpc('store_connection_secret', {
-      p_name: secretName,
-      p_secret: tokens.refresh_token,
-    });
+    const { data: site } = await db.from('sites').select('id, organization_id, domain').eq('id', state.siteId).single();
+    if (!site) return json(res, { error: 'site not found' }, 404);
+
+    // Prefer updating the vault row already pointed at by connections (avoids secrets_name_idx
+    // when 0005 upsert migration is not yet applied on Supabase).
+    let secretId = null;
+    let error = null;
+    const { data: existingConn } = await db
+      .from('connections')
+      .select('vault_secret_id')
+      .eq('site_id', site.id)
+      .eq('provider', 'gsc')
+      .maybeSingle();
+    if (existingConn?.vault_secret_id) {
+      const upd = await db.rpc('update_connection_secret', {
+        p_id: existingConn.vault_secret_id,
+        p_secret: tokens.refresh_token,
+      });
+      if (!upd.error) secretId = existingConn.vault_secret_id;
+    }
+    if (!secretId) {
+      ({ data: secretId, error } = await db.rpc('store_connection_secret', {
+        p_name: secretName,
+        p_secret: tokens.refresh_token,
+      }));
+    }
     // Until 0005 upsert migration is applied on Supabase, create under a unique name
     // and point connections.vault_secret_id at the new row so reconnect still works.
     if (error && /duplicate key|secrets_name_idx/i.test(error.message || '')) {
@@ -519,7 +553,6 @@ export function createApp() {
       }));
     }
     if (error) return json(res, { error: error.message }, 500);
-    const { data: site } = await db.from('sites').select('id, organization_id, domain').eq('id', state.siteId).single();
     client.setCredentials({ refresh_token: tokens.refresh_token });
     let gscProperty = process.env.GSC_SITE_URL || null;
     try {
@@ -535,6 +568,23 @@ export function createApp() {
     let ga4Property = process.env.GA4_PROPERTY_ID || null;
     if (ga4Property && !String(ga4Property).startsWith('properties/')) {
       ga4Property = 'properties/' + ga4Property;
+    }
+    if (!ga4Property) {
+      try {
+        const admin = google.analyticsadmin({ version: 'v1beta', auth: client });
+        const summaries = await admin.accountSummaries.list({ pageSize: 200 });
+        const host = String(site.domain || '').replace(/^www\./, '').toLowerCase();
+        const props = [];
+        for (const acct of summaries.data.accountSummaries || []) {
+          for (const p of acct.propertySummaries || []) {
+            if (p.property) props.push(p);
+          }
+        }
+        const match = props.find((p) => String(p.displayName || '').toLowerCase().includes(host))
+          || props.find((p) => /rytsense/i.test(String(p.displayName || '')))
+          || props[0];
+        if (match?.property) ga4Property = match.property;
+      } catch { /* keep null → error status below */ }
     }
     await db.from('connections').upsert({
       organization_id: site.organization_id,

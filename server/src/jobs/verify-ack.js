@@ -152,11 +152,32 @@ async function askModel(evidence) {
       try {
         return await callAnthropicVerify(key, model, evidence, { forceRetryHint: true });
       } catch (err2) {
+        // Last resort: if live HTTP already proved pass/fail, don't strand the claim.
+        const fallback = fallbackFromLiveHttp(evidence);
+        if (fallback) return fallback;
         throw new Error(String(err2.message || err2).slice(0, 240));
       }
     }
+    const fallback = fallbackFromLiveHttp(evidence);
+    if (fallback) return fallback;
     throw err;
   }
+}
+
+function fallbackFromLiveHttp(evidence) {
+  const status = String(
+    (evidence.live && evidence.live.http && evidence.live.http.status) || evidence.observed_status || ''
+  );
+  const cat = String((evidence.issue && evidence.issue.category) || evidence.source_kind || '');
+  if (!status) return null;
+  if (['404', '403', '500', '502', '503'].includes(status) && isHttpErrorCategory(cat)) {
+    return { verdict: 'failed', reason: `Live HTTP still ${status}`, evidence_used: evidence.keys || [] };
+  }
+  const code = Number(status);
+  if (Number.isFinite(code) && code >= 200 && code < 400 && isHttpErrorCategory(cat)) {
+    return { verdict: 'confirmed', reason: `Live HTTP ${status}`, evidence_used: evidence.keys || [] };
+  }
+  return null;
 }
 
 async function httpStatus(url) {
