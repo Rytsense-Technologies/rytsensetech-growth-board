@@ -55,6 +55,8 @@ const staticFiles = [
   ['assets/platform.js', 'assets/platform.js'],
   ['assets/seo-work.js', 'assets/seo-work.js'],
   ['assets/live-api.js', 'assets/live-api.js'],
+  ['assets/app-config.js', 'assets/app-config.js'],
+  ['assets/ack.js', 'assets/ack.js'],
   ['data/latest.json', 'data/latest.json'],
   ['data/audit.json', 'data/audit.json'],
   ['data/fixes.json', 'data/fixes.json'],
