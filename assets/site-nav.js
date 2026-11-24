@@ -246,6 +246,20 @@
       userRow.appendChild(theme);
       footer.appendChild(userRow);
     }
+    var connect = footer.querySelector('.site-nav-connect');
+    if (!connect) {
+      connect = document.createElement('button');
+      connect.type = 'button';
+      connect.className = 'site-nav-connect site-nav-signout';
+      connect.id = 'gb-connect-google';
+      connect.title = 'Connect Google Search Console + GA4 for live Addressed verify';
+      connect.innerHTML = icon('<path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/>') +
+        '<span class="site-nav-label">Connect Google</span>';
+      connect.hidden = true;
+      connect.addEventListener('click', startGoogleConnect);
+      footer.appendChild(connect);
+      refreshConnectLink(connect);
+    }
     var out = footer.querySelector('.site-nav-signout');
     if (!out) {
       out = document.createElement('button');
@@ -256,6 +270,44 @@
       footer.appendChild(out);
     }
     return footer;
+  }
+
+  function startGoogleConnect() {
+    if (!window.GbLive || typeof window.GbLive.request !== 'function') {
+      alert('API not ready. Sign in again, then retry Connect Google.');
+      return;
+    }
+    window.GbLive.request('/api/oauth/google/start?format=json', { headers: { Accept: 'application/json' } })
+      .then(function (res) { return res.json().then(function (body) { return { res: res, body: body }; }); })
+      .then(function (pack) {
+        if (!pack.res.ok) {
+          var msg = (pack.body && (pack.body.detail || pack.body.error)) || ('HTTP ' + pack.res.status);
+          alert('Connect Google failed: ' + msg);
+          return;
+        }
+        if (pack.body && pack.body.url) location.href = pack.body.url;
+        else alert('Connect Google failed: no auth URL returned');
+      })
+      .catch(function (err) {
+        alert('Connect Google failed: ' + (err && err.message ? err.message : err));
+      });
+  }
+
+  function refreshConnectLink(el) {
+    var link = el || document.getElementById('gb-connect-google');
+    if (!link || !window.GbLive) return;
+    var load = typeof window.GbLive.sync === 'function'
+      ? window.GbLive.sync()
+      : Promise.reject(new Error('no sync'));
+    load.then(function (res) {
+      var rows = (res && res.connections) || [];
+      var hasGoogle = rows.some(function (c) {
+        return (c.provider === 'gsc' || c.provider === 'ga4') && c.status === 'connected';
+      });
+      link.hidden = !!hasGoogle;
+    }).catch(function () {
+      link.hidden = false;
+    });
   }
 
   function ensureMenuButton() {

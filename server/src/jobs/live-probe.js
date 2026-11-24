@@ -35,15 +35,19 @@ function oauthClient(refresh) {
   return client;
 }
 
-async function gscConnection(db, siteId) {
+async function connectionFor(db, siteId, provider) {
   const { data } = await db
     .from('connections')
     .select('id, organization_id, site_id, provider, status, external_property_id, vault_secret_id')
     .eq('site_id', siteId)
-    .eq('provider', 'gsc')
+    .eq('provider', provider)
     .eq('status', 'connected')
     .maybeSingle();
   return data || null;
+}
+
+async function gscConnection(db, siteId) {
+  return connectionFor(db, siteId, 'gsc');
 }
 
 async function refreshToken(db, connection) {
@@ -58,6 +62,8 @@ export async function liveGscPage(db, { siteId, organizationId, pageUrl }) {
   if (!connection) return { skipped: true, reason: 'gsc_not_connected' };
   const token = await refreshToken(db, connection);
   if (!token) return { skipped: true, reason: 'gsc_missing_token' };
+  const siteUrl = connection.external_property_id || process.env.GSC_SITE_URL;
+  if (!siteUrl) return { skipped: true, reason: 'gsc_missing_property' };
   const auth = oauthClient(token);
   const sc = google.searchconsole({ version: 'v1', auth });
   const end = new Date();
@@ -65,7 +71,6 @@ export async function liveGscPage(db, { siteId, organizationId, pageUrl }) {
   const start = new Date(end);
   start.setUTCDate(start.getUTCDate() - 27);
   const fmt = (d) => d.toISOString().slice(0, 10);
-  const siteUrl = connection.external_property_id;
   const pathOrUrl = pageUrl;
   const pages = await sc.searchanalytics.query({
     siteUrl,
@@ -239,5 +244,85 @@ export async function probeClaimLive(db, ack) {
     }
   }
 
+  // GA4 live check for KPI / channel / page claims (Growth Board OAuth — not Claude Desktop MCP).
+  if (['kpi', 'channel', 'page', 'board'].includes(ack.source_kind) || snap.metricKey) {
+    try {
+      out.ga4 = await liveGa4(db, {
+        siteId: ack.site_id,
+        pagePath: snap.page || (httpUrl ? new URL(httpUrl).pathname : null),
+        metricKey: snap.metricKey || null,
+      });
+      out.tools_used.push('ga4');
+    } catch (err) {
+      out.ga4 = { error: String(err.message || err).slice(0, 300) };
+      out.tools_used.push('ga4');
+    }
+  }
+
+  // Clarity live check (HTTP worker — same source as Claude Desktop scheduler).
+  if (ack.source_kind === 'clarity' || /clarity/i.test(String(snap.title || snap.note || ''))) {
+    try {
+      out.clarity = await liveClarity();
+      out.tools_used.push('clarity');
+    } catch (err) {
+      out.clarity = { error: String(err.message || err).slice(0, 300) };
+      out.tools_used.push('clarity');
+    }
+  }
+
   return out;
+}
+
+export async function liveGa4(db, { siteId, pagePath, metricKey }) {
+  const connection = await connectionFor(db, siteId, 'ga4');
+  if (!connection) return { skipped: true, reason: 'ga4_not_connected' };
+  if (!connection.external_property_id) return { skipped: true, reason: 'ga4_missing_property' };
+  const token = await refreshToken(db, connection);
+  if (!token) return { skipped: true, reason: 'ga4_missing_token' };
+  const auth = oauthClient(token);
+  const data = google.analyticsdata({ version: 'v1beta', auth });
+  const property = connection.external_property_id;
+  const requestBody = {
+    dateRanges: [{ startDate: '28daysAgo', endDate: 'yesterday' }],
+    metrics: [{ name: 'sessions' }, { name: 'activeUsers' }, { name: 'engagementRate' }],
+  };
+  if (pagePath) {
+    requestBody.dimensions = [{ name: 'pagePath' }];
+    requestBody.dimensionFilter = {
+      filter: { fieldName: 'pagePath', stringFilter: { matchType: 'EXACT', value: pagePath } },
+    };
+  }
+  const report = await data.properties.runReport({ property, requestBody });
+  const row = (report.data.rows && report.data.rows[0]) || null;
+  const metrics = (row && row.metricValues) || [];
+  return {
+    property,
+    pagePath: pagePath || null,
+    metricKey: metricKey || null,
+    sessions: Number(metrics[0] && metrics[0].value) || 0,
+    activeUsers: Number(metrics[1] && metrics[1].value) || 0,
+    engagementRate: metrics[2] ? Number(metrics[2].value) : null,
+    absent: !row,
+  };
+}
+
+export async function liveClarity() {
+  const url = process.env.CLARITY_URL;
+  if (!url) return { skipped: true, reason: 'clarity_url_missing' };
+  const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
+  if (!res.ok) return { ok: false, status: res.status, error: 'clarity HTTP ' + res.status };
+  const body = await res.json();
+  const list = Array.isArray(body) ? body : [];
+  const byName = {};
+  for (const row of list) {
+    if (row && row.metricName) byName[row.metricName] = row.information || [];
+  }
+  return {
+    ok: true,
+    status: 'ok',
+    metricsPresent: Object.keys(byName),
+    deadClicks: byName.DeadClickCount || null,
+    rageClicks: byName.RageClickCount || null,
+    traffic: byName.Traffic || null,
+  };
 }

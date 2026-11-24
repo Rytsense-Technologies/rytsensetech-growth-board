@@ -475,6 +475,12 @@ export function createApp() {
     const site = await resolveSite(req, actor);
     if (site.error) return json(res, { error: site.error }, site.status);
     if (!canAdminOrg(site.role)) return json(res, { error: 'forbidden' }, 403);
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REDIRECT_URI) {
+      return json(res, {
+        error: 'google_oauth_not_configured',
+        detail: 'Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI on Render (callback must be https://…onrender.com/api/oauth/google/callback).',
+      }, 503);
+    }
     const client = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, process.env.GOOGLE_REDIRECT_URI);
     const url = client.generateAuthUrl({
       access_type: 'offline',
@@ -485,6 +491,10 @@ export function createApp() {
       ],
       state: JSON.stringify({ siteId: site.row.id, userId: actor.userId }),
     });
+    // Browser nav links cannot send Bearer; UI requests ?format=json then redirects.
+    if (String(req.query.format || '') === 'json' || /application\/json/i.test(String(req.headers.accept || ''))) {
+      return json(res, { url });
+    }
     res.redirect(url);
   });
 
@@ -500,14 +510,48 @@ export function createApp() {
       p_secret: tokens.refresh_token,
     });
     if (error) return json(res, { error: error.message }, 500);
-    const { data: site } = await db.from('sites').select('id, organization_id').eq('id', state.siteId).single();
-    for (const provider of ['gsc', 'ga4']) {
+    const { data: site } = await db.from('sites').select('id, organization_id, domain').eq('id', state.siteId).single();
+    client.setCredentials({ refresh_token: tokens.refresh_token });
+    let gscProperty = process.env.GSC_SITE_URL || null;
+    try {
+      const sc = google.searchconsole({ version: 'v1', auth: client });
+      const listed = await sc.sites.list();
+      const host = String(site.domain || '').replace(/^www\./, '').toLowerCase();
+      const entries = (listed.data.siteEntry || []).map((e) => e.siteUrl).filter(Boolean);
+      gscProperty = entries.find((u) => String(u).toLowerCase().includes(host))
+        || entries.find((u) => /sc-domain:/i.test(u) && String(u).toLowerCase().includes(host))
+        || gscProperty
+        || (host ? `https://${host}/` : null);
+    } catch { /* keep env / fallback */ }
+    let ga4Property = process.env.GA4_PROPERTY_ID || null;
+    if (ga4Property && !String(ga4Property).startsWith('properties/')) {
+      ga4Property = 'properties/' + ga4Property;
+    }
+    await db.from('connections').upsert({
+      organization_id: site.organization_id,
+      site_id: site.id,
+      provider: 'gsc',
+      status: 'connected',
+      vault_secret_id: secretId,
+      external_property_id: gscProperty,
+      last_error: null,
+    }, { onConflict: 'site_id,provider' });
+    await db.from('connections').upsert({
+      organization_id: site.organization_id,
+      site_id: site.id,
+      provider: 'ga4',
+      status: ga4Property ? 'connected' : 'error',
+      vault_secret_id: secretId,
+      external_property_id: ga4Property,
+      last_error: ga4Property ? null : 'Set GA4_PROPERTY_ID on Render (e.g. properties/423166919)',
+    }, { onConflict: 'site_id,provider' });
+    if (process.env.CLARITY_URL) {
       await db.from('connections').upsert({
         organization_id: site.organization_id,
         site_id: site.id,
-        provider,
+        provider: 'clarity',
         status: 'connected',
-        vault_secret_id: secretId,
+        external_property_id: process.env.CLARITY_URL,
         last_error: null,
       }, { onConflict: 'site_id,provider' });
     }
@@ -571,6 +615,44 @@ export function createApp() {
     if (!db) return json(res, { error: 'database not configured' }, 503);
     try {
       json(res, await runDailySync(db));
+    } catch (err) {
+      json(res, { error: err.message }, 500);
+    }
+  });
+
+  // Claude Desktop / scheduler bridge: push the same latest.json body into Supabase overview.
+  // Auth: Authorization: Bearer <CRON_SECRET>  (same as other /api/jobs/*)
+  app.post('/api/jobs/import-overview', async (req, res) => {
+    if (!cronOk(req)) return json(res, { error: 'forbidden' }, 403);
+    const db = supabaseAdmin();
+    if (!db) return json(res, { error: 'database not configured' }, 503);
+    const doc = req.body && (req.body.document || req.body.latest || req.body);
+    if (!doc || typeof doc !== 'object' || Array.isArray(doc)) {
+      return json(res, { error: 'latest.json object required in body' }, 400);
+    }
+    try {
+      const siteId = (req.body && req.body.siteId) || RYTSENSE_SITE;
+      const orgId = (req.body && req.body.organizationId) || RYTSENSE_ORG;
+      const updatedAt = doc.updatedAt || new Date().toISOString();
+      const { error } = await db.from('site_snapshots').upsert({
+        site_id: siteId,
+        kind: 'overview',
+        document: doc,
+        updated_at: updatedAt,
+      });
+      if (error) throw error;
+      if (process.env.CLARITY_URL) {
+        await db.from('connections').upsert({
+          organization_id: orgId,
+          site_id: siteId,
+          provider: 'clarity',
+          status: 'connected',
+          external_property_id: process.env.CLARITY_URL,
+          last_sync_at: new Date().toISOString(),
+          last_error: null,
+        }, { onConflict: 'site_id,provider' });
+      }
+      json(res, { ok: true, siteId, updatedAt, gscClicks: doc.gsc && doc.gsc.current && doc.gsc.current.clicks, ga4Sessions: doc.ga4 && doc.ga4.totals && doc.ga4.totals.sessions });
     } catch (err) {
       json(res, { error: err.message }, 500);
     }

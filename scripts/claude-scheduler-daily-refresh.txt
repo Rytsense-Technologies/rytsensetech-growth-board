@@ -187,6 +187,15 @@ PATH B — Local Windows auto-deploy (always on — does not need device_bash):
 
 PATH C — device_bash available: also run `npm run deploy:cf` immediately (faster).
 
+PATH D — Push overview into Supabase (required for live Growth Board API / Addressed verify):
+   After writing data/latest.json, POST the same JSON object to Render:
+     POST https://rytsensetech-growth-board.onrender.com/api/jobs/import-overview
+     Authorization: Bearer <CRON_SECRET from Render env>
+     Content-Type: application/json
+     Body: full latest.json object
+   This updates site_snapshots.overview so Pages+API show today's numbers (not a stale Oct snapshot).
+   If CRON_SECRET is unknown, skip PATH D and note it — do not invent a secret.
+
 If GitHub push fails AND you cannot run npm:
   - Keep full local file
   - cloudflare.deployment.status = "pending_local_watcher"
