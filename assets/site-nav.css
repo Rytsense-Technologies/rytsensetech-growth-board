@@ -63,14 +63,52 @@ html.gb-app body {
   min-height: 0;
 }
 
+.site-nav-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex: none;
+}
+
 .site-nav-brand {
   display: inline-flex;
   align-items: center;
   gap: 9px;
   text-decoration: none;
   color: var(--sn-ink);
+  flex: 1;
+  min-width: 0;
+  padding: 4px 4px 4px 8px;
+}
+
+.site-nav-collapse,
+.gb-side-collapse {
+  appearance: none;
+  border: 1px solid var(--sn-line, var(--line, #e2e5ea));
+  background: var(--sn-bg, var(--paper-raised, #fff));
+  color: var(--sn-soft, var(--ink-soft, #4b5563));
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: none;
-  padding: 4px 8px 8px;
+  padding: 0;
+}
+.site-nav-collapse:hover,
+.gb-side-collapse:hover {
+  border-color: var(--sn-accent, var(--accent, #0e7a82));
+  background: var(--sn-accent-soft, var(--accent-soft, #e4f2f1));
+  color: var(--sn-accent-ink, var(--accent-ink, #075258));
+}
+.site-nav-collapse svg,
+.gb-side-collapse svg,
+.site-nav-ico {
+  display: block;
+  flex: none;
 }
 
 .site-nav-mark {
@@ -114,6 +152,15 @@ html.gb-app body {
   border-radius: 8px;
   white-space: nowrap;
   transition: background 0.12s, color 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.site-nav-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .site-nav-links a:hover {
@@ -232,11 +279,182 @@ html.gb-app body {
   padding: 9px 12px;
   border-radius: 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .site-nav-signout:hover {
   border-color: var(--sn-accent);
   background: var(--sn-accent-soft);
   color: var(--sn-accent-ink);
+}
+
+/* Primary nav — icon rail */
+html.gb-nav-rail {
+  --site-nav-w: 68px;
+}
+.site-nav.is-rail .site-nav-name,
+.site-nav.is-rail .site-nav-label,
+.site-nav.is-rail .site-nav-chip,
+.site-nav.is-rail .site-nav-source,
+.site-nav.is-rail .site-nav-user-name {
+  display: none;
+}
+.site-nav.is-rail .site-nav-top {
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.site-nav.is-rail .site-nav-brand {
+  padding: 4px 0;
+  justify-content: center;
+}
+.site-nav.is-rail .site-nav-links a {
+  justify-content: center;
+  padding: 10px 8px;
+}
+.site-nav.is-rail .site-nav-user {
+  justify-content: center;
+  padding: 0;
+}
+.site-nav.is-rail .site-nav-signout {
+  padding: 9px 0;
+}
+.site-nav.is-rail .site-nav-meta {
+  align-items: center;
+}
+
+/* Module sidebars — icon rail */
+.gb-mod-side {
+  position: relative;
+}
+.gb-side-collapse {
+  position: sticky;
+  top: 8px;
+  z-index: 2;
+  margin: 0 0 10px auto;
+  display: flex;
+}
+.gb-side-link,
+.gb-mod-side .nav a,
+.gb-mod-side .sw-nav a,
+.gb-mod-side .navbtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gb-side-ico {
+  display: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  flex: none;
+  background: var(--sn-chip, var(--chip-bg, #edeff3));
+  color: var(--sn-ink, var(--ink, #12181f));
+}
+.gb-mod-side .navbtn .gb-side-ico {
+  display: none;
+}
+
+html.gb-side-rail {
+  --sidebar: 68px;
+}
+html.gb-side-rail .rts-report {
+  --side-w: 68px;
+}
+.shell.gb-side-rail {
+  grid-template-columns: 68px minmax(0, 1fr);
+}
+.gb-mod-side.is-rail {
+  width: 68px;
+  min-width: 68px;
+  max-width: 68px;
+  padding-left: 8px;
+  padding-right: 8px;
+  overflow-x: hidden;
+}
+.gb-mod-side.is-rail .gb-side-collapse {
+  margin-left: auto;
+  margin-right: auto;
+}
+.gb-mod-side.is-rail .brand > div:not(.mark),
+.gb-mod-side.is-rail .brand-row > div:not(.mark),
+.gb-mod-side.is-rail .brandbox .wm,
+.gb-mod-side.is-rail .brandbox .sub,
+.gb-mod-side.is-rail .navgrp,
+.gb-mod-side.is-rail .side-foot,
+.gb-mod-side.is-rail .group,
+.gb-mod-side.is-rail .gb-side-label,
+.gb-mod-side.is-rail .sw-view-kicker {
+  display: none !important;
+}
+.gb-mod-side.is-rail .brand,
+.gb-mod-side.is-rail .brand-row {
+  justify-content: center;
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+.gb-mod-side.is-rail .brandbox {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 10px;
+  border-bottom: 1px solid var(--rule, var(--line, #e2e5ea));
+}
+.gb-mod-side.is-rail .brandbox::after {
+  content: "RI";
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  background: var(--sig-soft, var(--accent-soft, #e4f2f1));
+  color: var(--sig, var(--accent-ink, #075258));
+}
+.gb-mod-side.is-rail a,
+.gb-mod-side.is-rail .navbtn {
+  justify-content: center;
+  padding-left: 6px;
+  padding-right: 6px;
+  gap: 0;
+}
+.gb-mod-side.is-rail .gb-side-ico {
+  display: inline-flex;
+}
+.gb-mod-side.is-rail .navbtn .dot {
+  display: none;
+}
+.gb-mod-side.is-rail .navbtn .gb-side-ico {
+  display: inline-flex;
+}
+.gb-mod-side.is-rail .navbtn[data-state="crit"] .gb-side-ico {
+  background: color-mix(in srgb, var(--crit, #c23b3b) 16%, transparent);
+  color: var(--crit, #c23b3b);
+}
+.gb-mod-side.is-rail .navbtn[data-state="warn"] .gb-side-ico {
+  background: color-mix(in srgb, var(--warn, #b4740e) 16%, transparent);
+  color: var(--warn, #b4740e);
+}
+.gb-mod-side.is-rail .navbtn[data-state="good"] .gb-side-ico {
+  background: color-mix(in srgb, var(--good, #1e8e5a) 16%, transparent);
+  color: var(--good, #1e8e5a);
+}
+.gb-mod-side.is-rail .navbtn[data-state="pend"] .gb-side-ico {
+  background: color-mix(in srgb, var(--pend, #8b93a1) 16%, transparent);
+  color: var(--pend, #6c7480);
+}
+.gb-mod-side.is-rail .navbtn[data-state="sig"] .gb-side-ico {
+  background: color-mix(in srgb, var(--sig, #0e7a82) 16%, transparent);
+  color: var(--sig, #075258);
 }
 
 .gb-menu-btn {
@@ -302,6 +520,23 @@ html.gb-app body {
     height: auto;
     max-height: none;
     overflow: visible;
+  }
+}
+
+@media (max-width: 900px) {
+  html.gb-side-rail .rts-report {
+    --side-w: 246px;
+  }
+  .shell.gb-side-rail {
+    grid-template-columns: 1fr;
+  }
+  .gb-mod-side.is-rail {
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
+  .gb-side-collapse {
+    display: none;
   }
 }
 
