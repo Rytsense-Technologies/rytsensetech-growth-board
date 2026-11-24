@@ -26,11 +26,19 @@ export const KINDS = new Set([
 ]);
 
 export function parseVerify(text) {
-  const raw = String(text || '');
+  let raw = String(text || '').trim();
+  // Strip markdown fences if the model wraps JSON.
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenced) raw = fenced[1].trim();
   const start = raw.indexOf('{');
   const end = raw.lastIndexOf('}');
   if (start < 0 || end <= start) throw new Error('not json');
-  const obj = JSON.parse(raw.slice(start, end + 1));
+  let obj;
+  try {
+    obj = JSON.parse(raw.slice(start, end + 1));
+  } catch {
+    throw new Error('not json');
+  }
   const verdict = String(obj.verdict || '').toLowerCase();
   if (verdict !== 'confirmed' && verdict !== 'failed') throw new Error('bad verdict');
   return {
@@ -71,23 +79,14 @@ async function anthropicModel(key) {
   return pickAutoModel([]);
 }
 
-async function askModel(evidence) {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) {
-    // No model: confirm only when evidence itself already proves the fix.
-    if (evidence.hard_pass) {
-      return { verdict: 'confirmed', reason: evidence.hard_pass, evidence_used: evidence.keys || [] };
-    }
-    if (evidence.hard_fail) {
-      return { verdict: 'failed', reason: evidence.hard_fail, evidence_used: evidence.keys || [] };
-    }
-    return {
-      verdict: 'failed',
-      reason: 'ANTHROPIC_API_KEY missing and no hard pass evidence',
-      evidence_used: evidence.keys || [],
-    };
-  }
-  const model = await anthropicModel(key);
+async function callAnthropicVerify(key, model, evidence, { forceRetryHint } = {}) {
+  const userPayload =
+    'Human claimed this item is fixed. Verify against live connected tools for this item only.\n' +
+    JSON.stringify(evidence) +
+    (forceRetryHint
+      ? '\n\nIMPORTANT: Your previous reply was not valid JSON. Reply with ONLY one JSON object and nothing else.'
+      : '');
+  // Prefill `{` so the model continues as JSON (then we prepend it when parsing).
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -106,21 +105,55 @@ async function askModel(evidence) {
         'If live evidence shows the problem is gone → verdict confirmed (the board will clear/update only this item). ' +
         'If live evidence shows it is still broken → verdict failed, and reason must explain why it still appears / what is still wrong. ' +
         'If live tools failed or evidence is inconclusive for a claimed fix → verdict failed. ' +
-        'Return one JSON object: { "verdict": "confirmed"|"failed", "reason": string, "evidence_used": string[] }.',
+        'Reply with exactly one JSON object and no markdown: ' +
+        '{"verdict":"confirmed"|"failed","reason":string,"evidence_used":string[]}.',
       messages: [
-        {
-          role: 'user',
-          content:
-            'Human claimed this item is fixed. Verify against live connected tools for this item only.\n' +
-            JSON.stringify(evidence),
-        },
+        { role: 'user', content: userPayload },
+        { role: 'assistant', content: '{' },
       ],
     }),
   });
-  if (!res.ok) throw new Error('anthropic ' + res.status);
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '');
+    throw new Error('anthropic ' + res.status + (errBody ? ': ' + errBody.slice(0, 180) : ''));
+  }
   const body = await res.json();
-  const text = (body.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
+  const continuation = (body.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
+  const text = '{' + continuation;
   return parseVerify(text);
+}
+
+async function askModel(evidence) {
+  // Deterministic live tool signals win (same item, no invented metrics).
+  if (evidence.hard_fail) {
+    return { verdict: 'failed', reason: evidence.hard_fail, evidence_used: evidence.keys || [] };
+  }
+  if (evidence.hard_pass) {
+    return { verdict: 'confirmed', reason: evidence.hard_pass, evidence_used: evidence.keys || [] };
+  }
+
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) {
+    return {
+      verdict: 'failed',
+      reason: 'ANTHROPIC_API_KEY missing and no hard pass evidence',
+      evidence_used: evidence.keys || [],
+    };
+  }
+  const model = await anthropicModel(key);
+  try {
+    return await callAnthropicVerify(key, model, evidence);
+  } catch (err) {
+    // One retry for blank / non-JSON model replies.
+    if (/not json|bad verdict/i.test(String(err.message || ''))) {
+      try {
+        return await callAnthropicVerify(key, model, evidence, { forceRetryHint: true });
+      } catch (err2) {
+        throw new Error(String(err2.message || err2).slice(0, 240));
+      }
+    }
+    throw err;
+  }
 }
 
 async function httpStatus(url) {
@@ -406,6 +439,10 @@ async function evidenceBoard(db, ack, out, keys, snap) {
 
   if (!out.hard_pass && !out.hard_fail && !url && !snap.query && !snap.metricKey && !snap.page) {
     out.hard_pass = 'Informational board row with no measurable URL/query/metric; accepting human claim with caveat';
+  }
+  // Healthy KPI / info claim (human reviewed, not a warn tile): accept without requiring the LLM.
+  if (!out.hard_pass && !out.hard_fail && !snap.warn && (snap.metricKey || ack.source_kind === 'kpi' || ack.source_kind === 'channel' || ack.source_kind === 'clarity' || ack.source_kind === 'deploy')) {
+    out.hard_pass = 'Healthy/info board claim with no warn flag; accepting human Addressed mark';
   }
   return out;
 }
