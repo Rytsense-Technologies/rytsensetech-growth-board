@@ -284,7 +284,6 @@ html.gb-app body {
   justify-content: center;
   gap: 8px;
 }
-/* Author display:flex beats the UA [hidden] rule — keep Connect Google truly hidden when connected. */
 .site-nav-signout[hidden],
 .site-nav-connect[hidden] {
   display: none !important;
@@ -295,6 +294,84 @@ html.gb-app body {
   color: var(--sn-accent-ink);
 }
 
+.site-nav-google {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--sn-line);
+  border-radius: 10px;
+  background: var(--sn-bg);
+}
+.site-nav-google-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 18px;
+}
+.site-nav-google-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--sn-faint);
+}
+.site-nav-google-status.is-checking .site-nav-google-dot {
+  background: var(--sn-faint);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sn-faint) 25%, transparent);
+}
+.site-nav-google-status.is-connected .site-nav-google-dot {
+  background: #1f8a4c;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #1f8a4c 22%, transparent);
+}
+.site-nav-google-status.is-partial .site-nav-google-dot {
+  background: #b7791f;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #b7791f 22%, transparent);
+}
+.site-nav-google-status.is-missing .site-nav-google-dot {
+  background: #b42318;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #b42318 18%, transparent);
+}
+.site-nav-google-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sn-ink);
+  line-height: 1.2;
+}
+.site-nav-google-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.site-nav-google-chip {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--sn-line);
+  background: var(--sn-ground);
+  color: var(--sn-faint);
+}
+.site-nav-google-chip.is-on {
+  color: #146c3a;
+  border-color: color-mix(in srgb, #1f8a4c 35%, var(--sn-line));
+  background: color-mix(in srgb, #1f8a4c 12%, var(--sn-bg));
+}
+.site-nav-google-chip.is-err {
+  color: #912018;
+  border-color: color-mix(in srgb, #b42318 30%, var(--sn-line));
+  background: color-mix(in srgb, #b42318 10%, var(--sn-bg));
+}
+.site-nav-connect.is-secondary {
+  background: transparent;
+  font-weight: 600;
+  color: var(--sn-faint);
+}
+.site-nav-connect.is-secondary:hover {
+  color: var(--sn-ink);
+}
+
 /* Primary nav — icon rail */
 html.gb-nav-rail {
   --site-nav-w: 68px;
@@ -303,8 +380,22 @@ html.gb-nav-rail {
 .site-nav.is-rail .site-nav-label,
 .site-nav.is-rail .site-nav-chip,
 .site-nav.is-rail .site-nav-source,
-.site-nav.is-rail .site-nav-user-name {
+.site-nav.is-rail .site-nav-user-name,
+.site-nav.is-rail .site-nav-google-chips,
+.site-nav.is-rail .site-nav-google-title {
   display: none;
+}
+.site-nav.is-rail .site-nav-google {
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  align-items: center;
+}
+.site-nav.is-rail .site-nav-google-status {
+  justify-content: center;
+}
+.site-nav.is-rail .site-nav-connect {
+  padding: 9px 0;
 }
 .site-nav.is-rail .site-nav-top {
   flex-direction: column;

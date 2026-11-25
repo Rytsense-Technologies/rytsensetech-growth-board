@@ -246,21 +246,42 @@
       userRow.appendChild(theme);
       footer.appendChild(userRow);
     }
-    var connect = footer.querySelector('.site-nav-connect');
-    if (!connect) {
-      connect = document.createElement('button');
+    var google = footer.querySelector('.site-nav-google');
+    if (!google) {
+      google = document.createElement('div');
+      google.className = 'site-nav-google';
+      google.id = 'gb-google-status';
+      google.setAttribute('aria-live', 'polite');
+
+      var status = document.createElement('div');
+      status.className = 'site-nav-google-status is-checking';
+      status.innerHTML =
+        '<span class="site-nav-google-dot" aria-hidden="true"></span>' +
+        '<span class="site-nav-google-title site-nav-label">Checking Google…</span>';
+
+      var chips = document.createElement('div');
+      chips.className = 'site-nav-google-chips site-nav-label';
+      chips.innerHTML =
+        '<span class="site-nav-google-chip" data-provider="gsc">GSC</span>' +
+        '<span class="site-nav-google-chip" data-provider="ga4">GA4</span>' +
+        '<span class="site-nav-google-chip" data-provider="clarity">Clarity</span>';
+
+      var connect = document.createElement('button');
       connect.type = 'button';
       connect.className = 'site-nav-connect site-nav-signout';
       connect.id = 'gb-connect-google';
       connect.title = 'Connect Google Search Console + GA4 for live Addressed verify';
       connect.innerHTML = icon('<path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/>') +
         '<span class="site-nav-label">Connect Google</span>';
-      connect.hidden = true;
       connect.addEventListener('click', startGoogleConnect);
-      footer.appendChild(connect);
-      refreshConnectLink(connect);
+
+      google.appendChild(status);
+      google.appendChild(chips);
+      google.appendChild(connect);
+      footer.appendChild(google);
+      refreshGoogleStatus(google);
     }
-    var out = footer.querySelector('.site-nav-signout');
+    var out = footer.querySelector('.site-nav-signout:not(.site-nav-connect)');
     if (!out) {
       out = document.createElement('button');
       out.type = 'button';
@@ -293,21 +314,83 @@
       });
   }
 
-  function refreshConnectLink(el) {
-    var link = el || document.getElementById('gb-connect-google');
-    if (!link || !window.GbLive) return;
-    var load = typeof window.GbLive.sync === 'function'
-      ? window.GbLive.sync()
-      : Promise.reject(new Error('no sync'));
-    load.then(function (res) {
-      var rows = (res && res.connections) || [];
-      var hasGoogle = rows.some(function (c) {
-        return (c.provider === 'gsc' || c.provider === 'ga4') && c.status === 'connected';
-      });
-      link.hidden = !!hasGoogle;
-    }).catch(function () {
-      link.hidden = false;
+  function providerState(rows, name) {
+    var row = (rows || []).find(function (c) { return c.provider === name; });
+    if (!row) return 'missing';
+    if (row.status === 'connected') return 'connected';
+    if (row.status === 'error') return 'error';
+    return 'missing';
+  }
+
+  function paintGoogleStatus(wrap, rows) {
+    if (!wrap) return;
+    var statusEl = wrap.querySelector('.site-nav-google-status');
+    var titleEl = wrap.querySelector('.site-nav-google-title');
+    var connect = wrap.querySelector('.site-nav-connect');
+    var gsc = providerState(rows, 'gsc');
+    var ga4 = providerState(rows, 'ga4');
+    var clarity = providerState(rows, 'clarity');
+    var coreOk = gsc === 'connected' && ga4 === 'connected';
+    var anyOk = gsc === 'connected' || ga4 === 'connected' || clarity === 'connected';
+
+    ['gsc', 'ga4', 'clarity'].forEach(function (name) {
+      var chip = wrap.querySelector('.site-nav-google-chip[data-provider="' + name + '"]');
+      if (!chip) return;
+      var state = name === 'gsc' ? gsc : name === 'ga4' ? ga4 : clarity;
+      chip.classList.toggle('is-on', state === 'connected');
+      chip.classList.toggle('is-err', state === 'error');
+      chip.title = name.toUpperCase() + ': ' + (state === 'connected' ? 'connected' : state === 'error' ? 'error' : 'not connected');
     });
+
+    wrap.classList.toggle('is-connected', coreOk);
+    wrap.classList.toggle('is-partial', !coreOk && anyOk);
+    wrap.classList.toggle('is-missing', !anyOk);
+
+    if (statusEl) {
+      statusEl.classList.remove('is-checking', 'is-connected', 'is-partial', 'is-missing');
+      if (coreOk) statusEl.classList.add('is-connected');
+      else if (anyOk) statusEl.classList.add('is-partial');
+      else statusEl.classList.add('is-missing');
+    }
+    if (titleEl) {
+      titleEl.textContent = coreOk
+        ? 'Google connected'
+        : anyOk
+          ? 'Google partial'
+          : 'Google not connected';
+    }
+    if (connect) {
+      connect.hidden = false;
+      connect.classList.toggle('is-secondary', coreOk);
+      var label = connect.querySelector('.site-nav-label');
+      if (coreOk) {
+        connect.title = 'Reconnect Google Search Console + GA4';
+        if (label) label.textContent = 'Reconnect';
+      } else if (anyOk) {
+        connect.title = 'Finish connecting Google Search Console + GA4';
+        if (label) label.textContent = 'Finish connecting';
+      } else {
+        connect.title = 'Connect Google Search Console + GA4 for live Addressed verify';
+        if (label) label.textContent = 'Connect Google';
+      }
+    }
+  }
+
+  function refreshGoogleStatus(el) {
+    var wrap = el || document.getElementById('gb-google-status');
+    if (!wrap) return;
+    if (!window.GbLive || typeof window.GbLive.sync !== 'function') {
+      paintGoogleStatus(wrap, []);
+      setTimeout(function () { refreshGoogleStatus(wrap); }, 600);
+      return;
+    }
+    window.GbLive.sync()
+      .then(function (res) {
+        paintGoogleStatus(wrap, (res && res.connections) || []);
+      })
+      .catch(function () {
+        paintGoogleStatus(wrap, []);
+      });
   }
 
   function showConnectedToast() {
@@ -327,7 +410,7 @@
       params.delete('connected');
       var next = location.pathname + (params.toString() ? '?' + params.toString() : '') + (location.hash || '');
       if (window.history && history.replaceState) history.replaceState({}, '', next);
-      refreshConnectLink();
+      refreshGoogleStatus();
     } catch (e) { /* non-fatal */ }
   }
 
