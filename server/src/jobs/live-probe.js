@@ -169,6 +169,18 @@ function absoluteFromSite(domain, pathOrUrl) {
   return null;
 }
 
+function firstPathFromClaimText(snap) {
+  const texts = [snap.url, snap.page, snap.note, snap.title, snap.expected]
+    .filter(Boolean)
+    .map(String)
+    .join('\n');
+  const abs = texts.match(/https?:\/\/[^\s"'<>)\]}]+/i);
+  if (abs) return abs[0].replace(/[.,;:]+$/g, '');
+  const path = texts.match(/\/(?:[a-z0-9][a-z0-9._\-/%]*)+/i);
+  if (path && path[0].length >= 4) return path[0].replace(/[.,;:]+$/g, '');
+  return null;
+}
+
 export async function probeClaimLive(db, ack) {
   const snap = ack.claim_snapshot || {};
   let domain = null;
@@ -177,7 +189,7 @@ export async function probeClaimLive(db, ack) {
     domain = site && site.domain;
   } catch { /* optional */ }
 
-  const url = snap.url || snap.targetUrl || snap.sourceUrl || snap.page || null;
+  const url = snap.url || snap.targetUrl || snap.sourceUrl || snap.page || firstPathFromClaimText(snap) || null;
   const absoluteUrl = absoluteFromSite(domain, url);
   const out = {
     tools_used: [],

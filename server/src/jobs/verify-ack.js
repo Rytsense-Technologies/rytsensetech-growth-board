@@ -205,6 +205,42 @@ function pathOf(url) {
   }
 }
 
+/** Pull absolute URLs or site paths from claim text (Easy Wins location/rationale, etc.). */
+export function extractClaimUrls(snap = {}) {
+  const texts = [snap.url, snap.page, snap.note, snap.title, snap.expected, snap.sourceUrl, snap.targetUrl]
+    .filter(Boolean)
+    .map(String)
+    .join('\n');
+  const found = [];
+  for (const m of texts.matchAll(/https?:\/\/[^\s"'<>)\]}]+/gi)) {
+    found.push(m[0].replace(/[.,;:]+$/g, ''));
+  }
+  for (const m of texts.matchAll(/\/(?:[a-z0-9][a-z0-9._\-/%]*)+/gi)) {
+    const p = m[0].replace(/[.,;:]+$/g, '');
+    if (p.length >= 4 && !/^\/(?:api|assets|static)\b/i.test(p)) found.push(p);
+  }
+  return [...new Set(found)];
+}
+
+async function siteDomain(db, siteId) {
+  try {
+    const { data } = await db.from('sites').select('domain').eq('id', siteId).maybeSingle();
+    return (data && data.domain) || process.env.SITE_DOMAIN || 'rytsensetech.com';
+  } catch {
+    return process.env.SITE_DOMAIN || 'rytsensetech.com';
+  }
+}
+
+function toAbsoluteUrl(domain, pathOrUrl) {
+  const raw = String(pathOrUrl || '').trim();
+  if (!raw) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const host = String(domain || '').replace(/^https?:\/\//i, '').replace(/\/.*$/, '').replace(/^www\./i, '');
+  if (!host) return null;
+  if (raw.startsWith('/')) return `https://${host}${raw}`;
+  return `https://${host}/${raw.replace(/^\/+/, '')}`;
+}
+
 async function evidenceFor(db, ack) {
   const snap = ack.claim_snapshot || {};
   const keys = [];
@@ -316,30 +352,43 @@ async function evidenceFor(db, ack) {
     } else if (snap.url) {
       out.observed_status = await httpStatus(snap.url);
       keys.push('observed_status');
-    } else {
-      out.hard_pass = 'No measurable URL or issue link; accepting human claim with caveat';
+      if (['404', '403', '410', '500', '502', '503'].includes(String(out.observed_status))) {
+        out.hard_fail = `Live HTTP still ${out.observed_status} — not resolved on the website`;
+      }
     }
+    // No URL/issue: do not auto-confirm — LLM + live tools must prove, or verify fails.
     return out;
   }
 
   if (ack.source_kind === 'audit_finding' || ack.source_kind === 'fix') {
     out.snapshot = snap;
     keys.push('snapshot');
-    if (snap.url) {
-      out.observed_status = await httpStatus(snap.url);
-      keys.push('observed_status');
-      const path = pathOf(snap.url);
+    const domain = await siteDomain(db, ack.site_id);
+    const candidates = extractClaimUrls(snap);
+    const primary = snap.url || snap.page || candidates[0] || null;
+    const absolute = toAbsoluteUrl(domain, primary);
+    out.claim_urls = candidates.slice(0, 5);
+    out.url = absolute || primary || null;
+    keys.push('claim_urls');
+    if (absolute) {
+      out.observed_status = await httpStatus(absolute);
+      keys.push('observed_status', 'url');
+      if (['404', '403', '410', '500', '502', '503'].includes(String(out.observed_status))) {
+        // User claimed fixed — live site still broken → never Verified.
+        out.hard_fail = `Live HTTP still ${out.observed_status} for ${absolute} — not resolved on the website`;
+      }
+      const path = pathOf(absolute);
       const { data: pages } = await db
         .from('search_pages')
         .select('page, clicks, impressions, position')
         .eq('site_id', ack.site_id)
         .order('impressions', { ascending: false })
         .limit(500);
-      out.search_pages = (pages || []).filter((p) => p.page === path || p.page === snap.url).slice(0, 3);
+      out.search_pages = (pages || []).filter((p) => p.page === path || p.page === absolute).slice(0, 3);
       keys.push('search_pages');
-    } else {
-      out.hard_pass = 'No URL on finding; accepting human claim with caveat';
     }
+    // Never auto-confirm Easy Wins / audit fixes from the human tick alone.
+    // If there is no hard_fail yet, LLM + live tools must prove the fix (or fail).
     return out;
   }
 
@@ -700,8 +749,17 @@ function applyLiveHardSignals(evidence, live) {
       evidence.hard_fail = evidence.hard_fail || `GSC inspection: ${live.gsc.inspection.coverageState}`;
     }
   }
-  if (live.http && ['404', '403', '500', '502', '503'].includes(String(live.http.status)) && (evidence.source_kind === 'gsc_issue' || evidence.source_kind === 'page' || evidence.source_kind === 'internal_link')) {
-    evidence.hard_fail = evidence.hard_fail || `Live HTTP still ${live.http.status}`;
+  if (
+    live.http &&
+    ['404', '403', '410', '500', '502', '503'].includes(String(live.http.status)) &&
+    (evidence.source_kind === 'gsc_issue' ||
+      evidence.source_kind === 'page' ||
+      evidence.source_kind === 'internal_link' ||
+      evidence.source_kind === 'audit_finding' ||
+      evidence.source_kind === 'fix' ||
+      evidence.source_kind === 'task')
+  ) {
+    evidence.hard_fail = evidence.hard_fail || `Live HTTP still ${live.http.status} — not resolved on the website`;
   }
   if (live.http && evidence.source_kind === 'gsc_issue') {
     const cat = String((evidence.issue && evidence.issue.category) || '').toLowerCase();

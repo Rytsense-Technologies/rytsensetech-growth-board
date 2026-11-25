@@ -46,6 +46,7 @@
       attr('note', opts.note) +
       attr('query', opts.query) +
       attr('page', opts.page) +
+      attr('category', opts.category) +
       attr('metric-key', opts.metricKey) +
       attr('metric-value', opts.metricValue != null ? String(opts.metricValue) : '') +
       attr('warn', opts.warn ? '1' : '') +
@@ -130,6 +131,7 @@
             note: el.getAttribute('data-note') || null,
             query: el.getAttribute('data-query') || null,
             page: el.getAttribute('data-page') || null,
+            category: el.getAttribute('data-category') || null,
             metricKey: el.getAttribute('data-metric-key') || null,
             metricValue: el.getAttribute('data-metric-value') || null,
             warn: el.getAttribute('data-warn') === '1',

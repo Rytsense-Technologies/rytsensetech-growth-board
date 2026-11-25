@@ -230,6 +230,7 @@
                 title: (i.categoryLabel || 'GSC') + ': ' + shortUrl(i.url),
                 url: i.url,
                 note: i.action || i.note || '',
+                category: i.categoryLabel || i.category || '',
                 label: 'Addressed',
               })
             : '') +

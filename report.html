@@ -213,30 +213,41 @@
     document.getElementById('summary').innerHTML=html;
   }
 
+  function claimPath(text){
+    var s=String(text||'');
+    var abs=s.match(/https?:\/\/[^\s"'<>)\]}]+/i);
+    if(abs) return abs[0].replace(/[.,;:]+$/g,'');
+    var path=s.match(/\/(?:[a-z0-9][a-z0-9._\-\/%]*)+/i);
+    return path&&path[0].length>=4 ? path[0].replace(/[.,;:]+$/g,'') : '';
+  }
+
   function renderCritical(a){
-    var html='<p class="lede">Findings verified during the '+esc(a.auditedRange)+' engagement. Critical items block trustworthy AI citation and SERP conversion. Tick <strong>Addressed</strong> when live; the board verifies against stored data.</p>';
+    var html='<p class="lede">Findings verified during the '+esc(a.auditedRange)+' engagement. Critical items block trustworthy AI citation and SERP conversion. Tick <strong>Addressed</strong> when live — the board verifies with connected tools before Verified.</p>';
     a.criticalIssues.forEach(function(i){
+      var url=claimPath(i.detail)||claimPath(i.title);
       html+='<article class="find crit"><h4>'+esc(i.title)+' <span class="tag t-crit">'+esc(i.id)+'</span> <span class="tag t-sig">'+esc(i.scope)+'</span></h4>'+
         '<p>'+esc(i.detail)+'</p>'+
-        (window.GbAck?window.GbAck.checkboxHtml('audit_finding', i.id, { title:i.title, note:i.detail, label:'Addressed' }):'')+
+        (window.GbAck?window.GbAck.checkboxHtml('audit_finding', i.id, { title:i.title, note:i.detail, url:url||null, page:url||null, expected:i.title, label:'Addressed' }):'')+
         '</article>';
     });
     a.highIssues.forEach(function(i){
+      var url=claimPath(i.detail)||claimPath(i.title);
       html+='<article class="find warn"><h4>'+esc(i.title)+' <span class="tag t-warn">'+esc(i.id)+'</span></h4>'+
         '<p>'+esc(i.detail)+'</p>'+
-        (window.GbAck?window.GbAck.checkboxHtml('audit_finding', i.id, { title:i.title, note:i.detail, label:'Addressed' }):'')+
+        (window.GbAck?window.GbAck.checkboxHtml('audit_finding', i.id, { title:i.title, note:i.detail, url:url||null, page:url||null, expected:i.title, label:'Addressed' }):'')+
         '</article>';
     });
     document.getElementById('critical').innerHTML=html;
   }
 
   function renderWins(a){
-    var html='<p class="lede">Fifteen shippable actions with owner and effort. Prefer W1–W5 this sprint. Tick Addressed when live.</p>';
+    var html='<p class="lede">Fifteen shippable actions with owner and effort. Prefer W1–W5 this sprint. Tick Addressed when live — Verified only after connected tools confirm the fix on the site.</p>';
     html+='<div class="h2">Ship today</div><div class="tblwrap"><table><thead><tr><th>ID</th><th>Action</th><th>Location</th><th>Effort</th><th>Owner</th><th>Live</th></tr></thead><tbody>';
     a.easyWins.forEach(function(w){
+      var url=claimPath(w.location)||claimPath(w.rationale)||claimPath(w.action);
       html+='<tr><td class="u">'+esc(w.id)+'</td><td>'+esc(w.action)+'<div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">'+esc(w.rationale)+'</div></td>'+
         '<td>'+esc(w.location)+'</td><td class="n">'+esc(w.effort)+'</td><td>'+esc(w.owner)+'</td>'+
-        '<td>'+(window.GbAck?window.GbAck.checkboxHtml('audit_finding', w.id, { title:w.action, note:w.location, label:'Addressed' }):'')+'</td></tr>';
+        '<td>'+(window.GbAck?window.GbAck.checkboxHtml('audit_finding', w.id, { title:w.action, note:(w.location||'')+' — '+(w.rationale||''), url:url||null, page:url||null, expected:w.action, label:'Addressed' }):'')+'</td></tr>';
     });
     html+='</tbody></table></div>';
     document.getElementById('wins').innerHTML=html;

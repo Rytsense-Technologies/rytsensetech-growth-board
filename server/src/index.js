@@ -442,6 +442,7 @@ export function createApp() {
           note: req.body.note || null,
           query: req.body.query || null,
           page: req.body.page || null,
+          category: req.body.category || null,
           metricKey: req.body.metricKey || req.body.metric_key || null,
           metricValue: req.body.metricValue != null ? req.body.metricValue : (req.body.metric_value != null ? req.body.metric_value : null),
           warn: !!(req.body.warn),
