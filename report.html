@@ -352,14 +352,18 @@
       }
       return i.done;
     }).length;
-    var html='<p class="lede">Tick Addressed when the fix is live. The board verifies against stored data'+(window.GbLive&&window.GbLive.base()?' via the API':'; local checklist still kept as fallback')+'. '+done+' / '+items.length+' done.</p>';
+    var html='<p class="lede">Tick Addressed when the fix is live. Verified only after connected tools confirm it on the site'+(window.GbLive&&window.GbLive.base()?'':'; local checklist still kept as fallback')+'. '+done+' / '+items.length+' done.</p>';
     html+='<div class="card" id="fixes-list">';
     if(!items.length) html+='<p class="note" style="margin:0;color:var(--ink-3)">No fixes loaded.</p>';
     items.forEach(function(item){
+      var fixUrl = claimPath(item.location)||claimPath(item.title);
       var ackHtml = window.GbAck
         ? window.GbAck.checkboxHtml('fix', item.id, {
             title: item.title,
             note: [item.type, item.location, item.owner].filter(Boolean).join(' · '),
+            url: fixUrl || null,
+            page: fixUrl || null,
+            expected: item.title,
             label: 'Addressed',
           })
         : '<input type="checkbox" '+(item.done?'checked':'')+' aria-label="Mark '+esc(item.id)+' done">';
