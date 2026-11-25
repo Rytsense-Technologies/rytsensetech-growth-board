@@ -174,7 +174,7 @@ function fallbackFromLiveHttp(evidence) {
     return { verdict: 'failed', reason: `Live HTTP still ${status}`, evidence_used: evidence.keys || [] };
   }
   const code = Number(status);
-  if (Number.isFinite(code) && code >= 200 && code < 400 && isHttpErrorCategory(cat)) {
+  if (Number.isFinite(code) && code >= 200 && code < 300 && isHttpErrorCategory(cat)) {
     return { verdict: 'confirmed', reason: `Live HTTP ${status}`, evidence_used: evidence.keys || [] };
   }
   return null;
@@ -182,12 +182,13 @@ function fallbackFromLiveHttp(evidence) {
 
 async function httpStatus(url) {
   if (!url || !/^https?:\/\//i.test(url)) return null;
+  // Follow redirects: intermediate 301 must not mask a final 404.
   try {
-    const head = await fetch(url, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(15000) });
+    const head = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(15000) });
     return String(head.status);
   } catch {
     try {
-      const get = await fetch(url, { method: 'GET', redirect: 'manual', signal: AbortSignal.timeout(15000) });
+      const get = await fetch(url, { method: 'GET', redirect: 'follow', signal: AbortSignal.timeout(15000) });
       return String(get.status);
     } catch {
       return null;
@@ -243,10 +244,10 @@ async function evidenceFor(db, ack) {
       keys.push('search_pages');
     }
     // Hard pass/fail: sheet categories look like "404 Errors", not exact "404".
-    // 2xx/3xx means the claimed dead URL is now reachable or redirected (typical fix).
+    // After following redirects, final 2xx = fixed; final 404/5xx = still broken.
     const cat = String((issue && issue.category) || snap.category || '').toLowerCase();
     const code = Number(out.observed_status);
-    if (isHttpErrorCategory(cat) && Number.isFinite(code) && code >= 200 && code < 400) {
+    if (isHttpErrorCategory(cat) && Number.isFinite(code) && code >= 200 && code < 300) {
       out.hard_pass = `Live HTTP ${out.observed_status} for previously ${cat || 'error'} URL`;
     }
     if (out.observed_status && ['404', '403', '500', '502', '503'].includes(out.observed_status) && isHttpErrorCategory(cat)) {
@@ -705,7 +706,7 @@ function applyLiveHardSignals(evidence, live) {
   if (live.http && evidence.source_kind === 'gsc_issue') {
     const cat = String((evidence.issue && evidence.issue.category) || '').toLowerCase();
     const code = Number(live.http.status);
-    if (isHttpErrorCategory(cat) && Number.isFinite(code) && code >= 200 && code < 400) {
+    if (isHttpErrorCategory(cat) && Number.isFinite(code) && code >= 200 && code < 300) {
       evidence.hard_pass = evidence.hard_pass || `Live HTTP ${live.http.status} for previously ${cat || 'error'} URL`;
     }
   }

@@ -4,8 +4,10 @@ import { refreshOnePsiPage } from './sync-psi.js';
 
 export async function liveHttp(url) {
   if (!url || !/^https?:\/\//i.test(url)) return null;
+  // Follow redirects so a 301→404 (common soft "fix") cannot count as healthy.
+  // A real SEO redirect to a live page ends on 2xx and still passes.
   try {
-    const head = await fetch(url, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(15000) });
+    const head = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(15000) });
     return {
       status: String(head.status),
       finalUrl: head.url || url,
@@ -13,7 +15,7 @@ export async function liveHttp(url) {
     };
   } catch {
     try {
-      const get = await fetch(url, { method: 'GET', redirect: 'manual', signal: AbortSignal.timeout(15000) });
+      const get = await fetch(url, { method: 'GET', redirect: 'follow', signal: AbortSignal.timeout(15000) });
       return {
         status: String(get.status),
         finalUrl: get.url || url,
